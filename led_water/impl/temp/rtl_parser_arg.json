@@ -1,0 +1,16 @@
+{
+    "Device": "GW5AT-60B",
+    "Files": [
+        {
+            "Path": "C:/Users/30415/Desktop/gowin_work/led_water/src/led_water.v",
+            "Type": "verilog"
+        }
+    ],
+    "IncludePath": [
+    ],
+    "LoopLimit": 2000,
+    "ResultFile": "C:/Users/30415/Desktop/gowin_work/led_water/impl/temp/rtl_parser.result",
+    "Top": "led_water",
+    "VerilogStd": "verilog_2001",
+    "VhdlStd": "vhdl_93"
+}

@@ -1,0 +1,111 @@
+//Copyright (C)2014-2026 Gowin Semiconductor Corporation.
+//All rights reserved.
+//File Title: Physical Constraints file
+//Part Number: GW5AT-LV60PG484AC1/I0
+//Device: GW5AT-60
+//Device Version: B
+//
+// Board: Sipeed Tang Mega 60K (SOM GW5AT-LV60 + TANG MEGA NEO dock board)
+//
+// Pin sources
+// -----------
+//  clk / rstn / keys / PMOD LEDs are taken from the vendor example project
+//  sipeed/TangMega-60K-example (pmod_led_neo/src/pmod_led.cst and
+//  cam_dvi/src/NEO_DOCK.cst).  The 8 LED pins below are the "PMOD near the HDMI
+//  connector" header, which is what this project inherited from led_water.
+//  The left-edge PMOD LED header is listed (commented out) at the bottom.
+
+//=====================================================================
+// System
+//=====================================================================
+// 50 MHz on-board oscillator (bank 7, 3.3 V)
+IO_LOC "clk" V22;
+IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+
+// The dock board has NO pull-up on the reset pin, so enable the FPGA one.
+// AA13 is the documented rst_n/KEY pin; it sits in a 1.5 V bank.
+IO_LOC "rstn" AA13;
+IO_PORT "rstn" IO_TYPE=LVCMOS15 PULL_MODE=UP BANK_VCCIO=1.5;
+
+//=====================================================================
+// 8 x LED - "PMOD near the HDMI connector" header (bank 8, 3.3 V)
+//   led_o[0] -> LED0  ...  led_o[7] -> LED7
+//   LEDs are active LOW (pin driven low = LED lit)
+//=====================================================================
+IO_LOC "led_o[0]" AB20;
+IO_PORT "led_o[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[1]" AA19;
+IO_PORT "led_o[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[2]" AA21;
+IO_PORT "led_o[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[3]" AA20;
+IO_PORT "led_o[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[4]" AB22;
+IO_PORT "led_o[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[5]" AB21;
+IO_PORT "led_o[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[6]" Y22;
+IO_PORT "led_o[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "led_o[7]" Y21;
+IO_PORT "led_o[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+
+//=====================================================================
+// ADC  --  *** EDIT THESE FOR YOUR OWN ADC WIRING ***
+//
+// These are the interface signals of the parallel ADC front-end
+// (ADC_IF = "PAR").  The ball numbers below all exist on GW5AT-LV60PG484AC1/I0
+// and this project has been built and routed with them, but they are
+// PLACEHOLDERS: point them at whatever pins your ADC data bus actually uses.
+// The current values sit in bank 6/7/8, all 3.3 V.
+//
+// If your ADC is a serial device, build with ADC_IF = "SPI" and constrain
+// adc_cs_n / adc_sclk / adc_din instead (listed below).
+//=====================================================================
+IO_LOC "adc_data[0]" T20;
+IO_PORT "adc_data[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[1]" N15;
+IO_PORT "adc_data[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[2]" R14;
+IO_PORT "adc_data[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[3]" R16;
+IO_PORT "adc_data[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[4]" P15;
+IO_PORT "adc_data[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[5]" P14;
+IO_PORT "adc_data[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[6]" AA14;
+IO_PORT "adc_data[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_data[7]" N14;
+IO_PORT "adc_data[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "adc_dv" M15;
+IO_PORT "adc_dv" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+
+// Serial ADC alternative (used when ADC_IF = "SPI")
+IO_LOC "adc_cs_n" J16;
+IO_PORT "adc_cs_n" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+IO_LOC "adc_sclk" P17;
+IO_PORT "adc_sclk" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "adc_din" K13;
+IO_PORT "adc_din" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+
+//=====================================================================
+// Alternative LED header: the PMOD on the LEFT edge of the dock board
+// (official pmod_led_neo example).  Uncomment these and comment out the
+// led_o block above if that is the header your LEDs are wired to.
+//=====================================================================
+//IO_LOC "led_o[0]" P19;
+//IO_PORT "led_o[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[1]" R19;
+//IO_PORT "led_o[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[2]" T21;
+//IO_PORT "led_o[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[3]" U21;
+//IO_PORT "led_o[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[4]" P16;
+//IO_PORT "led_o[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[5]" R17;
+//IO_PORT "led_o[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[6]" R18;
+//IO_PORT "led_o[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+//IO_LOC "led_o[7]" T18;
+//IO_PORT "led_o[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;

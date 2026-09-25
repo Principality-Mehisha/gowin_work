@@ -9,7 +9,7 @@
 //
 // Pin sources
 // -----------
-//  clk / rstn / keys / PMOD LEDs are taken from the vendor example project
+//  clk / rstn / PMOD LEDs are taken from the vendor example project
 //  sipeed/TangMega-60K-example (pmod_led_neo/src/pmod_led.cst and
 //  cam_dvi/src/NEO_DOCK.cst).  The 8 LED pins below are the "PMOD near the HDMI
 //  connector" header, which is what this project inherited from led_water.
@@ -50,43 +50,18 @@ IO_LOC "led_o[7]" Y21;
 IO_PORT "led_o[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
 
 //=====================================================================
-// ADC  --  *** EDIT THESE FOR YOUR OWN ADC WIRING ***
-//
-// These are the interface signals of the parallel ADC front-end
-// (ADC_IF = "PAR").  The ball numbers below all exist on GW5AT-LV60PG484AC1/I0
-// and this project has been built and routed with them, but they are
-// PLACEHOLDERS: point them at whatever pins your ADC data bus actually uses.
-// The current values sit in bank 6/7/8, all 3.3 V.
-//
-// If your ADC is a serial device, build with ADC_IF = "SPI" and constrain
-// adc_cs_n / adc_sclk / adc_din instead (listed below).
+// Dedicated analogue ADC input (not ordinary digital I/O constraints)
 //=====================================================================
-IO_LOC "adc_data[0]" T20;
-IO_PORT "adc_data[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[1]" N15;
-IO_PORT "adc_data[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[2]" R14;
-IO_PORT "adc_data[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[3]" R16;
-IO_PORT "adc_data[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[4]" P15;
-IO_PORT "adc_data[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[5]" P14;
-IO_PORT "adc_data[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[6]" AA14;
-IO_PORT "adc_data[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_data[7]" N14;
-IO_PORT "adc_data[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-IO_LOC "adc_dv" M15;
-IO_PORT "adc_dv" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
-
-// Serial ADC alternative (used when ADC_IF = "SPI")
-IO_LOC "adc_cs_n" J16;
-IO_PORT "adc_cs_n" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
-IO_LOC "adc_sclk" P17;
-IO_PORT "adc_sclk" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
-IO_LOC "adc_din" K13;
-IO_PORT "adc_din" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+// ADCV positive input : L10 / ADCVP (schematic net label ADVCP)
+// ADCV negative input : M9  / ADCVN
+//
+// Connect the external signal to L10 and its analogue ground/return to M9.
+// The differential input range is 0..1 V and ADCVP must be above ADCVN.
+// Never apply a differential voltage greater than 1 V.
+//
+// The ADC_SAR hard macro connects these package balls internally, so there is
+// deliberately no IO_LOC or IO_PORT statement for them.  The alternative ADCT
+// pair is N10/ADCTP and N9/ADCTN; selecting it would require vsenctl=3'b001.
 
 //=====================================================================
 // Alternative LED header: the PMOD on the LEFT edge of the dock board

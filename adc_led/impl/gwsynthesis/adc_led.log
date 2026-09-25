@@ -1,13 +1,13 @@
 GowinSynthesis start
 Running parser ...
-Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v'
 Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\adc_led\src\adc_led.v'
-Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\adc_led\src\spi_adc.v'
-Compiling module 'top'("C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v":24)
-Compiling module 'adc_led'("C:\Users\30415\Desktop\gowin_work\adc_led\src\adc_led.v":36)
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\adc_led\src\gowin_adc\gowin_adc.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v'
+Compiling module 'top'("C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v":13)
+Compiling module 'Gowin_ADC'("C:\Users\30415\Desktop\gowin_work\adc_led\src\gowin_adc\gowin_adc.v":11)
+Compiling module 'adc_led(ADC_BITS=14,HYST=0)'("C:\Users\30415\Desktop\gowin_work\adc_led\src\adc_led.v":36)
 NOTE  (EX0101) : Current top module is "top"
 [5%] Running netlist conversion ...
-WARN  (CV0016) : Input adc_din is unused("C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v":42)
 Running device independent optimization ...
 [10%] Optimizing Phase 0 completed
 [15%] Optimizing Phase 1 completed

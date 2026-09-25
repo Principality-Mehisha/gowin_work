@@ -2,15 +2,15 @@
     "Device": "GW5AT-60B",
     "Files": [
         {
-            "Path": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
-            "Type": "verilog"
-        },
-        {
             "Path": "C:/Users/30415/Desktop/gowin_work/adc_led/src/adc_led.v",
             "Type": "verilog"
         },
         {
-            "Path": "C:/Users/30415/Desktop/gowin_work/adc_led/src/spi_adc.v",
+            "Path": "C:/Users/30415/Desktop/gowin_work/adc_led/src/gowin_adc/gowin_adc.v",
+            "Type": "verilog"
+        },
+        {
+            "Path": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
             "Type": "verilog"
         }
     ],

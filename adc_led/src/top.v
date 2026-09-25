@@ -1,107 +1,89 @@
 //======================================================================
-//  Module   : top
-//  Function : Tang Mega 60K - ADC input shown as a binary count on 8 LEDs
-//  Device   : GW5AT-LV60PG484AC1/I0  (GW5AT-60B, PBGA484A)
+//  Tang Mega 60K on-chip ADC to binary LED display
 //
-//  Two ADC front-ends are provided; pick one with the ADC_IF parameter:
+//  ADCV is a dedicated analogue differential input of the GW5AT-60:
+//    ADCVP = L10  (external 0..1 V signal)
+//    ADCVN = M9   (analogue ground / signal return)
 //
-//    ADC_IF = "PAR"  parallel ADC (or any converter that presents a parallel
-//                    result): adc_data[ADC_BITS-1:0] plus an adc_dv one-clock
-//                    valid strobe.  This is the default.
-//
-//    ADC_IF = "SPI"  serial ADC such as MCP3202 / ADS7816 / ADC128S022: the
-//                    FPGA drives adc_cs_n / adc_sclk and shifts in adc_din,
-//                    producing one conversion per SAMPLE_DIV clock periods.
-//                    Here SPI_BITS defines the converter resolution.
-//
-//  Ports of the front-end that is not selected are left unconstrained, so the
-//  fitter only ever sees the pins you actually use.
-//
-//  The LED mapping itself lives in adc_led.v.
+//  The dedicated ADC balls are consumed directly by the ADC_SAR hard macro
+//  and therefore do not appear as top-level ports or ordinary CST IO_LOCs.
 //======================================================================
 `timescale 1ns / 1ps
 
 module top #(
-    parameter ADC_BITS   = 8,           // parallel ADC resolution
-    parameter HYST       = 2,           // ADC hysteresis in 8-bit LSBs
-    parameter ADC_IF     = "PAR",       // "PAR" or "SPI"
-    // SPI front-end only
-    parameter CLK_FREQ   = 50_000_000,
-    parameter SAMPLE_DIV = 50_000,      // 1 kHz conversion rate
-    parameter SPI_BITS   = 12,          // serial ADC resolution
-    parameter SPI_CPOL   = 0            // 0: SCLK idles low, data on rising edge
+    // Delay between completed conversions.  1024 clocks = 20.48 us at 50 MHz.
+    parameter SAMPLE_GAP = 1024
 )(
-    input                  clk,         // 50 MHz, pin V22
-    input                  rstn,        // active-low reset, pin AA13
-
-    input  [ADC_BITS-1:0]  adc_data,    // parallel ADC result (ADC_IF = "PAR")
-    input                  adc_dv,      // parallel ADC valid strobe
-
-    output                 adc_cs_n,    // serial ADC chip select (ADC_IF = "SPI")
-    output                 adc_sclk,    // serial ADC clock
-    input                  adc_din,     // serial ADC data in
-
-    output [7:0]           led_o
+    input        clk,
+    input        rstn,
+    output [7:0] led_o
 );
 
-    generate
-        //--------------------------------------------------------------
-        // Parallel front-end
-        //--------------------------------------------------------------
-        if (ADC_IF != "SPI") begin : g_par
-            // Park the unused serial pins at their idle levels and keep
-            // adc_din observed, rather than leaving outputs undriven.
-            wire unused_din = adc_din;
+    wire        adc_ready;
+    wire [13:0] adc_value;
+    wire [7:0]  mdrp_rdata_unused;
 
-            assign adc_cs_n = 1'b1;
-            assign adc_sclk = SPI_CPOL[0];
+    reg         adc_request;
+    reg         adc_ready_d;
+    reg         conversion_pending;
+    reg [15:0]  gap_count;
 
-            adc_led #(
-                .ADC_BITS  (ADC_BITS),
-                .HYST      (HYST),
-                .ACTIVE_LOW(1)
-            ) u_disp (
-                .clk     (clk),
-                .rstn    (rstn),
-                .adc_data(adc_data),
-                .adc_dv  (adc_dv),
-                .led_o   (led_o)
-            );
+    wire adc_value_valid = adc_ready & ~adc_ready_d;
+
+    // Voltage mode, ADCV channel.  The generated IP divides the 50 MHz clock
+    // by 8, giving a 6.25 MHz ADC clock (inside the specified 0.5..8 MHz range).
+    Gowin_ADC u_adc (
+        .adcrdy       (adc_ready),
+        .adcvalue     (adc_value),
+        .mdrp_rdata   (mdrp_rdata_unused),
+        .adcmode      (1'b1),
+        .vsenctl      (3'b000),
+        .clk          (clk),
+        .drstn        (rstn),
+        .adcreqi      (adc_request),
+        .mdrp_clk     (1'b0),
+        .mdrp_wdata   (8'b0),
+        .mdrp_a_inc   (1'b0),
+        .mdrp_opcode  (2'b00)
+    );
+
+    // ADCREQI is a one-clock pulse.  Do not issue another conversion until
+    // ADCRDY has produced a rising edge for the current request.
+    always @(posedge clk or negedge rstn) begin
+        if (!rstn) begin
+            adc_request        <= 1'b0;
+            adc_ready_d        <= 1'b0;
+            conversion_pending <= 1'b0;
+            gap_count          <= SAMPLE_GAP - 1;
+        end else begin
+            adc_ready_d <= adc_ready;
+            adc_request <= 1'b0;
+
+            if (conversion_pending) begin
+                if (adc_value_valid) begin
+                    conversion_pending <= 1'b0;
+                    gap_count <= SAMPLE_GAP - 1;
+                end
+            end else if (gap_count != 0) begin
+                gap_count <= gap_count - 1'b1;
+            end else begin
+                adc_request <= 1'b1;
+                conversion_pending <= 1'b1;
+            end
         end
-        //--------------------------------------------------------------
-        // Serial (SPI) front-end
-        //--------------------------------------------------------------
-        else begin : g_spi
-            wire [SPI_BITS-1:0] spi_data;
-            wire                spi_dv;
+    end
 
-            spi_adc #(
-                .BITS      (SPI_BITS),
-                .CLK_FREQ  (CLK_FREQ),
-                .SAMPLE_DIV(SAMPLE_DIV),
-                .CPOL      (SPI_CPOL)
-            ) u_spi (
-                .clk      (clk),
-                .rstn     (rstn),
-                .cs_n     (adc_cs_n),
-                .sclk     (adc_sclk),
-                .din      (adc_din),
-                .dout     (spi_data),
-                .dout_vld (spi_dv)
-            );
-
-            adc_led #(
-                .ADC_BITS  (SPI_BITS),
-                .HYST      (HYST),
-                .ACTIVE_LOW(1)
-            ) u_disp (
-                .clk     (clk),
-                .rstn    (rstn),
-                .adc_data(spi_data),
-                .adc_dv  (spi_dv),
-                .led_o   (led_o)
-            );
-        end
-    endgenerate
+    // The top three bits of the 14-bit ADC result form eight equal ranges.
+    adc_led #(
+        .ADC_BITS   (14),
+        .HYST       (0),
+        .ACTIVE_LOW (1)
+    ) u_display (
+        .clk      (clk),
+        .rstn     (rstn),
+        .adc_data (adc_value),
+        .adc_dv   (adc_value_valid),
+        .led_o    (led_o)
+    );
 
 endmodule

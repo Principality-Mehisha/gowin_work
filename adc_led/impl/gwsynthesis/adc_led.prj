@@ -4,9 +4,9 @@
     <Version>beta</Version>
     <Device id="GW5AT-60B" package="PBGA484A" speed="1" partNumber="GW5AT-LV60PG484AC1/I0"/>
     <FileList>
-        <File path="C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v" type="verilog"/>
         <File path="C:\Users\30415\Desktop\gowin_work\adc_led\src\adc_led.v" type="verilog"/>
-        <File path="C:\Users\30415\Desktop\gowin_work\adc_led\src\spi_adc.v" type="verilog"/>
+        <File path="C:\Users\30415\Desktop\gowin_work\adc_led\src\gowin_adc\gowin_adc.v" type="verilog"/>
+        <File path="C:\Users\30415\Desktop\gowin_work\adc_led\src\top.v" type="verilog"/>
     </FileList>
     <OptionList>
         <Option type="disable_insert_pad" value="0"/>

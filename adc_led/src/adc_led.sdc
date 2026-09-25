@@ -4,6 +4,5 @@
 //======================================================================
 create_clock -name clk -period 20 -waveform {0 10} [get_ports {clk}]
 
-// The ADC strobes (adc_dv / SPI clock) are asynchronous to clk and are
-// resynchronised inside the design; no input delay is required for this
-// slow, human-visible application.
+// The Gowin ADC hard macro and its request/ready handshake use this clock.
+// ADCVP/ADCVN are dedicated analogue balls, not timed digital input ports.

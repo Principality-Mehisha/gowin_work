@@ -1,0 +1,29 @@
+-series GW5AT
+-device GW5AT-60
+-device_version B
+-package PBGA484A
+-part_number GW5AT-LV60PG484AC1/I0
+
+
+-mod_name Gowin_ADC
+-file_name gowin_adc
+-path C:/Users/30415/Desktop/gowin_work/adc_led/src/gowin_adc/
+-file_type vlg
+-ip_version 1.1
+-type ADC_SAR
+-adc_en 1
+-saradc_en 0
+-dyn_bk_en false
+-glo_left true
+-vdd12_mipi true
+-glo_right true
+-vcc_right true
+-bank3 true
+-vccio3 true
+-adc_mode voltage
+-clk_sel clk
+-div 8
+-rate_change_ctrl 128
+-sample_cnt_sel 1024
+-fscal_value 653
+-offset 0

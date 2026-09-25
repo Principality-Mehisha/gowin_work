@@ -26,7 +26,7 @@ create_project -name $proj_name -dir $gen_dir \
 puts "== add_file =="
 add_file $proj_dir/src/top.v
 add_file $proj_dir/src/adc_led.v
-add_file $proj_dir/src/spi_adc.v
+add_file $proj_dir/src/gowin_adc/gowin_adc.v
 add_file $proj_dir/src/adc_led.cst
 add_file $proj_dir/src/adc_led.sdc
 

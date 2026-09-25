@@ -3,10 +3,10 @@
 //  Module   : test (top)
 //  Device   : GW5AT-60B (GW5AT-LV60PG484AC1/I0)
 //  Board    : Sipeed Tang Mega 60K + NEO Dock
-//  Function : PT8211 piano-like synthesizer demo
+//  Function : Smooth stereo rendition of The Internationale
 //
 //  Audio path, updated once per stereo frame (~48.828 kHz):
-//    triangle DDS -> harmonic mix -> hammer transient -> ADSR -> low-pass
+//    piano-like DDS -> hammer/decay envelope -> low-pass -> DC blocker -> gate
 //    -> signed 16-bit PCM -> PT8211 LSBJ serializer
 //
 //  PT8211 is not standard I2S. It uses 16-bit LSBJ/Japanese format:
@@ -36,16 +36,16 @@ module test (
     localparam integer AMP_START_CYCLES  = CLK_FREQ_HZ / 20; // 50 ms
     localparam integer TONE_START_CYCLES = CLK_FREQ_HZ / 10; // 100 ms
 
-    // One note lasts about 500 ms. The final 21 ms is a short release.
-    localparam [31:0] NOTE_FRAMES       = 32'd24_414;
-    localparam [31:0] RELEASE_FRAMES    = 32'd1_024;
-    localparam [31:0] ATTACK_FRAMES     = 32'd128;       // about 2.6 ms
-    localparam [31:0] BRIGHT_FRAMES     = 32'd3_906;     // about 80 ms
-    localparam [31:0] HAMMER_FRAMES     = 32'd256;       // about 5.2 ms
-    localparam [5:0]  DECAY_LAST        = 6'd63;         // update every 64 frames
+    // The Internationale in C major at about 108 BPM. Timing is expressed in
+    // eighth notes; articulation is deliberately soft to avoid clicks.
+    localparam [31:0] EIGHTH_FRAMES     = 32'd13_563;
+    localparam [31:0] RELEASE_FRAMES    = 32'd2_930;     // about 60 ms
+    localparam [31:0] ATTACK_FRAMES     = 32'd260;       // about 5.3 ms
+    localparam [31:0] BRIGHT_FRAMES     = 32'd1_953;     // about 40 ms
+    localparam [5:0]  DECAY_LAST        = 6'd31;         // update every 32 frames
     localparam [15:0] ATTACK_STEP       = 16'd512;
-    localparam [15:0] RELEASE_STEP      = 16'd64;
-    localparam [15:0] SUSTAIN_LEVEL     = 16'd12_288;
+    localparam [15:0] RELEASE_STEP      = 16'd48;
+    localparam [15:0] SUSTAIN_LEVEL     = 16'd4_096;
 
     //--------------------------------------------------------------------
     // Reset synchronizer: asynchronous assertion, synchronous release.
@@ -90,28 +90,68 @@ module test (
     assign PA_EN = (rst_n && amp_ready) ? 1'b0 : 1'b1;
 
     //--------------------------------------------------------------------
-    // Melody. Phase increments are for Fs=48.828125 kHz.
+    // Public-domain melody of The Internationale. Phase increments use
+    // Fs=48.828125 kHz. Note codes 1..8 are C4..C5.
     //--------------------------------------------------------------------
     function [31:0] phase_increment;
-        input [3:0] melody_pos;
+        input [3:0] note_code;
         begin
-            case (melody_pos)
-                4'd0,  4'd14: phase_increment = 32'd23_012_828; // C4
-                4'd1,  4'd13: phase_increment = 32'd25_831_026; // D4
-                4'd2,  4'd12: phase_increment = 32'd28_994_347; // E4
-                4'd3,  4'd11: phase_increment = 32'd30_718_440; // F4
-                4'd4,  4'd10: phase_increment = 32'd34_480_283; // G4
-                4'd5,  4'd9 : phase_increment = 32'd38_702_809; // A4
-                4'd6,  4'd8 : phase_increment = 32'd43_442_435; // B4
-                4'd7         : phase_increment = 32'd46_025_656; // C5
-                default      : phase_increment = 32'd23_012_828;
+            case (note_code)
+                4'd1: phase_increment = 32'd23_012_828; // C4
+                4'd2: phase_increment = 32'd25_831_026; // D4
+                4'd3: phase_increment = 32'd28_994_347; // E4
+                4'd4: phase_increment = 32'd30_718_440; // F4
+                4'd5: phase_increment = 32'd34_480_283; // G4
+                4'd6: phase_increment = 32'd38_702_809; // A4
+                4'd7: phase_increment = 32'd43_442_435; // B4
+                4'd8: phase_increment = 32'd46_025_656; // C5
+                default: phase_increment = 32'd0;
+            endcase
+        end
+    endfunction
+
+    function [3:0] song_note;
+        input [5:0] song_pos;
+        begin
+            case (song_pos)
+                // Pickup and first two statements: G G C B A G A B C C B A G.
+                6'd0, 6'd14, 6'd28, 6'd44, 6'd60, 6'd61, 6'd62, 6'd63: song_note = 4'd0;
+                6'd1, 6'd2, 6'd6, 6'd13, 6'd15, 6'd16, 6'd20, 6'd27: song_note = 4'd5; // G4
+                6'd3, 6'd9, 6'd10, 6'd17, 6'd23, 6'd24: song_note = 4'd8; // C5
+                6'd4, 6'd11, 6'd18, 6'd25: song_note = 4'd7; // B4
+                6'd5, 6'd12, 6'd19, 6'd26: song_note = 4'd6; // A4
+                6'd7, 6'd21: song_note = 4'd6; // A4
+                6'd8, 6'd22: song_note = 4'd7; // B4
+
+                // Refrain: E E F G G F E D C C D E E D D.
+                6'd29, 6'd30, 6'd35, 6'd40, 6'd41, 6'd46, 6'd51, 6'd56: song_note = 4'd3; // E4
+                6'd31, 6'd34, 6'd48, 6'd49: song_note = 4'd4; // F4
+                6'd32, 6'd33, 6'd47: song_note = 4'd5; // G4
+                6'd36, 6'd39, 6'd42, 6'd43, 6'd51, 6'd54, 6'd57, 6'd58: song_note = 4'd2; // D4
+                6'd37, 6'd38, 6'd52, 6'd53: song_note = 4'd1; // C4
+                default: song_note = 4'd0;
+            endcase
+        end
+    endfunction
+
+    // Duration in eighth-note units: 1=eighth, 2=quarter,
+    // 3=dotted quarter and 4=half note.
+    function [3:0] song_units;
+        input [5:0] song_pos;
+        begin
+            case (song_pos)
+                // Eighth-note pickup/figures; phrase endings are held.
+                6'd0, 6'd14, 6'd28, 6'd44, 6'd60, 6'd61, 6'd62, 6'd63: song_units = 4'd1;
+                6'd13, 6'd27, 6'd43, 6'd59: song_units = 4'd4;
+                6'd12, 6'd26, 6'd42, 6'd58: song_units = 4'd3;
+                default: song_units = 4'd2;
             endcase
         end
     endfunction
 
     //--------------------------------------------------------------------
-    // Triangle oscillator. Four low-cost harmonics make the sound less like
-    // a pure test tone. The phase arithmetic naturally wraps at 32 bits.
+    // Triangle-derived oscillator. Weighted partials and the short hammer
+    // partial approximate a soft piano attack while keeping the core small.
     //--------------------------------------------------------------------
     function signed [15:0] triangle_wave;
         input [31:0] phase;
@@ -124,12 +164,17 @@ module test (
         end
     endfunction
 
-    reg [3:0]  melody_pos;
+    reg [5:0]  melody_pos;
     reg [31:0] note_frame_cnt;
     reg [31:0] phase_acc;
+    reg [31:0] phase_step;
     reg [15:0] envelope;
     reg [5:0]  decay_tick;
-    reg [15:0] lfsr;
+
+    wire [3:0] current_note = song_note(melody_pos);
+    wire [31:0] target_phase_step = phase_increment(current_note);
+    wire [3:0] current_units = song_units(melody_pos);
+    wire [31:0] current_note_frames = EIGHTH_FRAMES * current_units;
 
     wire signed [15:0] tri_fund = triangle_wave(phase_acc);
     wire signed [15:0] tri_2nd  = triangle_wave(phase_acc << 1);
@@ -141,24 +186,18 @@ module test (
     wire signed [19:0] third_ext = {{4{tri_3rd[15]}}, tri_3rd};
     wire signed [19:0] fourth_ext = {{4{tri_4th[15]}}, tri_4th};
 
-    // Fundamental + 1/2 second + 1/4 third + 1/8 fourth harmonic.
+    // Piano-like spectrum: fundamental dominates, with restrained upper
+    // partials. The short fourth partial below supplies the hammer attack.
     wire signed [19:0] harmonic_mix = fund_ext
-                                     + (second_ext >>> 1)
-                                     + (third_ext >>> 2)
-                                     + (fourth_ext >>> 3);
-
-    // Small pseudo-random hammer component during the first few milliseconds.
-    wire signed [9:0] hammer_noise =
-        $signed({1'b0, lfsr[8:0]}) - 10'sd256;
-    wire signed [20:0] hammer_component =
-        (note_frame_cnt < HAMMER_FRAMES)
-        ? ($signed({{11{hammer_noise[9]}}, hammer_noise}) <<< 2)
-        : 21'sd0;
+                                     + (second_ext >>> 3)
+                                     + (third_ext >>> 4);
+    wire signed [20:0] hammer_partial = (note_frame_cnt < 32'd180)
+                                       ? (fourth_ext >>> 2) : 21'sd0;
 
     wire signed [16:0] envelope_signed = $signed({1'b0, envelope});
     wire signed [36:0] envelope_product = harmonic_mix * envelope_signed;
     wire signed [20:0] enveloped_mix = envelope_product >>> 16;
-    wire signed [20:0] shaped_sample = enveloped_mix + hammer_component;
+    wire signed [20:0] shaped_sample = enveloped_mix + hammer_partial;
 
     //--------------------------------------------------------------------
     // One-pole low-pass filter. The attack stays brighter (shift=2), then
@@ -171,7 +210,30 @@ module test (
     wire signed [22:0] lp_next_wide = $signed({lp_state[21], lp_state})
                                      + (lp_diff >>> filter_shift);
     wire signed [21:0] lp_next = lp_next_wide[21:0];
-    wire signed [21:0] pcm_scaled = lp_next >>> 2;
+
+    // DC blocker: y[n] = x[n] - x[n-1] + 0.999*y[n-1]. This removes offsets
+    // that otherwise become clicks when the envelope opens or closes.
+    reg signed [21:0] dc_prev_in;
+    reg signed [21:0] dc_state;
+    // Each cleanup stage consumes the previous stage's registered output.
+    // This audio-rate pipeline keeps the 50 MHz FPGA path short.
+    wire signed [22:0] lp_state_ext = $signed({lp_state[21], lp_state});
+    wire signed [22:0] dc_prev_ext = $signed({dc_prev_in[21], dc_prev_in});
+    wire signed [22:0] dc_state_ext = $signed({dc_state[21], dc_state});
+    wire signed [22:0] dc_next_wide = lp_state_ext - dc_prev_ext + dc_state_ext
+                                     - (dc_state_ext >>> 10);
+    wire signed [21:0] dc_next = dc_next_wide[21:0];
+
+    // A second gentle one-pole stage suppresses quantization and transition
+    // noise without dulling the melody.
+    reg signed [21:0] smooth_state;
+    wire signed [22:0] smooth_state_ext =
+        $signed({smooth_state[21], smooth_state});
+    wire signed [22:0] smooth_diff = dc_state_ext - smooth_state_ext;
+    wire signed [22:0] smooth_next_wide = smooth_state_ext
+                                         + (smooth_diff >>> 2);
+    wire signed [21:0] smooth_next = smooth_next_wide[21:0];
+    wire signed [21:0] pcm_scaled = smooth_state >>> 2;
 
     function signed [15:0] saturate16;
         input signed [21:0] value;
@@ -185,7 +247,16 @@ module test (
         end
     endfunction
 
-    wire signed [15:0] next_pcm = saturate16(pcm_scaled);
+    wire signed [15:0] pcm_raw = saturate16(pcm_scaled);
+    wire [15:0] pcm_abs = pcm_raw[15] ? (~pcm_raw + 16'd1) : pcm_raw;
+    wire signed [15:0] next_pcm = (pcm_abs < 16'd20) ? 16'sd0 : pcm_raw;
+
+    // Slew the DDS increment over several milliseconds at pitch changes.
+    // Keeping phase continuous removes clicks while retaining clear notes.
+    wire [31:0] phase_gap_up = target_phase_step - phase_step;
+    wire [31:0] phase_gap_down = phase_step - target_phase_step;
+    wire [31:0] phase_slew_up = (phase_gap_up >> 9) + 32'd1;
+    wire [31:0] phase_slew_down = (phase_gap_down >> 9) + 32'd1;
 
     // Envelope helper values. Decay is an exponential-like glide toward the
     // sustain level, updated once every 64 audio frames to avoid a long divider.
@@ -200,10 +271,7 @@ module test (
     //--------------------------------------------------------------------
     // LED indication. The user's verified CST setup is active-low.
     //--------------------------------------------------------------------
-    wire [3:0] led_index_wide = (melody_pos <= 4'd7)
-                               ? melody_pos
-                               : (4'd14 - melody_pos);
-    wire [2:0] led_index = led_index_wide[2:0];
+    wire [2:0] led_index = melody_pos[5:3];
     wire [7:0] led_on = 8'b0000_0001 << led_index;
     assign LEDs = tone_ready ? ~led_on : 8'hFF;
 
@@ -214,34 +282,43 @@ module test (
     //--------------------------------------------------------------------
     reg [5:0]  bck_div_cnt;
     reg [4:0]  bit_index;
-    reg [15:0] audio_sample;
+    reg [15:0] left_sample;
+    reg [15:0] right_sample;
 
     always @(posedge sys_clk) begin
         if (!rst_n) begin
             bck_div_cnt    <= 6'd0;
-            bit_index      <= 5'd0;
+            bit_index      <= 5'd31;
             HP_BCK         <= 1'b0;
             HP_WS          <= 1'b0;
             HP_DIN         <= 1'b0;
-            audio_sample   <= 16'd0;
-            melody_pos     <= 4'd0;
+            left_sample    <= 16'd0;
+            right_sample   <= 16'd0;
+            melody_pos     <= 6'd0;
             note_frame_cnt <= 32'd0;
             phase_acc      <= 32'd0;
+            phase_step     <= 32'd34_480_283;
             envelope       <= 16'd0;
             decay_tick     <= 6'd0;
-            lfsr            <= 16'h1ACE;
             lp_state       <= 22'sd0;
+            dc_prev_in     <= 22'sd0;
+            dc_state       <= 22'sd0;
+            smooth_state   <= 22'sd0;
         end else begin
             // Hold all synthesis state quiet until the startup delay expires.
             if (!tone_ready) begin
-                audio_sample   <= 16'd0;
-                melody_pos     <= 4'd0;
+                left_sample    <= 16'd0;
+                right_sample   <= 16'd0;
+                melody_pos     <= 6'd0;
                 note_frame_cnt <= 32'd0;
                 phase_acc      <= 32'd0;
+                phase_step     <= 32'd34_480_283;
                 envelope       <= 16'd0;
                 decay_tick     <= 6'd0;
-                lfsr            <= 16'h1ACE;
                 lp_state       <= 22'sd0;
+                dc_prev_in     <= 22'sd0;
+                dc_state       <= 22'sd0;
+                smooth_state   <= 22'sd0;
             end
 
             if (bck_div_cnt == (BCK_HALF_DIV - 1)) begin
@@ -256,36 +333,48 @@ module test (
                         HP_WS     <= 1'b0;
 
                         if (tone_ready) begin
-                            // Freeze one complete PCM sample for both channels.
-                            audio_sample <= next_pcm;
+                            // Explicitly load both PT8211 channels. Sending the
+                            // same mono mix to L and R drives both speakers.
+                            left_sample  <= next_pcm;
+                            right_sample <= next_pcm;
 
                             // Advance all musical state exactly once per frame.
-                            lfsr <= {lfsr[14:0],
-                                     lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
                             lp_state <= lp_next;
+                            dc_prev_in <= lp_state;
+                            dc_state <= dc_next;
+                            smooth_state <= smooth_next;
 
-                            if (note_frame_cnt == (NOTE_FRAMES - 1)) begin
-                                // End of note: restart phase and attack cleanly.
+                            if (note_frame_cnt == (current_note_frames - 1)) begin
+                                // End of event: re-trigger the envelope but keep
+                                // oscillator phase continuous to avoid clicks.
                                 note_frame_cnt <= 32'd0;
-                                if (melody_pos == 4'd14)
-                                    melody_pos <= 4'd0;
+                                if (melody_pos == 6'd63)
+                                    melody_pos <= 6'd0;
                                 else
-                                    melody_pos <= melody_pos + 4'd1;
-                                phase_acc  <= 32'd0;
+                                    melody_pos <= melody_pos + 6'd1;
                                 envelope   <= 16'd0;
                                 decay_tick <= 6'd0;
                             end else begin
                                 note_frame_cnt <= note_frame_cnt + 32'd1;
-                                phase_acc <= phase_acc + phase_increment(melody_pos);
+                                phase_acc <= phase_acc + phase_step;
+                                if ((current_note != 4'd0) &&
+                                    (phase_step < target_phase_step))
+                                    phase_step <= phase_step + phase_slew_up;
+                                else if ((current_note != 4'd0) &&
+                                         (phase_step > target_phase_step))
+                                    phase_step <= phase_step - phase_slew_down;
 
-                                if (note_frame_cnt < ATTACK_FRAMES) begin
+                                if (current_note == 4'd0) begin
+                                    envelope   <= 16'd0;
+                                    decay_tick <= 6'd0;
+                                end else if (note_frame_cnt < ATTACK_FRAMES) begin
                                     if (envelope >= (16'hffff - ATTACK_STEP))
                                         envelope <= 16'hffff;
                                     else
                                         envelope <= envelope + ATTACK_STEP;
                                     decay_tick <= 6'd0;
                                 end else if (note_frame_cnt >=
-                                             (NOTE_FRAMES - RELEASE_FRAMES)) begin
+                                             (current_note_frames - RELEASE_FRAMES)) begin
                                     if (envelope > RELEASE_STEP)
                                         envelope <= envelope - RELEASE_STEP;
                                     else
@@ -309,7 +398,8 @@ module test (
 
                             HP_DIN <= next_pcm[15];
                         end else begin
-                            audio_sample <= 16'd0;
+                            left_sample  <= 16'd0;
+                            right_sample <= 16'd0;
                             HP_DIN       <= 1'b0;
                         end
                     end else begin
@@ -317,14 +407,14 @@ module test (
 
                         if (bit_index < 5'd15) begin
                             // Continue right channel: bit14 down to bit0.
-                            HP_DIN <= audio_sample[14 - bit_index];
+                            HP_DIN <= right_sample[14 - bit_index];
                         end else if (bit_index == 5'd15) begin
                             // Right LSB is complete; start left-channel MSB.
                             HP_WS  <= 1'b1;
-                            HP_DIN <= audio_sample[15];
+                            HP_DIN <= left_sample[15];
                         end else begin
                             // Continue left channel: bit14 down to bit0.
-                            HP_DIN <= audio_sample[30 - bit_index];
+                            HP_DIN <= left_sample[30 - bit_index];
                         end
                     end
                 end

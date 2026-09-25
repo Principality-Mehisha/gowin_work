@@ -1,4 +1,4 @@
-# GoWin FPGA60K Music
+# GoWin FPGA60K Stereo Internationale
 
 This project drives the onboard PT8211 DAC on the Tang Mega 60K NEO Dock.
 
@@ -6,31 +6,36 @@ This project drives the onboard PT8211 DAC on the Tang Mega 60K NEO Dock.
 
 - After configuration, the audio clocks start immediately with zero data.
 - The onboard amplifier is enabled after about 50 ms.
-- After about 100 ms, both channels play a repeating C4-to-C5-to-C4 scale with
-  a piano-like synthesized timbre.
-- The eight active-low PMOD LEDs show the current note position.
+- After about 100 ms, both channels play a C-major arrangement of the
+  public-domain melody `The Internationale` (`国际歌`) at about 108 BPM.
+- The score is encoded in playback order: the opening `G-G-C-B-A-G-A-B-C`
+  motive is followed by the `E-E-F-G-G-F-E-D-C` refrain, with pickup rests and
+  held phrase endings. Continuous phase, pitch slewing and soft envelopes
+  smooth the transitions between notes.
+- The mono mix is explicitly loaded into separate PT8211 left and right sample
+  registers so both onboard speaker channels receive the complete waveform.
+- The eight active-low PMOD LEDs show the current section of the score.
 - Pressing the configured reset button stops the amplifier and restarts playback.
 
 ## Piano voice
 
 The voice is synthesized in the FPGA rather than read from a recording:
 
-- triangle fundamental plus 2nd, 3rd, and 4th harmonics;
-- a short LFSR-based hammer transient at each note onset;
+- piano-like fundamental with restrained 2nd/3rd partials and a short
+  deterministic hammer partial;
 - frame-rate ADSR-style envelope: fast attack, exponential-like decay toward
   sustain, and a short release before changing notes;
-- one-pole low-pass filtering, brighter during the attack and warmer during
-  the sustain/tail.
+- two-stage low-pass filtering, a DC blocker and a low-level noise gate.
 
-This is an electronic/toy-piano approximation. A more realistic piano would
-need per-note PCM samples or a much larger physical-modeling voice.
+This is a compact FPGA piano approximation. A sampled concert piano would need
+per-note PCM memory or a larger physical-modeling voice.
 
 ## Audio interface
 
 The PT8211 uses 16-bit LSBJ/Japanese right-justified data, not standard I2S:
 
 - `HP_BCK`: 1.5625 MHz bit clock
-- `HP_WS`: low for right, high for left
+- `HP_WS`: low for right, high for left; both receive the same mono mix
 - `HP_DIN`: signed 16-bit, MSB first, sampled on BCK rising edges
 - `PA_EN`: active-low amplifier enable
 - Sample rate: approximately 48.828125 kHz

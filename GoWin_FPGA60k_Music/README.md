@@ -6,12 +6,12 @@ This project drives the onboard PT8211 DAC on the Tang Mega 60K NEO Dock.
 
 - After configuration, the audio clocks start immediately with zero data.
 - The onboard amplifier is enabled after about 50 ms.
-- After about 100 ms, both channels play a C-major arrangement of the
-  public-domain melody `The Internationale` (`国际歌`) at about 108 BPM.
-- The score is encoded in playback order: the opening `G-G-C-B-A-G-A-B-C`
-  motive is followed by the `E-E-F-G-G-F-E-D-C` refrain, with pickup rests and
-  held phrase endings. Continuous phase, pitch slewing and soft envelopes
-  smooth the transitions between notes.
+- After about 100 ms, both channels play the complete public-domain melody
+  `The Internationale` (`国际歌`) in G major at about 120 BPM.
+- The 129-event score begins with the written pickup and opening
+  `D-G-F#-A-G-D-B-E`, preserves the dotted-eighth/sixteenth figures, and spans
+  B3 through D5. Continuous phase, pitch slewing and soft envelopes smooth the
+  transitions between notes.
 - The mono mix is explicitly loaded into separate PT8211 left and right sample
   registers so both onboard speaker channels receive the complete waveform.
 - The eight active-low PMOD LEDs show the current section of the score.

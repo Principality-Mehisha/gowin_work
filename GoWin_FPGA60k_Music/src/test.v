@@ -36,9 +36,10 @@ module test (
     localparam integer AMP_START_CYCLES  = CLK_FREQ_HZ / 20; // 50 ms
     localparam integer TONE_START_CYCLES = CLK_FREQ_HZ / 10; // 100 ms
 
-    // The Internationale in C major at about 108 BPM. Timing is expressed in
-    // eighth notes; articulation is deliberately soft to avoid clicks.
-    localparam [31:0] EIGHTH_FRAMES     = 32'd13_563;
+    // The Internationale in its familiar G-major setting at about 120 BPM.
+    // Timing is expressed in sixteenth notes so the dotted-eighth figures in
+    // the second half retain their written rhythm.
+    localparam [31:0] SIXTEENTH_FRAMES = 32'd6_104;
     localparam [31:0] RELEASE_FRAMES    = 32'd2_930;     // about 60 ms
     localparam [31:0] ATTACK_FRAMES     = 32'd260;       // about 5.3 ms
     localparam [31:0] BRIGHT_FRAMES     = 32'd1_953;     // about 40 ms
@@ -46,6 +47,7 @@ module test (
     localparam [15:0] ATTACK_STEP       = 16'd512;
     localparam [15:0] RELEASE_STEP      = 16'd48;
     localparam [15:0] SUSTAIN_LEVEL     = 16'd4_096;
+    localparam [7:0]  SONG_LAST         = 8'd128;
 
     //--------------------------------------------------------------------
     // Reset synchronizer: asynchronous assertion, synchronous release.
@@ -91,60 +93,82 @@ module test (
 
     //--------------------------------------------------------------------
     // Public-domain melody of The Internationale. Phase increments use
-    // Fs=48.828125 kHz. Note codes 1..8 are C4..C5.
+    // Fs=48.828125 kHz. The score spans B3 through D5.
     //--------------------------------------------------------------------
     function [31:0] phase_increment;
         input [3:0] note_code;
         begin
             case (note_code)
-                4'd1: phase_increment = 32'd23_012_828; // C4
-                4'd2: phase_increment = 32'd25_831_026; // D4
-                4'd3: phase_increment = 32'd28_994_347; // E4
-                4'd4: phase_increment = 32'd30_718_440; // F4
-                4'd5: phase_increment = 32'd34_480_283; // G4
-                4'd6: phase_increment = 32'd38_702_809; // A4
-                4'd7: phase_increment = 32'd43_442_435; // B4
-                4'd8: phase_increment = 32'd46_025_656; // C5
+                4'd1:  phase_increment = 32'd21_721_217; // B3
+                4'd2:  phase_increment = 32'd23_012_828; // C4
+                4'd3:  phase_increment = 32'd24_381_242; // C#4
+                4'd4:  phase_increment = 32'd25_831_026; // D4
+                4'd5:  phase_increment = 32'd27_367_019; // D#4
+                4'd6:  phase_increment = 32'd28_994_347; // E4
+                4'd7:  phase_increment = 32'd32_545_054; // F#4
+                4'd8:  phase_increment = 32'd34_480_283; // G4
+                4'd9:  phase_increment = 32'd38_702_809; // A4
+                4'd10: phase_increment = 32'd43_442_435; // B4
+                4'd11: phase_increment = 32'd46_025_656; // C5
+                4'd12: phase_increment = 32'd51_662_052; // D5
                 default: phase_increment = 32'd0;
             endcase
         end
     endfunction
 
     function [3:0] song_note;
-        input [5:0] song_pos;
+        input [7:0] song_pos;
         begin
             case (song_pos)
-                // Pickup and first two statements: G G C B A G A B C C B A G.
-                6'd0, 6'd14, 6'd28, 6'd44, 6'd60, 6'd61, 6'd62, 6'd63: song_note = 4'd0;
-                6'd1, 6'd2, 6'd6, 6'd13, 6'd15, 6'd16, 6'd20, 6'd27: song_note = 4'd5; // G4
-                6'd3, 6'd9, 6'd10, 6'd17, 6'd23, 6'd24: song_note = 4'd8; // C5
-                6'd4, 6'd11, 6'd18, 6'd25: song_note = 4'd7; // B4
-                6'd5, 6'd12, 6'd19, 6'd26: song_note = 4'd6; // A4
-                6'd7, 6'd21: song_note = 4'd6; // A4
-                6'd8, 6'd22: song_note = 4'd7; // B4
-
-                // Refrain: E E F G G F E D C C D E E D D.
-                6'd29, 6'd30, 6'd35, 6'd40, 6'd41, 6'd46, 6'd51, 6'd56: song_note = 4'd3; // E4
-                6'd31, 6'd34, 6'd48, 6'd49: song_note = 4'd4; // F4
-                6'd32, 6'd33, 6'd47: song_note = 4'd5; // G4
-                6'd36, 6'd39, 6'd42, 6'd43, 6'd51, 6'd54, 6'd57, 6'd58: song_note = 4'd2; // D4
-                6'd37, 6'd38, 6'd52, 6'd53: song_note = 4'd1; // C4
+                8'd6, 8'd16, 8'd24, 8'd75, 8'd103: song_note = 4'd1; // B3
+                8'd8, 8'd15, 8'd26, 8'd77, 8'd105: song_note = 4'd2; // C4
+                8'd45, 8'd58: song_note = 4'd3; // C#4
+                8'd0, 8'd5, 8'd14, 8'd18, 8'd23, 8'd44, 8'd46, 8'd56: song_note = 4'd4; // D4
+                8'd57, 8'd59, 8'd69, 8'd74, 8'd82, 8'd83, 8'd85, 8'd89: song_note = 4'd4; // D4
+                8'd102, 8'd110: song_note = 4'd4; // D4
+                8'd94: song_note = 4'd5; // D#4
+                8'd7, 8'd9, 8'd13, 8'd25, 8'd39, 8'd42, 8'd47, 8'd48: song_note = 4'd6; // E4
+                8'd62, 8'd68, 8'd76, 8'd81, 8'd93, 8'd95, 8'd104, 8'd109: song_note = 4'd6; // E4
+                8'd2, 8'd12, 8'd20, 8'd29, 8'd32, 8'd37, 8'd38, 8'd40: song_note = 4'd7; // F#4
+                8'd43, 8'd51, 8'd55, 8'd63, 8'd65, 8'd80, 8'd91, 8'd92: song_note = 4'd7; // F#4
+                8'd108, 8'd126: song_note = 4'd7; // F#4
+                8'd1, 8'd4, 8'd11, 8'd19, 8'd22, 8'd28, 8'd33, 8'd41: song_note = 4'd8; // G4
+                8'd50, 8'd61, 8'd64, 8'd67, 8'd73, 8'd79, 8'd90, 8'd101: song_note = 4'd8; // G4
+                8'd107, 8'd124, 8'd127: song_note = 4'd8; // G4
+                8'd3, 8'd10, 8'd21, 8'd27, 8'd30, 8'd36, 8'd49, 8'd53: song_note = 4'd9; // A4
+                8'd54, 8'd66, 8'd72, 8'd78, 8'd88, 8'd96, 8'd97, 8'd100: song_note = 4'd9; // A4
+                8'd106, 8'd118, 8'd125: song_note = 4'd9; // A4
+                8'd35, 8'd60, 8'd71, 8'd86, 8'd87, 8'd99, 8'd111, 8'd113: song_note = 4'd10; // B4
+                8'd117, 8'd119, 8'd123: song_note = 4'd10; // B4
+                8'd31, 8'd116, 8'd120, 8'd122: song_note = 4'd11; // C5
+                8'd114, 8'd115: song_note = 4'd12; // D5
                 default: song_note = 4'd0;
             endcase
         end
     endfunction
 
-    // Duration in eighth-note units: 1=eighth, 2=quarter,
-    // 3=dotted quarter and 4=half note.
+    // Duration in sixteenth-note units: 1=sixteenth, 2=eighth, 3=dotted
+    // eighth, 4=quarter, 6=dotted quarter and 8=half note.
     function [3:0] song_units;
-        input [5:0] song_pos;
+        input [7:0] song_pos;
         begin
             case (song_pos)
-                // Eighth-note pickup/figures; phrase endings are held.
-                6'd0, 6'd14, 6'd28, 6'd44, 6'd60, 6'd61, 6'd62, 6'd63: song_units = 4'd1;
-                6'd13, 6'd27, 6'd43, 6'd59: song_units = 4'd4;
-                6'd12, 6'd26, 6'd42, 6'd58: song_units = 4'd3;
-                default: song_units = 4'd2;
+                8'd72, 8'd79, 8'd100, 8'd107: song_units = 4'd1;
+                8'd2, 8'd3, 8'd4, 8'd5, 8'd6, 8'd11, 8'd12, 8'd13: song_units = 4'd2;
+                8'd14, 8'd15, 8'd20, 8'd21, 8'd22, 8'd23, 8'd24, 8'd27: song_units = 4'd2;
+                8'd28, 8'd35, 8'd36, 8'd38, 8'd39, 8'd40, 8'd41, 8'd42: song_units = 4'd2;
+                8'd45, 8'd46, 8'd48, 8'd50, 8'd55, 8'd56, 8'd57, 8'd58: song_units = 4'd2;
+                8'd59, 8'd61, 8'd62, 8'd63, 8'd64, 8'd75, 8'd82, 8'd87: song_units = 4'd2;
+                8'd92, 8'd94, 8'd103, 8'd110, 8'd115, 8'd121, 8'd122, 8'd124: song_units = 4'd2;
+                8'd126: song_units = 4'd2;
+                8'd71, 8'd78, 8'd99, 8'd106: song_units = 4'd3;
+                8'd1, 8'd10, 8'd19, 8'd37, 8'd47, 8'd49, 8'd54, 8'd74: song_units = 4'd6;
+                8'd81, 8'd86, 8'd91, 8'd93, 8'd102, 8'd109, 8'd114, 8'd123: song_units = 4'd6;
+                8'd125: song_units = 4'd6;
+                8'd7, 8'd16, 8'd25, 8'd33, 8'd43, 8'd51, 8'd60, 8'd69: song_units = 4'd8;
+                8'd73, 8'd76, 8'd80, 8'd83, 8'd90, 8'd97, 8'd101, 8'd104: song_units = 4'd8;
+                8'd108, 8'd111, 8'd127: song_units = 4'd8;
+                default: song_units = 4'd4;
             endcase
         end
     endfunction
@@ -164,7 +188,7 @@ module test (
         end
     endfunction
 
-    reg [5:0]  melody_pos;
+    reg [7:0]  melody_pos;
     reg [31:0] note_frame_cnt;
     reg [31:0] phase_acc;
     reg [31:0] phase_step;
@@ -174,7 +198,7 @@ module test (
     wire [3:0] current_note = song_note(melody_pos);
     wire [31:0] target_phase_step = phase_increment(current_note);
     wire [3:0] current_units = song_units(melody_pos);
-    wire [31:0] current_note_frames = EIGHTH_FRAMES * current_units;
+    wire [31:0] current_note_frames = SIXTEENTH_FRAMES * current_units;
 
     wire signed [15:0] tri_fund = triangle_wave(phase_acc);
     wire signed [15:0] tri_2nd  = triangle_wave(phase_acc << 1);
@@ -191,7 +215,8 @@ module test (
     wire signed [19:0] harmonic_mix = fund_ext
                                      + (second_ext >>> 3)
                                      + (third_ext >>> 4);
-    wire signed [20:0] hammer_partial = (note_frame_cnt < 32'd180)
+    wire signed [20:0] hammer_partial = ((current_note != 4'd0) &&
+                                         (note_frame_cnt < 32'd180))
                                        ? (fourth_ext >>> 2) : 21'sd0;
 
     wire signed [16:0] envelope_signed = $signed({1'b0, envelope});
@@ -271,7 +296,13 @@ module test (
     //--------------------------------------------------------------------
     // LED indication. The user's verified CST setup is active-low.
     //--------------------------------------------------------------------
-    wire [2:0] led_index = melody_pos[5:3];
+    wire [2:0] led_index = (melody_pos < 8'd16)  ? 3'd0 :
+                           (melody_pos < 8'd32)  ? 3'd1 :
+                           (melody_pos < 8'd48)  ? 3'd2 :
+                           (melody_pos < 8'd64)  ? 3'd3 :
+                           (melody_pos < 8'd80)  ? 3'd4 :
+                           (melody_pos < 8'd96)  ? 3'd5 :
+                           (melody_pos < 8'd112) ? 3'd6 : 3'd7;
     wire [7:0] led_on = 8'b0000_0001 << led_index;
     assign LEDs = tone_ready ? ~led_on : 8'hFF;
 
@@ -294,10 +325,10 @@ module test (
             HP_DIN         <= 1'b0;
             left_sample    <= 16'd0;
             right_sample   <= 16'd0;
-            melody_pos     <= 6'd0;
+            melody_pos     <= 8'd0;
             note_frame_cnt <= 32'd0;
             phase_acc      <= 32'd0;
-            phase_step     <= 32'd34_480_283;
+            phase_step     <= 32'd25_831_026;
             envelope       <= 16'd0;
             decay_tick     <= 6'd0;
             lp_state       <= 22'sd0;
@@ -309,10 +340,10 @@ module test (
             if (!tone_ready) begin
                 left_sample    <= 16'd0;
                 right_sample   <= 16'd0;
-                melody_pos     <= 6'd0;
+                melody_pos     <= 8'd0;
                 note_frame_cnt <= 32'd0;
                 phase_acc      <= 32'd0;
-                phase_step     <= 32'd34_480_283;
+                phase_step     <= 32'd25_831_026;
                 envelope       <= 16'd0;
                 decay_tick     <= 6'd0;
                 lp_state       <= 22'sd0;
@@ -348,10 +379,10 @@ module test (
                                 // End of event: re-trigger the envelope but keep
                                 // oscillator phase continuous to avoid clicks.
                                 note_frame_cnt <= 32'd0;
-                                if (melody_pos == 6'd63)
-                                    melody_pos <= 6'd0;
+                                if (melody_pos == SONG_LAST)
+                                    melody_pos <= 8'd0;
                                 else
-                                    melody_pos <= melody_pos + 6'd1;
+                                    melody_pos <= melody_pos + 8'd1;
                                 envelope   <= 16'd0;
                                 decay_tick <= 6'd0;
                             end else begin

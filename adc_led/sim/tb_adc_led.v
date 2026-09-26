@@ -1,5 +1,5 @@
 //======================================================================
-//  Unit test for the 14-bit ADC result to active-low binary LED mapping.
+//  Unit test for the ADC's useful 11-bit 0..1 V result range.
 //  The vendor ADC hard macro is intentionally outside this behavioural test.
 //======================================================================
 `timescale 1ns / 1ps
@@ -8,7 +8,7 @@ module tb_adc_led;
 
     reg         clk = 0;
     reg         rstn = 0;
-    reg  [13:0] adc_data = 0;
+    reg  [10:0] adc_data = 0;
     reg         adc_dv = 0;
     wire [7:0]  led_o;
 
@@ -18,7 +18,7 @@ module tb_adc_led;
     always #10 clk = ~clk;
 
     adc_led #(
-        .ADC_BITS   (14),
+        .ADC_BITS   (11),
         .HYST       (0),
         .ACTIVE_LOW (1)
     ) dut (
@@ -30,7 +30,7 @@ module tb_adc_led;
     );
 
     task sample;
-        input [13:0] raw;
+        input [10:0] raw;
         begin
             @(negedge clk);
             adc_data = raw;
@@ -44,14 +44,14 @@ module tb_adc_led;
     endtask
 
     function [7:0] expected_led;
-        input [13:0] raw;
+        input [10:0] raw;
         begin
-            expected_led = ~{5'b00000, raw[13:11]};
+            expected_led = ~{5'b00000, raw[10:8]};
         end
     endfunction
 
     task check;
-        input [13:0] raw;
+        input [10:0] raw;
         begin
             sample(raw);
             if (led_o !== expected_led(raw)) begin
@@ -63,7 +63,7 @@ module tb_adc_led;
     endtask
 
     initial begin
-        $display("=== tb_adc_led: 14-bit on-chip ADC mapping ===");
+        $display("=== tb_adc_led: 0..1 V / 2048 mapping ===");
         repeat (5) @(posedge clk);
         rstn = 1'b1;
         repeat (2) @(posedge clk);
@@ -74,35 +74,35 @@ module tb_adc_led;
         end
 
         // Check both sides of all seven range boundaries.
-        check(14'd0);
-        check(14'd2047);
-        check(14'd2048);
-        check(14'd4095);
-        check(14'd4096);
-        check(14'd6143);
-        check(14'd6144);
-        check(14'd8191);
-        check(14'd8192);
-        check(14'd10239);
-        check(14'd10240);
-        check(14'd12287);
-        check(14'd12288);
-        check(14'd14335);
-        check(14'd14336);
-        check(14'd16383);
+        check(11'd0);
+        check(11'd255);
+        check(11'd256);
+        check(11'd511);
+        check(11'd512);
+        check(11'd767);
+        check(11'd768);
+        check(11'd1023);
+        check(11'd1024);
+        check(11'd1279);
+        check(11'd1280);
+        check(11'd1535);
+        check(11'd1536);
+        check(11'd1791);
+        check(11'd1792);
+        check(11'd2047);
 
-        // Exhaustively verify every possible 14-bit conversion result.
-        for (i = 0; i < 16384; i = i + 1) begin
-            sample(i[13:0]);
-            if (led_o !== expected_led(i[13:0])) begin
+        // Exhaustively verify the useful voltage range.
+        for (i = 0; i < 2048; i = i + 1) begin
+            sample(i[10:0]);
+            if (led_o !== expected_led(i[10:0])) begin
                 $display("FAIL adc=%0d led_o=%02h expected=%02h",
-                         i, led_o, expected_led(i[13:0]));
+                         i, led_o, expected_led(i[10:0]));
                 errors = errors + 1;
             end
         end
 
         if (errors == 0)
-            $display("=== ALL 16384 ADC VALUES PASSED ===");
+            $display("=== ALL 2048 ADC VALUES PASSED ===");
         else
             $display("=== %0d CHECKS FAILED ===", errors);
         $finish;

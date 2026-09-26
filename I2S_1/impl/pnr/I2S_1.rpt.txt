@@ -12,27 +12,27 @@
   <Part Number>: GW5AT-LV60PG484AC1/I0
   <Device>: GW5AT-60
   <Device Version>: B
-  <Created Time>:Sat Sep 26 22:10:05 2026
+  <Created Time>:Sat Sep 26 22:44:29 2026
 
 
 2. PnR Details
 
   Running placement:
-    Placement Phase 0: CPU time = 0h 0m 0.043s, Elapsed time = 0h 0m 0.044s
-    Placement Phase 1: CPU time = 0h 0m 0.369s, Elapsed time = 0h 0m 0.368s
-    Placement Phase 2: CPU time = 0h 0m 0.122s, Elapsed time = 0h 0m 0.122s
-    Placement Phase 3: CPU time = 0h 0m 0.372s, Elapsed time = 0h 0m 0.372s
-    Total Placement: CPU time = 0h 0m 0.906s, Elapsed time = 0h 0m 0.906s
+    Placement Phase 0: CPU time = 0h 0m 0.038s, Elapsed time = 0h 0m 0.038s
+    Placement Phase 1: CPU time = 0h 0m 0.361s, Elapsed time = 0h 0m 0.361s
+    Placement Phase 2: CPU time = 0h 0m 0.136s, Elapsed time = 0h 0m 0.136s
+    Placement Phase 3: CPU time = 0h 0m 0.409s, Elapsed time = 0h 0m 0.409s
+    Total Placement: CPU time = 0h 0m 0.944s, Elapsed time = 0h 0m 0.944s
  Running routing:
-    Routing Phase 0: CPU time = 0h 0m 0s, Elapsed time = 0h 0m 0.001s
+    Routing Phase 0: CPU time = 0h 0m 0.001s, Elapsed time = 0h 0m 0s
     Routing Phase 1: CPU time = 0h 0m 5s, Elapsed time = 0h 0m 5s
-    Routing Phase 2: CPU time = 0h 0m 0.039s, Elapsed time = 0h 0m 0.039s
+    Routing Phase 2: CPU time = 0h 0m 0.043s, Elapsed time = 0h 0m 0.043s
     Routing Phase 3: CPU time = 0h 0m 0s, Elapsed time = 0h 0m 0s
     Total Routing: CPU time = 0h 0m 5s, Elapsed time = 0h 0m 5s
  Generate output files:
-    CPU time = 0h 0m 5s, Elapsed time = 0h 0m 5s
+    CPU time = 0h 0m 6s, Elapsed time = 0h 0m 6s
 
- Total Time and Memory Usage: CPU time = 0h 0m 11s, Elapsed time = 0h 0m 11s, Peak memory usage = 1737MB
+ Total Time and Memory Usage: CPU time = 0h 0m 12s, Elapsed time = 0h 0m 12s, Peak memory usage = 1737MB
 
 
 3. Resource Usage Summary

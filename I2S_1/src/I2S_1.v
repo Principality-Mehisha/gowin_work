@@ -26,6 +26,14 @@ module I2S_1 #(
     output wire PA_EN
 );
 
+    // Configuration-time global reset. This guarantees deterministic FF
+    // initialization even when KEY2 is already high during bitstream load.
+    // The GSR primitive is released automatically by the Gowin device after
+    // configuration; KEY2 remains the user-controlled runtime reset.
+    GSR GSR_INST (
+        .GSRI(1'b1)
+    );
+
     localparam [15:0] ATTACK_STEP   = 16'd256;
     localparam [15:0] RELEASE_STEP  = 16'd128;
     localparam [15:0] SUSTAIN_LEVEL = 16'd12_000;

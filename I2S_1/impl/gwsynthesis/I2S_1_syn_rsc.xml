@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module name="I2S_1" Register="84" Alu="46" Lut="173" T_Register="158(84)" T_Alu="77(46)" T_Lut="237(173)">
+ <SubModule name="u_I2S_1_communication" Register="74" Alu="31" Lut="64" T_Register="74(74)" T_Alu="31(31)" T_Lut="64(64)"/>
+</Module>

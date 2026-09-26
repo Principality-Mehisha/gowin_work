@@ -1,0 +1,20 @@
+[
+    {
+        "InstFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
+        "InstLine": 17,
+        "InstName": "I2S_1",
+        "ModuleFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
+        "ModuleLine": 17,
+        "ModuleName": "I2S_1",
+        "SubInsts": [
+            {
+                "InstFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
+                "InstLine": 281,
+                "InstName": "u_I2S_1_communication",
+                "ModuleFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1_communication.v",
+                "ModuleLine": 16,
+                "ModuleName": "I2S_1_communication"
+            }
+        ]
+    }
+]

@@ -1,25 +1,25 @@
 [
     {
-        "InstFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
+        "InstFile": "D:/GitHub/gowin_work/adc_led/src/top.v",
         "InstLine": 13,
         "InstName": "top",
-        "ModuleFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
+        "ModuleFile": "D:/GitHub/gowin_work/adc_led/src/top.v",
         "ModuleLine": 13,
         "ModuleName": "top",
         "SubInsts": [
             {
-                "InstFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
-                "InstLine": 35,
+                "InstFile": "D:/GitHub/gowin_work/adc_led/src/top.v",
+                "InstLine": 50,
                 "InstName": "u_adc",
-                "ModuleFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/gowin_adc/gowin_adc.v",
+                "ModuleFile": "D:/GitHub/gowin_work/adc_led/src/gowin_adc/gowin_adc.v",
                 "ModuleLine": 11,
                 "ModuleName": "Gowin_ADC"
             },
             {
-                "InstFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/top.v",
-                "InstLine": 81,
+                "InstFile": "D:/GitHub/gowin_work/adc_led/src/top.v",
+                "InstLine": 107,
                 "InstName": "u_display",
-                "ModuleFile": "C:/Users/30415/Desktop/gowin_work/adc_led/src/adc_led.v",
+                "ModuleFile": "D:/GitHub/gowin_work/adc_led/src/adc_led.v",
                 "ModuleLine": 36,
                 "ModuleName": "adc_led"
             }

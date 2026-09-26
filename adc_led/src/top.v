@@ -12,7 +12,12 @@
 
 module top #(
     // Delay between completed conversions.  1024 clocks = 20.48 us at 50 MHz.
-    parameter SAMPLE_GAP = 1024
+    parameter SAMPLE_GAP = 1024,
+    // ADC clock is 50 MHz / 8 = 6.25 MHz.  Keep ADCREQI high for 16 system
+    // clocks (320 ns), spanning two complete ADC clock periods.
+    parameter REQUEST_CYCLES = 16,
+    // Retry if ADCRDY is not seen within 100 ms.
+    parameter ADC_TIMEOUT_CYCLES = 5_000_000
 )(
     input        clk,
     output [7:0] led_o
@@ -32,10 +37,15 @@ module top #(
     wire [7:0]  mdrp_rdata_unused;
 
     reg         adc_request;
-    reg         adc_ready_d;
-    reg         conversion_pending;
     reg [15:0]  gap_count;
     reg         adc_seen;
+    reg [1:0]   adc_state;
+    reg [7:0]   request_count;
+    reg [22:0]  timeout_count;
+
+    localparam ADC_GAP     = 2'd0;
+    localparam ADC_REQUEST = 2'd1;
+    localparam ADC_WAIT    = 2'd2;
 
     // Power-on LED test: light LED0..LED7 for 125 ms each.  Afterwards LED7
     // blinks if the ADC has never completed a conversion.
@@ -43,7 +53,10 @@ module top #(
     reg [3:0]   selftest_step;
     reg [24:0]  heartbeat_count;
 
-    wire adc_value_valid = adc_ready & ~adc_ready_d;
+    // ADCRDY is specified as an active-high completion indication.  Treat a
+    // high level as valid so both pulse-style and level-style implementations
+    // are accepted.
+    wire adc_value_valid = adc_ready;
 
     // Voltage mode, ADCV channel.  The generated IP divides the 50 MHz clock
     // by 8, giving a 6.25 MHz ADC clock (inside the specified 0.5..8 MHz range).
@@ -62,33 +75,60 @@ module top #(
         .mdrp_opcode  (2'b00)
     );
 
-    // ADCREQI is a one-clock pulse.  Do not issue another conversion until
-    // ADCRDY has produced a rising edge for the current request.
+    // Stretch ADCREQI so the divided ADC clock cannot miss it.  A timeout
+    // returns to ADC_GAP and retries instead of waiting forever.
     always @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             adc_request        <= 1'b0;
-            adc_ready_d        <= 1'b0;
-            conversion_pending <= 1'b0;
             gap_count          <= SAMPLE_GAP - 1;
             adc_seen           <= 1'b0;
+            adc_state          <= ADC_GAP;
+            request_count      <= 8'd0;
+            timeout_count      <= 23'd0;
         end else begin
-            adc_ready_d <= adc_ready;
-            adc_request <= 1'b0;
-
-            if (adc_value_valid)
-                adc_seen <= 1'b1;
-
-            if (conversion_pending) begin
-                if (adc_value_valid) begin
-                    conversion_pending <= 1'b0;
-                    gap_count <= SAMPLE_GAP - 1;
+            case (adc_state)
+                ADC_GAP: begin
+                    adc_request <= 1'b0;
+                    if (gap_count != 0) begin
+                        gap_count <= gap_count - 1'b1;
+                    end else begin
+                        adc_request   <= 1'b1;
+                        request_count <= REQUEST_CYCLES - 1;
+                        adc_state     <= ADC_REQUEST;
+                    end
                 end
-            end else if (gap_count != 0) begin
-                gap_count <= gap_count - 1'b1;
-            end else begin
-                adc_request <= 1'b1;
-                conversion_pending <= 1'b1;
-            end
+
+                ADC_REQUEST: begin
+                    adc_request <= 1'b1;
+                    if (adc_value_valid) begin
+                        adc_request <= 1'b0;
+                        adc_seen <= 1'b1;
+                        gap_count <= SAMPLE_GAP - 1;
+                        adc_state <= ADC_GAP;
+                    end else if (request_count != 0) begin
+                        request_count <= request_count - 1'b1;
+                    end else begin
+                        adc_request <= 1'b0;
+                        timeout_count <= 23'd0;
+                        adc_state <= ADC_WAIT;
+                    end
+                end
+
+                default: begin  // ADC_WAIT
+                    adc_request <= 1'b0;
+                    if (adc_value_valid) begin
+                        adc_seen <= 1'b1;
+                        gap_count <= SAMPLE_GAP - 1;
+                        adc_state <= ADC_GAP;
+                    end else if (timeout_count == ADC_TIMEOUT_CYCLES - 1) begin
+                        timeout_count <= 23'd0;
+                        gap_count <= 16'd0;
+                        adc_state <= ADC_GAP;
+                    end else begin
+                        timeout_count <= timeout_count + 1'b1;
+                    end
+                end
+            endcase
         end
     end
 

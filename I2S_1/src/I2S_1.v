@@ -9,7 +9,11 @@
 // The reset is asserted asynchronously and released synchronously.
 //==========================================================================
 
-module I2S_1 (
+module I2S_1 #(
+    parameter integer CLK_FREQ_HZ        = 50_000_000,
+    parameter integer DEBOUNCE_CYCLES    = 1_000_000,
+    parameter integer AUDIO_START_CYCLES = 2_500_000
+) (
     input  wire sys_clk,
 
     input  wire KEY0,
@@ -21,10 +25,6 @@ module I2S_1 (
     output wire HP_DIN,
     output wire PA_EN
 );
-
-    localparam integer CLK_FREQ_HZ        = 50_000_000;
-    localparam integer DEBOUNCE_CYCLES    = 1_000_000;
-    localparam integer AUDIO_START_CYCLES = 2_500_000;
 
     localparam [15:0] ATTACK_STEP   = 16'd256;
     localparam [15:0] RELEASE_STEP  = 16'd128;
@@ -199,8 +199,6 @@ module I2S_1 (
         end
     endfunction
 
-    wire [31:0] selected_phase_step = note_phase_step(note_select);
-
     //--------------------------------------------------------------------------
     // Compact piano-like synthesizer. A triangle fundamental plus restrained
     // harmonics is shaped by an attack/decay/sustain/release envelope.
@@ -223,8 +221,10 @@ module I2S_1 (
     reg [15:0] envelope;
     reg [15:0] note_age;
     reg        retrigger_pending;
+    reg        play_state_at_last_sample;
+    reg [4:0]  active_note;
 
-    wire start_request = key0_press_pulse && !play_enabled;
+    wire [31:0] selected_phase_step = note_phase_step(active_note);
 
     always @(posedge sys_clk) begin
         if (!rst_n) begin
@@ -232,17 +232,25 @@ module I2S_1 (
             envelope          <= 16'd0;
             note_age          <= 16'd0;
             retrigger_pending <= 1'b1;
+            play_state_at_last_sample <= 1'b1;
+            active_note       <= 5'd0;
         end else begin
             if (sample_tick) begin
+                play_state_at_last_sample <= play_enabled;
+
                 if (!audio_ready) begin
                     phase_accumulator <= 32'd0;
                     envelope          <= 16'd0;
                     note_age          <= 16'd0;
-                end else if (retrigger_pending || key1_press_pulse || start_request) begin
+                    active_note       <= note_select;
+                end else if (retrigger_pending
+                             || (note_select != active_note)
+                             || (play_enabled && !play_state_at_last_sample)) begin
                     phase_accumulator <= 32'd0;
                     envelope          <= 16'd0;
                     note_age          <= 16'd0;
                     retrigger_pending <= 1'b0;
+                    active_note       <= note_select;
                 end else begin
                     phase_accumulator <= phase_accumulator + selected_phase_step;
 
@@ -269,8 +277,6 @@ module I2S_1 (
                             envelope <= 16'd0;
                     end
                 end
-            end else if (key1_press_pulse || start_request) begin
-                retrigger_pending <= 1'b1;
             end
         end
     end

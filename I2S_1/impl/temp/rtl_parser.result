@@ -1,17 +1,17 @@
 [
     {
-        "InstFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
-        "InstLine": 17,
+        "InstFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
+        "InstLine": 12,
         "InstName": "I2S_1",
-        "ModuleFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
-        "ModuleLine": 17,
+        "ModuleFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
+        "ModuleLine": 12,
         "ModuleName": "I2S_1",
         "SubInsts": [
             {
-                "InstFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
-                "InstLine": 281,
+                "InstFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
+                "InstLine": 384,
                 "InstName": "u_I2S_1_communication",
-                "ModuleFile": "D:/Gowin_competition_Code/I2S_1/src/I2S_1_communication.v",
+                "ModuleFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1_communication.v",
                 "ModuleLine": 16,
                 "ModuleName": "I2S_1_communication"
             }

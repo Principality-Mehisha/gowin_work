@@ -2,18 +2,18 @@
     "Device": "GW5AT-60B",
     "Files": [
         {
-            "Path": "D:/Gowin_competition_Code/I2S_1/src/I2S_1.v",
+            "Path": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
             "Type": "verilog"
         },
         {
-            "Path": "D:/Gowin_competition_Code/I2S_1/src/I2S_1_communication.v",
+            "Path": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1_communication.v",
             "Type": "verilog"
         }
     ],
     "IncludePath": [
     ],
     "LoopLimit": 2000,
-    "ResultFile": "D:/Gowin_competition_Code/I2S_1/impl/temp/rtl_parser.result",
+    "ResultFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/impl/temp/rtl_parser.result",
     "Top": "I2S_1",
     "VerilogStd": "verilog_2001",
     "VhdlStd": "vhdl_93"

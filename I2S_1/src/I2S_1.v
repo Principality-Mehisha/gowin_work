@@ -1,17 +1,12 @@
 //==========================================================================
-// Tang Mega 60K + NEO Dock 音频波形测试顶层
+// Tang Mega 60K + NEO Dock 32-note piano tone generator
 //
-// KEY0、KEY1、KEY2 均为低电平按下：
-//   上电或KEY2复位后：正弦波
-//   KEY1可靠按下并松开：切换到三角波
-//   KEY0可靠按下并松开：切换到方波
+// KEY2: active-low reset
+// KEY1: select the next chromatic note, C3 through G5
+// KEY0: toggle playback on/off
 //
-// KEY0和KEY1使用20 ms计数消抖，并且只在稳定释放时切换。
-// KEY2直接作为低有效系统复位，不经过复位同步器。
-//
-// 系统时钟：50 MHz
-// 音频采样率：约 48.828125 kHz
-// 输出音调：约 440 Hz
+// KEY0 and KEY1 use 20 ms debounce and trigger once on a stable press.
+// The reset is asserted asynchronously and released synchronously.
 //==========================================================================
 
 module I2S_1 (
@@ -27,62 +22,60 @@ module I2S_1 (
     output wire PA_EN
 );
 
-    // 440 Hz相位步进量：
-    // 440 * 2^32 / 48828.125 = 38702809
-    localparam [31:0] PHASE_STEP = 32'd38702809;
-    localparam integer DEBOUNCE_CYCLES = 1_000_000;
+    localparam integer CLK_FREQ_HZ        = 50_000_000;
+    localparam integer DEBOUNCE_CYCLES    = 1_000_000;
+    localparam integer AUDIO_START_CYCLES = 2_500_000;
 
-    localparam [1:0] WAVE_SINE     = 2'd0;
-    localparam [1:0] WAVE_TRIANGLE = 2'd1;
-    localparam [1:0] WAVE_SQUARE   = 2'd2;
+    localparam [15:0] ATTACK_STEP   = 16'd256;
+    localparam [15:0] RELEASE_STEP  = 16'd128;
+    localparam [15:0] SUSTAIN_LEVEL = 16'd12_000;
 
     //--------------------------------------------------------------------------
-    // KEY0、KEY1输入同步
-    // KEY2不进入此同步逻辑，它直接作为sys_rst_n使用。
+    // Reset synchronizer: asynchronous assertion, synchronous release.
+    //--------------------------------------------------------------------------
+
+    reg [1:0] reset_sync;
+
+    always @(posedge sys_clk or negedge KEY2) begin
+        if (!KEY2)
+            reset_sync <= 2'b00;
+        else
+            reset_sync <= {reset_sync[0], 1'b1};
+    end
+
+    wire rst_n = reset_sync[1];
+
+    //--------------------------------------------------------------------------
+    // Synchronize and debounce the two control buttons.
     //--------------------------------------------------------------------------
 
     reg [1:0] key0_sync;
     reg [1:0] key1_sync;
 
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2)
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
             key0_sync <= 2'b11;
-        else
-            key0_sync <= {key0_sync[0], KEY0};
-    end
-
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2)
             key1_sync <= 2'b11;
-        else
+        end else begin
+            key0_sync <= {key0_sync[0], KEY0};
             key1_sync <= {key1_sync[0], KEY1};
+        end
     end
-
-    //--------------------------------------------------------------------------
-    // 按键消抖与释放事件检测
-    //
-    // 只有输入连续保持新电平20 ms，才更新消抖后的状态。
-    // 必须先确认一次稳定按下，再确认一次稳定松开，才输出一个时钟周期的
-    // release_pulse，避免按下抖动或松开抖动导致重复切换。
-    //--------------------------------------------------------------------------
 
     reg [19:0] key0_count;
     reg [19:0] key1_count;
     reg        key0_debounced;
     reg        key1_debounced;
-    reg        key0_pressed;
-    reg        key1_pressed;
-    reg        key0_release_pulse;
-    reg        key1_release_pulse;
+    reg        key0_press_pulse;
+    reg        key1_press_pulse;
 
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2) begin
-            key0_count         <= 20'd0;
-            key0_debounced     <= 1'b1;
-            key0_pressed       <= 1'b0;
-            key0_release_pulse <= 1'b0;
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            key0_count       <= 20'd0;
+            key0_debounced   <= 1'b1;
+            key0_press_pulse <= 1'b0;
         end else begin
-            key0_release_pulse <= 1'b0;
+            key0_press_pulse <= 1'b0;
 
             if (key0_sync[1] == key0_debounced) begin
                 key0_count <= 20'd0;
@@ -90,26 +83,21 @@ module I2S_1 (
                 key0_count     <= 20'd0;
                 key0_debounced <= key0_sync[1];
 
-                if (!key0_sync[1]) begin
-                    key0_pressed <= 1'b1;
-                end else if (key0_pressed) begin
-                    key0_pressed       <= 1'b0;
-                    key0_release_pulse <= 1'b1;
-                end
+                if (!key0_sync[1])
+                    key0_press_pulse <= 1'b1;
             end else begin
                 key0_count <= key0_count + 20'd1;
             end
         end
     end
 
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2) begin
-            key1_count         <= 20'd0;
-            key1_debounced     <= 1'b1;
-            key1_pressed       <= 1'b0;
-            key1_release_pulse <= 1'b0;
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            key1_count       <= 20'd0;
+            key1_debounced   <= 1'b1;
+            key1_press_pulse <= 1'b0;
         end else begin
-            key1_release_pulse <= 1'b0;
+            key1_press_pulse <= 1'b0;
 
             if (key1_sync[1] == key1_debounced) begin
                 key1_count <= 20'd0;
@@ -117,12 +105,8 @@ module I2S_1 (
                 key1_count     <= 20'd0;
                 key1_debounced <= key1_sync[1];
 
-                if (!key1_sync[1]) begin
-                    key1_pressed <= 1'b1;
-                end else if (key1_pressed) begin
-                    key1_pressed       <= 1'b0;
-                    key1_release_pulse <= 1'b1;
-                end
+                if (!key1_sync[1])
+                    key1_press_pulse <= 1'b1;
             end else begin
                 key1_count <= key1_count + 20'd1;
             end
@@ -130,160 +114,273 @@ module I2S_1 (
     end
 
     //--------------------------------------------------------------------------
-    // 波形模式寄存器
-    // 模式在按键松开后改变，并一直保持到下一次按键事件或KEY2复位。
+    // Playback control and 32-note selector.
+    // Note 0 is C3 and note 31 is G5. KEY1 advances one semitone.
     //--------------------------------------------------------------------------
 
-    reg [1:0] waveform_select;
+    reg       play_enabled;
+    reg [4:0] note_select;
 
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2)
-            waveform_select <= WAVE_SINE;
-        else if (key1_release_pulse)
-            waveform_select <= WAVE_TRIANGLE;
-        else if (key0_release_pulse)
-            waveform_select <= WAVE_SQUARE;
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            play_enabled <= 1'b1;
+            note_select  <= 5'd0;
+        end else begin
+            if (key0_press_pulse)
+                play_enabled <= ~play_enabled;
+
+            if (key1_press_pulse)
+                note_select <= note_select + 5'd1;
+        end
     end
 
     //--------------------------------------------------------------------------
-    // 32位DDS相位累加器
-    //
-    // 每产生一个新的音频采样点，相位增加PHASE_STEP。
+    // Let the DAC clocks settle before opening the audio envelope. The power
+    // amplifier is enabled by the communication module after the same delay.
     //--------------------------------------------------------------------------
 
-    wire sample_tick;
-    reg  [31:0] phase_accumulator;
+    reg [21:0] audio_start_count;
+    reg        audio_ready;
 
-    always @(posedge sys_clk or negedge KEY2) begin
-        if (!KEY2)
-            phase_accumulator <= 32'd0;
-        else if (sample_tick)
-            phase_accumulator <= phase_accumulator + PHASE_STEP;
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            audio_start_count <= 22'd0;
+            audio_ready       <= 1'b0;
+        end else if (!audio_ready) begin
+            if (audio_start_count == AUDIO_START_CYCLES - 1)
+                audio_ready <= 1'b1;
+            else
+                audio_start_count <= audio_start_count + 22'd1;
+        end
     end
 
     //--------------------------------------------------------------------------
-    // 64点正弦波查找表
-    //
-    // 使用四分之一周期对称性，只保存0～90度的17个采样值。
-    // 正弦波峰值设为24576，保留一定的幅度余量。
+    // Equal-tempered chromatic notes for Fs = 48.828125 kHz.
     //--------------------------------------------------------------------------
 
-    function signed [15:0] sine_lut;
-        input [5:0] index;
-
-        reg [4:0]  lut_address;
-        reg [15:0] magnitude;
-
+    function [31:0] note_phase_step;
+        input [4:0] note_index;
         begin
-            // 第二、第四象限需要反向读取四分之一波表。
-            if (index[4])
-                lut_address = 5'd16 - {1'b0, index[3:0]};
-            else
-                lut_address = {1'b0, index[3:0]};
-
-            case (lut_address)
-                5'd0:  magnitude = 16'd0;
-                5'd1:  magnitude = 16'd2409;
-                5'd2:  magnitude = 16'd4795;
-                5'd3:  magnitude = 16'd7134;
-                5'd4:  magnitude = 16'd9405;
-                5'd5:  magnitude = 16'd11585;
-                5'd6:  magnitude = 16'd13654;
-                5'd7:  magnitude = 16'd15591;
-                5'd8:  magnitude = 16'd17378;
-                5'd9:  magnitude = 16'd18998;
-                5'd10: magnitude = 16'd20434;
-                5'd11: magnitude = 16'd21674;
-                5'd12: magnitude = 16'd22705;
-                5'd13: magnitude = 16'd23518;
-                5'd14: magnitude = 16'd24104;
-                5'd15: magnitude = 16'd24458;
-                5'd16: magnitude = 16'd24576;
-                default:
-                    magnitude = 16'd0;
+            case (note_index)
+                5'd0:  note_phase_step = 32'd11_506_414; // C3   130.813 Hz
+                5'd1:  note_phase_step = 32'd12_190_621; // C#3  138.591 Hz
+                5'd2:  note_phase_step = 32'd12_915_513; // D3   146.832 Hz
+                5'd3:  note_phase_step = 32'd13_683_509; // D#3  155.563 Hz
+                5'd4:  note_phase_step = 32'd14_497_173; // E3   164.814 Hz
+                5'd5:  note_phase_step = 32'd15_359_220; // F3   174.614 Hz
+                5'd6:  note_phase_step = 32'd16_272_527; // F#3  184.997 Hz
+                5'd7:  note_phase_step = 32'd17_240_142; // G3   195.998 Hz
+                5'd8:  note_phase_step = 32'd18_265_294; // G#3  207.652 Hz
+                5'd9:  note_phase_step = 32'd19_351_405; // A3   220.000 Hz
+                5'd10: note_phase_step = 32'd20_502_099; // A#3  233.082 Hz
+                5'd11: note_phase_step = 32'd21_721_217; // B3   246.942 Hz
+                5'd12: note_phase_step = 32'd23_012_828; // C4   261.626 Hz
+                5'd13: note_phase_step = 32'd24_381_242; // C#4  277.183 Hz
+                5'd14: note_phase_step = 32'd25_831_026; // D4   293.665 Hz
+                5'd15: note_phase_step = 32'd27_367_019; // D#4  311.127 Hz
+                5'd16: note_phase_step = 32'd28_994_347; // E4   329.628 Hz
+                5'd17: note_phase_step = 32'd30_718_440; // F4   349.228 Hz
+                5'd18: note_phase_step = 32'd32_545_054; // F#4  369.994 Hz
+                5'd19: note_phase_step = 32'd34_480_283; // G4   391.995 Hz
+                5'd20: note_phase_step = 32'd36_530_588; // G#4  415.305 Hz
+                5'd21: note_phase_step = 32'd38_702_809; // A4   440.000 Hz
+                5'd22: note_phase_step = 32'd41_004_198; // A#4  466.164 Hz
+                5'd23: note_phase_step = 32'd43_442_435; // B4   493.883 Hz
+                5'd24: note_phase_step = 32'd46_025_656; // C5   523.251 Hz
+                5'd25: note_phase_step = 32'd48_762_484; // C#5  554.365 Hz
+                5'd26: note_phase_step = 32'd51_662_052; // D5   587.330 Hz
+                5'd27: note_phase_step = 32'd54_734_038; // D#5  622.254 Hz
+                5'd28: note_phase_step = 32'd57_988_693; // E5   659.255 Hz
+                5'd29: note_phase_step = 32'd61_436_880; // F5   698.456 Hz
+                5'd30: note_phase_step = 32'd65_090_107; // F#5  739.989 Hz
+                5'd31: note_phase_step = 32'd68_960_566; // G5   783.991 Hz
+                default: note_phase_step = 32'd11_506_414;
             endcase
-
-            // index[5]表示正弦波的负半周期。
-            if (index[5])
-                sine_lut = -$signed(magnitude);
-            else
-                sine_lut =  $signed(magnitude);
         end
     endfunction
 
-    wire signed [15:0] sine_pcm;
-
-    assign sine_pcm = sine_lut(phase_accumulator[31:26]);
+    wire [31:0] selected_phase_step = note_phase_step(note_select);
 
     //--------------------------------------------------------------------------
-    // 三角波
-    //
-    // 先产生0～65535～0的无符号三角波，再转换成以0为中心的
-    // 有符号波形，最后乘以3/4，峰值约为24576。
+    // Compact piano-like synthesizer. A triangle fundamental plus restrained
+    // harmonics is shaped by an attack/decay/sustain/release envelope.
     //--------------------------------------------------------------------------
 
-    wire [15:0] triangle_offset;
-    wire signed [15:0] triangle_full_scale;
-    wire signed [15:0] triangle_pcm;
+    function signed [15:0] triangle_wave;
+        input [31:0] phase;
+        reg [15:0] tri_unsigned;
+        reg signed [16:0] tri_centered;
+        begin
+            tri_unsigned = phase[31] ? ~phase[30:15] : phase[30:15];
+            tri_centered = $signed({1'b0, tri_unsigned}) - 17'sd32768;
+            triangle_wave = tri_centered[15:0];
+        end
+    endfunction
 
-    assign triangle_offset =
-        phase_accumulator[31]
-            ? ~phase_accumulator[30:15]
-            :  phase_accumulator[30:15];
+    wire sample_tick;
 
-    assign triangle_full_scale =
-        $signed(triangle_offset ^ 16'h8000);
+    reg [31:0] phase_accumulator;
+    reg [15:0] envelope;
+    reg [15:0] note_age;
+    reg        retrigger_pending;
 
-    assign triangle_pcm =
-        triangle_full_scale - (triangle_full_scale >>> 2);
+    wire start_request = key0_press_pulse && !play_enabled;
 
-    //--------------------------------------------------------------------------
-    // 方波，幅值为正负24576
-    //--------------------------------------------------------------------------
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            phase_accumulator <= 32'd0;
+            envelope          <= 16'd0;
+            note_age          <= 16'd0;
+            retrigger_pending <= 1'b1;
+        end else begin
+            if (sample_tick) begin
+                if (!audio_ready) begin
+                    phase_accumulator <= 32'd0;
+                    envelope          <= 16'd0;
+                    note_age          <= 16'd0;
+                end else if (retrigger_pending || key1_press_pulse || start_request) begin
+                    phase_accumulator <= 32'd0;
+                    envelope          <= 16'd0;
+                    note_age          <= 16'd0;
+                    retrigger_pending <= 1'b0;
+                end else begin
+                    phase_accumulator <= phase_accumulator + selected_phase_step;
 
-    wire signed [15:0] square_pcm;
+                    if (play_enabled) begin
+                        if (note_age != 16'hffff)
+                            note_age <= note_age + 16'd1;
 
-    assign square_pcm =
-        phase_accumulator[31] ? -16'sd24576 : 16'sd24576;
-
-    //--------------------------------------------------------------------------
-    // 根据锁存的波形模式选择输出波形
-    //--------------------------------------------------------------------------
-
-    reg signed [15:0] selected_pcm;
-
-    always @(*) begin
-        case (waveform_select)
-            WAVE_SINE:
-                selected_pcm = sine_pcm;
-
-            WAVE_TRIANGLE:
-                selected_pcm = triangle_pcm;
-
-            WAVE_SQUARE:
-                selected_pcm = square_pcm;
-
-            default:
-                selected_pcm = 16'sd0;
-        endcase
+                        if (note_age < 16'd256) begin
+                            if (envelope >= (16'hffff - ATTACK_STEP))
+                                envelope <= 16'hffff;
+                            else
+                                envelope <= envelope + ATTACK_STEP;
+                        end else if (envelope > SUSTAIN_LEVEL) begin
+                            envelope <= envelope
+                                      - ((envelope - SUSTAIN_LEVEL) >> 9)
+                                      - 16'd1;
+                        end else begin
+                            envelope <= SUSTAIN_LEVEL;
+                        end
+                    end else begin
+                        if (envelope > RELEASE_STEP)
+                            envelope <= envelope - RELEASE_STEP;
+                        else
+                            envelope <= 16'd0;
+                    end
+                end
+            end else if (key1_press_pulse || start_request) begin
+                retrigger_pending <= 1'b1;
+            end
+        end
     end
 
+    wire signed [15:0] fundamental = triangle_wave(phase_accumulator);
+    wire signed [15:0] harmonic_2  = triangle_wave(phase_accumulator << 1);
+    wire signed [15:0] harmonic_3  = triangle_wave(
+        phase_accumulator + (phase_accumulator << 1)
+    );
+    wire signed [15:0] harmonic_4  = triangle_wave(phase_accumulator << 2);
+
+    wire signed [20:0] fundamental_ext = {{5{fundamental[15]}}, fundamental};
+    wire signed [20:0] harmonic_2_ext  = {{5{harmonic_2[15]}}, harmonic_2};
+    wire signed [20:0] harmonic_3_ext  = {{5{harmonic_3[15]}}, harmonic_3};
+    wire signed [20:0] harmonic_4_ext  = {{5{harmonic_4[15]}}, harmonic_4};
+
+    wire signed [20:0] piano_mix = fundamental_ext
+                                  + (harmonic_2_ext >>> 3)
+                                  + (harmonic_3_ext >>> 4)
+                                  + ((note_age < 16'd192)
+                                     ? (harmonic_4_ext >>> 3)
+                                     : 21'sd0);
+
+    wire signed [16:0] envelope_signed = $signed({1'b0, envelope});
+    wire signed [37:0] envelope_product = piano_mix * envelope_signed;
+    wire signed [21:0] shaped_sample = envelope_product >>> 16;
+
     //--------------------------------------------------------------------------
-    // PT8211串行音频发送模块
-    //
-    // 左右声道连接相同的PCM数据，因此耳机两侧播放相同声音。
+    // Low-pass smoothing and DC blocking reduce switching and envelope clicks.
+    //--------------------------------------------------------------------------
+
+    reg signed [21:0] lowpass_state;
+    reg signed [21:0] dc_previous_input;
+    reg signed [21:0] dc_state;
+    reg signed [21:0] smooth_state;
+
+    wire [2:0] filter_shift = (note_age < 16'd1_953) ? 3'd2 : 3'd3;
+    wire signed [22:0] lowpass_difference = shaped_sample
+                                             - $signed({lowpass_state[21], lowpass_state});
+    wire signed [22:0] lowpass_next_wide =
+        $signed({lowpass_state[21], lowpass_state})
+        + (lowpass_difference >>> filter_shift);
+    wire signed [21:0] lowpass_next = lowpass_next_wide[21:0];
+
+    wire signed [22:0] lowpass_state_ext =
+        $signed({lowpass_state[21], lowpass_state});
+    wire signed [22:0] dc_previous_ext =
+        $signed({dc_previous_input[21], dc_previous_input});
+    wire signed [22:0] dc_state_ext = $signed({dc_state[21], dc_state});
+    wire signed [22:0] dc_next_wide = lowpass_state_ext
+                                      - dc_previous_ext
+                                      + dc_state_ext
+                                      - (dc_state_ext >>> 10);
+    wire signed [21:0] dc_next = dc_next_wide[21:0];
+
+    wire signed [22:0] smooth_state_ext =
+        $signed({smooth_state[21], smooth_state});
+    wire signed [22:0] smooth_difference = dc_state_ext - smooth_state_ext;
+    wire signed [22:0] smooth_next_wide = smooth_state_ext
+                                          + (smooth_difference >>> 2);
+    wire signed [21:0] smooth_next = smooth_next_wide[21:0];
+
+    always @(posedge sys_clk) begin
+        if (!rst_n) begin
+            lowpass_state     <= 22'sd0;
+            dc_previous_input <= 22'sd0;
+            dc_state          <= 22'sd0;
+            smooth_state      <= 22'sd0;
+        end else if (sample_tick) begin
+            lowpass_state     <= lowpass_next;
+            dc_previous_input <= lowpass_state;
+            dc_state          <= dc_next;
+            smooth_state      <= smooth_next;
+        end
+    end
+
+    function signed [15:0] saturate16;
+        input signed [21:0] value;
+        begin
+            if (value > 22'sd32767)
+                saturate16 = 16'sh7fff;
+            else if (value < -22'sd32768)
+                saturate16 = 16'sh8000;
+            else
+                saturate16 = value[15:0];
+        end
+    endfunction
+
+    wire signed [15:0] pcm_unmuted = saturate16(smooth_state >>> 1);
+    wire [15:0] pcm_absolute = pcm_unmuted[15]
+                             ? (~pcm_unmuted + 16'd1)
+                             : pcm_unmuted;
+    wire signed [15:0] pcm_output = (!audio_ready || (pcm_absolute < 16'd16))
+                                  ? 16'sd0
+                                  : pcm_unmuted;
+
+    //--------------------------------------------------------------------------
+    // PT8211 stereo transmitter. Both channels receive the same piano sample.
     //--------------------------------------------------------------------------
 
     I2S_1_communication #(
-        .CLK_FREQ_HZ      (50_000_000),
+        .CLK_FREQ_HZ      (CLK_FREQ_HZ),
         .BCK_HALF_DIV     (16),
-        .AMP_START_CYCLES (2_500_000)
+        .AMP_START_CYCLES (AUDIO_START_CYCLES)
     ) u_I2S_1_communication (
         .sys_clk     (sys_clk),
-        .sys_rst_n   (KEY2),
+        .sys_rst_n   (rst_n),
 
-        .pcm_left    (selected_pcm),
-        .pcm_right   (selected_pcm),
+        .pcm_left    (pcm_output),
+        .pcm_right   (pcm_output),
         .sample_tick (sample_tick),
 
         .HP_BCK      (HP_BCK),

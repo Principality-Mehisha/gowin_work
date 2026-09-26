@@ -21,8 +21,8 @@ module I2S_1_communication #(
     input  wire               sys_clk,
     input  wire               sys_rst_n,
 
-    // Signed two's-complement PCM. Keep these inputs stable when sample_tick
-    // is high; they are copied into private registers once per stereo frame.
+    // Signed two's-complement PCM. sample_tick marks the frame in which the
+    // current values were consumed; the producer prepares the following frame.
     input  wire signed [15:0] pcm_left,
     input  wire signed [15:0] pcm_right,
     output reg                sample_tick,
@@ -35,7 +35,7 @@ module I2S_1_communication #(
 
     //--------------------------------------------------------------------
     // The NEO Dock amplifier enable is active-low. Keep it disabled while
-    // clocks and zero audio settle, which reduces power-up clicks.
+    // clocks settle. The top-level envelope holds PCM at zero over this delay.
     //--------------------------------------------------------------------
     reg [31:0] amp_start_cnt;
     reg        amp_ready;

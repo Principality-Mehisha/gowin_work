@@ -4,8 +4,8 @@
     <Version>beta</Version>
     <Device id="GW5AT-60B" package="PBGA484A" speed="1" partNumber="GW5AT-LV60PG484AC1/I0"/>
     <FileList>
-        <File path="D:\Gowin_competition_Code\I2S_1\src\I2S_1.v" type="verilog"/>
-        <File path="D:\Gowin_competition_Code\I2S_1\src\I2S_1_communication.v" type="verilog"/>
+        <File path="C:\Users\30415\Desktop\gowin_work\I2S_1\src\I2S_1.v" type="verilog"/>
+        <File path="C:\Users\30415\Desktop\gowin_work\I2S_1\src\I2S_1_communication.v" type="verilog"/>
     </FileList>
     <OptionList>
         <Option type="disable_insert_pad" value="0"/>
@@ -17,7 +17,7 @@
         <Option type="max_fanout" value="1000"/>
         <Option type="netlist_hierarchy" value="1"/>
         <Option type="opt_goal" value="auto"/>
-        <Option type="output_file" value="D:\Gowin_competition_Code\I2S_1\impl\gwsynthesis\I2S_1.vg"/>
+        <Option type="output_file" value="C:\Users\30415\Desktop\gowin_work\I2S_1\impl\gwsynthesis\I2S_1.vg"/>
         <Option type="print_all_synthesis_warning" value="0"/>
         <Option type="ram_rw_check" value="0"/>
         <Option type="ram_style" value="auto"/>

@@ -1,9 +1,9 @@
--d D:\Gowin_competition_Code\I2S_1\impl\gwsynthesis\I2S_1.vg
+-d C:\Users\30415\Desktop\gowin_work\I2S_1\impl\gwsynthesis\I2S_1.vg
 -p GW5AT-60B-PBGA484A-1
 -pn GW5AT-LV60PG484AC1/I0
--cst D:\Gowin_competition_Code\I2S_1\src\I2S_1.cst
--cfg D:\Gowin_competition_Code\I2S_1\impl\pnr\device.cfg
--sdc D:\Gowin_competition_Code\I2S_1\src\I2S_1.sdc
+-cst C:\Users\30415\Desktop\gowin_work\I2S_1\src\I2S_1.cst
+-cfg C:\Users\30415\Desktop\gowin_work\I2S_1\impl\pnr\device.cfg
+-sdc C:\Users\30415\Desktop\gowin_work\I2S_1\src\I2S_1.sdc
 -bit
 -tr
 -ph

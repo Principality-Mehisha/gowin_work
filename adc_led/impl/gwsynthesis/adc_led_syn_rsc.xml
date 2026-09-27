@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Module name="top" Register="119" Alu="39" Lut="176" T_Register="125(119)" T_Alu="39(39)" T_Lut="179(176)">
+<Module name="top" Register="128" Alu="24" Lut="182" T_Register="134(128)" T_Alu="24(24)" T_Lut="185(182)">
  <SubModule name="u_adc"/>
  <SubModule name="u_display" Register="6" Lut="3" T_Register="6(6)" T_Lut="3(3)"/>
 </Module>

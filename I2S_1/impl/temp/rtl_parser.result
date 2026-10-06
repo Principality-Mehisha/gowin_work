@@ -9,7 +9,7 @@
         "SubInsts": [
             {
                 "InstFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1.v",
-                "InstLine": 384,
+                "InstLine": 392,
                 "InstName": "u_I2S_1_communication",
                 "ModuleFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1_communication.v",
                 "ModuleLine": 16,

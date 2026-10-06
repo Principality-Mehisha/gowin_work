@@ -12,6 +12,12 @@ audio format is PT8211 16-bit LSBJ/Japanese timing rather than Philips I2S.
 KEY0 and KEY1 are synchronized and debounced for 20 ms. Each stable press
 causes exactly one action, even when the button is held.
 
+The top-level also instantiates the Gowin `GSR` primitive. This is important
+for configuration-time initialization: if the board is reprogrammed while
+`KEY2` is high, the user reset input may not produce a low-to-high reset edge.
+GSR guarantees that the serializer, startup counter, envelope, and controls
+still begin from known state on every configuration.
+
 ## Notes
 
 The 32 equal-tempered notes cover C3 through G5:

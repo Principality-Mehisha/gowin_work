@@ -1,5 +1,9 @@
 `timescale 1ns / 1ps
 
+// Behavioral stub for the Gowin configuration primitive used by the RTL.
+module GSR(input GSRI);
+endmodule
+
 module tb_I2S_1;
 
     reg sys_clk;

@@ -1,17 +1,17 @@
 [
     {
-        "InstFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
+        "InstFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1.v",
         "InstLine": 12,
         "InstName": "I2S_1",
-        "ModuleFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
+        "ModuleFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1.v",
         "ModuleLine": 12,
         "ModuleName": "I2S_1",
         "SubInsts": [
             {
-                "InstFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1.v",
-                "InstLine": 384,
+                "InstFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1.v",
+                "InstLine": 392,
                 "InstName": "u_I2S_1_communication",
-                "ModuleFile": "C:/Users/30415/Desktop/gowin_work/I2S_1/src/I2S_1_communication.v",
+                "ModuleFile": "D:/GitHub/gowin_work/I2S_1/src/I2S_1_communication.v",
                 "ModuleLine": 16,
                 "ModuleName": "I2S_1_communication"
             }

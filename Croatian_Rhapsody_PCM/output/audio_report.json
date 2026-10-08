@@ -1,0 +1,11 @@
+{
+  "sample_rate_hz": 16276.041666666666,
+  "samples": 230772,
+  "seconds": 14.17863168,
+  "rom_depth_bytes": 262144,
+  "source": "assets/score.json",
+  "voice": "offline additive acoustic piano model",
+  "pcm_peak": 19836,
+  "clipped_samples": 0,
+  "dc_mean": -0.3261054200682925
+}

@@ -235,7 +235,16 @@ module croatian_rhapsody (
                                        ? (fourth_ext >>> 1) : 21'sd0;
 
     wire signed [16:0] envelope_signed = $signed({1'b0, envelope});
-    wire signed [36:0] envelope_product = harmonic_mix * envelope_signed;
+    // Verilog multiplication keeps the expression width unless the
+    // operands are explicitly widened. Without these extensions the
+    // 20x17-bit product can be truncated before it reaches the 37-bit
+    // destination, which turns the PCM stream into clicks/noise.
+    wire signed [36:0] harmonic_product_ext =
+        $signed({{17{harmonic_mix[19]}}, harmonic_mix});
+    wire signed [36:0] envelope_product_ext =
+        $signed({{20{envelope_signed[16]}}, envelope_signed});
+    wire signed [36:0] envelope_product =
+        harmonic_product_ext * envelope_product_ext;
     wire signed [20:0] enveloped_mix = envelope_product >>> 16;
     wire signed [20:0] shaped_sample = enveloped_mix + hammer_partial;
 

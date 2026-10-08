@@ -1,0 +1,877 @@
+{
+  "title": "Croatian Rhapsody opening excerpt",
+  "source": "pianoletternotes.blogspot.com/2022/09/croatian-rhapsody-by-maksim-mrvica.html",
+  "duration_seconds": 14.178571428571427,
+  "events": [
+    {
+      "midi": 36,
+      "start_seconds": 0.0,
+      "duration_seconds": 2.36785714,
+      "gain": 0.7
+    },
+    {
+      "midi": 48,
+      "start_seconds": 0.0,
+      "duration_seconds": 1.45714286,
+      "gain": 0.28
+    },
+    {
+      "midi": 60,
+      "start_seconds": 0.0,
+      "duration_seconds": 1.45714286,
+      "gain": 0.28
+    },
+    {
+      "midi": 67,
+      "start_seconds": 0.0,
+      "duration_seconds": 2.36785714,
+      "gain": 0.7
+    },
+    {
+      "midi": 48,
+      "start_seconds": 1.71428571,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 60,
+      "start_seconds": 1.71428571,
+      "duration_seconds": 0.91071429,
+      "gain": 0.28
+    },
+    {
+      "midi": 86,
+      "start_seconds": 1.71428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 91,
+      "start_seconds": 1.71428571,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 87,
+      "start_seconds": 1.82142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 1.92857143,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 86,
+      "start_seconds": 2.14285714,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 91,
+      "start_seconds": 2.14285714,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 87,
+      "start_seconds": 2.25,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 2.35714286,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 44,
+      "start_seconds": 2.57142857,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 56,
+      "start_seconds": 2.57142857,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 79,
+      "start_seconds": 2.57142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 2.57142857,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 80,
+      "start_seconds": 2.67857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 77,
+      "start_seconds": 2.78571429,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 3.0,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 3.0,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 80,
+      "start_seconds": 3.10714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 77,
+      "start_seconds": 3.21428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 43,
+      "start_seconds": 3.42857143,
+      "duration_seconds": 1.82142857,
+      "gain": 0.28
+    },
+    {
+      "midi": 55,
+      "start_seconds": 3.42857143,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 81,
+      "start_seconds": 3.42857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 86,
+      "start_seconds": 3.42857143,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 83,
+      "start_seconds": 3.53571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 3.64285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 3.85714286,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 86,
+      "start_seconds": 3.85714286,
+      "duration_seconds": 1.09285714,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 4.07142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 4.17857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 48,
+      "start_seconds": 4.28571429,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 60,
+      "start_seconds": 4.28571429,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 72,
+      "start_seconds": 4.28571429,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 4.5,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 4.5,
+      "duration_seconds": 0.91071429,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 4.60714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 4.71428571,
+      "duration_seconds": 0.72857143,
+      "gain": 0.7
+    },
+    {
+      "midi": 48,
+      "start_seconds": 5.14285714,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 60,
+      "start_seconds": 5.14285714,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 86,
+      "start_seconds": 5.14285714,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 91,
+      "start_seconds": 5.14285714,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 87,
+      "start_seconds": 5.25,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 5.35714286,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 46,
+      "start_seconds": 5.78571429,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 58,
+      "start_seconds": 5.78571429,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 91,
+      "start_seconds": 5.78571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 5.89285714,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 44,
+      "start_seconds": 6.0,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 56,
+      "start_seconds": 6.0,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 79,
+      "start_seconds": 6.0,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 6.0,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 80,
+      "start_seconds": 6.10714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 77,
+      "start_seconds": 6.21428571,
+      "duration_seconds": 0.45535714,
+      "gain": 0.7
+    },
+    {
+      "midi": 84,
+      "start_seconds": 6.64285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 77,
+      "start_seconds": 6.75,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 43,
+      "start_seconds": 6.85714286,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 55,
+      "start_seconds": 6.85714286,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 81,
+      "start_seconds": 6.85714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 86,
+      "start_seconds": 6.85714286,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 83,
+      "start_seconds": 6.96428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 7.07142857,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 41,
+      "start_seconds": 7.28571429,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 53,
+      "start_seconds": 7.28571429,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 79,
+      "start_seconds": 7.28571429,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 86,
+      "start_seconds": 7.28571429,
+      "duration_seconds": 0.91071429,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 7.5,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 7.60714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 39,
+      "start_seconds": 7.71428571,
+      "duration_seconds": 0.54642857,
+      "gain": 0.28
+    },
+    {
+      "midi": 51,
+      "start_seconds": 7.71428571,
+      "duration_seconds": 0.54642857,
+      "gain": 0.28
+    },
+    {
+      "midi": 72,
+      "start_seconds": 7.71428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 7.92857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 7.92857143,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 8.03571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 8.14285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 36,
+      "start_seconds": 8.57142857,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 48,
+      "start_seconds": 8.57142857,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 8.57142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 8.57142857,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 8.67857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 8.78571429,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 9.21428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 9.21428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 9.32142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 44,
+      "start_seconds": 9.42857143,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 56,
+      "start_seconds": 9.42857143,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 9.42857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 9.42857143,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 9.53571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 9.64285714,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 10.07142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 10.07142857,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 10.17857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 43,
+      "start_seconds": 10.28571429,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 55,
+      "start_seconds": 10.28571429,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 10.28571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 10.28571429,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 10.39285714,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 10.5,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 10.71428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 10.71428571,
+      "duration_seconds": 0.27321429,
+      "gain": 0.7
+    },
+    {
+      "midi": 71,
+      "start_seconds": 10.92857143,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 10.92857143,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 11.03571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 11.03571429,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 39,
+      "start_seconds": 11.14285714,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 51,
+      "start_seconds": 11.14285714,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 72,
+      "start_seconds": 11.14285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 11.14285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 74,
+      "start_seconds": 11.35714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 11.35714286,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 11.46428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 11.57142857,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 36,
+      "start_seconds": 12.0,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 48,
+      "start_seconds": 12.0,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 12.0,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 12.0,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 12.10714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 12.21428571,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 48,
+      "start_seconds": 12.42857143,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 51,
+      "start_seconds": 12.42857143,
+      "duration_seconds": 1.275,
+      "gain": 0.28
+    },
+    {
+      "midi": 55,
+      "start_seconds": 12.42857143,
+      "duration_seconds": 1.275,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 12.64285714,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 12.64285714,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 12.75,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 29,
+      "start_seconds": 12.85714286,
+      "duration_seconds": 0.72857143,
+      "gain": 0.28
+    },
+    {
+      "midi": 41,
+      "start_seconds": 12.85714286,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 12.85714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 12.85714286,
+      "duration_seconds": 0.54642857,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 12.96428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 13.07142857,
+      "duration_seconds": 0.36428571,
+      "gain": 0.7
+    },
+    {
+      "midi": 41,
+      "start_seconds": 13.28571429,
+      "duration_seconds": 0.36428571,
+      "gain": 0.28
+    },
+    {
+      "midi": 44,
+      "start_seconds": 13.28571429,
+      "duration_seconds": 0.54642857,
+      "gain": 0.28
+    },
+    {
+      "midi": 48,
+      "start_seconds": 13.28571429,
+      "duration_seconds": 0.54642857,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 13.5,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 13.5,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 72,
+      "start_seconds": 13.60714286,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 31,
+      "start_seconds": 13.71428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 43,
+      "start_seconds": 13.71428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.28
+    },
+    {
+      "midi": 74,
+      "start_seconds": 13.71428571,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    },
+    {
+      "midi": 79,
+      "start_seconds": 13.71428571,
+      "duration_seconds": 0.18214286,
+      "gain": 0.7
+    },
+    {
+      "midi": 75,
+      "start_seconds": 13.82142857,
+      "duration_seconds": 0.09107143,
+      "gain": 0.7
+    }
+  ]
+}

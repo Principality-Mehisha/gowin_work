@@ -1,0 +1,6 @@
+impl/
+*.gprj.user
+sim/*.out
+sim/*.vcd
+sim/frame.ppm
+tools/__pycache__/

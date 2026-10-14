@@ -1,0 +1,9 @@
+impl/
+tmp/
+sim/work/
+sim/transcript
+sim/vsim.wlf
+sim/*.vcd
+sim/samples.txt
+*.gprj.user
+tools/__pycache__/

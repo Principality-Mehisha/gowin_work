@@ -24,6 +24,7 @@
 | [`adc_led`](./adc_led) | `top` | 使用 GW5AT-60 **片上 ADC**（ADCV 差分通道，0…1 V）采样，把有效电压范围 8 等分，档位以二进制写在最低 3 个 LED 上；上电带 PMOD 自检与 ADC 异常指示 | 2026-09-26 用 V1.9.12.03 跑通综合 / 布局布线 / 码流；仿真遍历 0…1 V 全部 2048 个码值通过 |
 | [`GoWin_FPGA60k_Music`](./GoWin_FPGA60k_Music) | `test` | 驱动 NEO Dock 板载 **PT8211 DAC**，由 FPGA 实时合成钢琴音色，双声道播放《国际歌》（G 大调，约 120 BPM），8 个 PMOD LED 显示乐曲段落 | 见工程内 [README](./GoWin_FPGA60k_Music/README.md) |
 | [`I2S_1`](./I2S_1) | `I2S_1` | 同一 PT8211 通道上的 **32 音等程律音阶发生器**（C3…G5），三个按键控制复位 / 升半音 / 播放停止，带 20 ms 消抖 | 见工程内 [README](./I2S_1/README.md) |
+| [`Piano_88`](./Piano_88) | `piano_88` | 真实钢琴 PCM 录音音区覆盖 A0…C8 共 88 音；上电静音，KEY1 每按一次切到下一音，KEY0 暂停 / 继续，KEY2 复位 | 见工程内 [README](./Piano_88/README.md) |
 
 ---
 

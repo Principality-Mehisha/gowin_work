@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Module name="I2S_1" Register="238" Alu="336" Lut="357" MULTALU27X18="1" T_Register="312(238)" T_Alu="367(336)" T_Lut="423(357)" T_MULTALU27X18="1(1)">
- <SubModule name="u_I2S_1_communication" Register="74" Alu="31" Lut="66" T_Register="74(74)" T_Alu="31(31)" T_Lut="66(66)"/>
-</Module>

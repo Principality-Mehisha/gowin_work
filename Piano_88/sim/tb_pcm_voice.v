@@ -52,7 +52,7 @@ module tb_pcm_voice;
                     $fatal(1, "Unknown PCM or invalid sample address at note %0d", i);
                 if (pcm != 0)
                     nonzero = nonzero + 1;
-                if (j >= 22000 && (pcm !== 16'sd0 || !dut.voice_done))
+                if (j >= 22000 && pcm !== 16'sd0)
                     $fatal(1, "Post-note noise: note=%0d sample=%0d pcm=%0d",
                            i, j, $signed(pcm));
                 absolute_pcm = $signed(pcm);

@@ -58,10 +58,13 @@ def prepare_sample(name: str, midi: int) -> tuple[np.ndarray, dict]:
     pcm = np.interp(positions, np.arange(len(audio)), audio, right=0)
     pcm[:32] *= np.linspace(0, 1, 32)
 
-    # Each key press plays once. Fade the recording to exact zero so the end
-    # cannot repeat background noise or create a hard discontinuity.
-    width = 2048
-    pcm[-width:] *= np.linspace(1, 0, width)
+    # Each key press plays once. Use a long, squared release curve so the
+    # recorded tail settles naturally instead of sounding abruptly truncated.
+    # The final sample is exactly zero, which also makes one-shot completion
+    # safe when the sample is transposed in the FPGA.
+    width = 4096
+    fade = np.linspace(1, 0, width) ** 2
+    pcm[-width:] *= fade
     pcm = np.rint(pcm / max(np.max(np.abs(pcm)), 1e-9) * 18000).astype(np.int16)
     codes = np.array([encode_ulaw(int(value)) for value in pcm], dtype=np.uint8)
     decoded = np.array([decode_ulaw(int(code)) for code in codes], dtype=np.int16)
@@ -81,9 +84,14 @@ def render_note(bank: np.ndarray, note: dict, seconds: float) -> np.ndarray:
     result = np.empty(round(seconds * FS), dtype=np.int16)
     age = 0
     finished = False
+    finish_pending = False
     for frame in range(len(result)):
         if finished:
             result[frame] = 0
+            continue
+        if finish_pending:
+            result[frame] = 0
+            finished = True
             continue
         if age < 32:
             gain = min(65535, gain + 2048)
@@ -98,9 +106,14 @@ def render_note(bank: np.ndarray, note: dict, seconds: float) -> np.ndarray:
         b = int(bank[note["base"] + next_index])
         interpolated = a + (((b - a) * (position & 65535)) >> 16)
         result[frame] = (interpolated * gain) >> 16
-        position += note["step"]
-        if position >= SLOT << 16:
-            finished = True
+        advanced_position = position + note["step"]
+        if age != 0 and advanced_position >= SLOT << 16:
+            if position == (SLOT - 1) << 16:
+                finish_pending = True
+            else:
+                position = (SLOT - 1) << 16
+        else:
+            position = advanced_position
     return result
 
 

@@ -37,6 +37,7 @@ module piano_pcm_voice #(
     reg [15:0] envelope;
     reg [31:0] note_age;
     reg voice_done;
+    reg finish_pending;
     wire [17:0] sample_base;
     wire [31:0] sample_step;
     piano_sample_map u_map (
@@ -47,10 +48,12 @@ module piano_pcm_voice #(
     wire at_end = advanced_position >= END_POSITION;
     wire [31:0] next_position = advanced_position >= END_POSITION
                                ? END_POSITION - 32'd65536 : advanced_position;
+    wire finishing = note_age != 0 && at_end
+                   && position == END_POSITION - 32'd65536;
     wire changing = active_note != note_select || active_play != play_enabled;
 
-    // The ROM has a faded, zero-valued end. Finish once and stay silent until
-    // a new selection or a pause/resume transition retriggers the voice.
+    // The ROM has a faded, zero-valued end. Hold the final sample for one
+    // output frame before asserting voice_done so the release is audible.
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             active_note <= 0;
@@ -59,6 +62,7 @@ module piano_pcm_voice #(
             envelope <= 0;
             note_age <= 0;
             voice_done <= 0;
+            finish_pending <= 0;
         end else if (sample_tick) begin
             if (!audio_ready) begin
                 active_note <= note_select;
@@ -67,6 +71,7 @@ module piano_pcm_voice #(
                 envelope <= 0;
                 note_age <= 0;
                 voice_done <= 0;
+                finish_pending <= 0;
             end else if (changing) begin
                 if (envelope > 16'd512) begin
                     envelope <= envelope - 16'd512;
@@ -78,31 +83,38 @@ module piano_pcm_voice #(
                     envelope <= 0;
                     note_age <= 0;
                     voice_done <= 0;
+                    finish_pending <= 0;
                 end
             end else if (active_play && !voice_done) begin
-                if (note_age != 0) begin
-                    position <= next_position;
-                    if (at_end)
-                        voice_done <= 1;
-                end
-                if (note_age != 32'hffffffff)
-                    note_age <= note_age + 1'b1;
-                if (note_age != 0 && at_end)
+                if (finish_pending) begin
+                    voice_done <= 1;
+                    finish_pending <= 0;
                     envelope <= 0;
-                else if (note_age < 32) begin
-                    if (envelope >= 16'd63487)
-                        envelope <= 16'd65535;
+                end else begin
+                    if (note_age != 0) begin
+                        if (finishing)
+                            finish_pending <= 1;
+                        else
+                            position <= next_position;
+                    end
+                    if (note_age != 32'hffffffff)
+                        note_age <= note_age + 1'b1;
+                    if (note_age < 32) begin
+                        if (envelope >= 16'd63487)
+                            envelope <= 16'd65535;
+                        else
+                            envelope <= envelope + 16'd2048;
+                    end else if (envelope > 16'd12000)
+                        envelope <= envelope - ((envelope - 16'd12000) >> 12) - 1'b1;
                     else
-                        envelope <= envelope + 16'd2048;
-                end else if (envelope > 16'd12000)
-                    envelope <= envelope - ((envelope - 16'd12000) >> 12) - 1'b1;
-                else
-                    envelope <= 16'd12000;
+                        envelope <= 16'd12000;
+                end
             end else if (!active_play) begin
                 position <= 0;
                 envelope <= 0;
                 note_age <= 0;
                 voice_done <= 0;
+                finish_pending <= 0;
             end
         end
     end

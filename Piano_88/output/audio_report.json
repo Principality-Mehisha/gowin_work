@@ -12,7 +12,7 @@
     {
       "name": "C1",
       "midi": 24,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "c24a8d1e1e3c399605c40ff62b844120e56d45bb83ce3a8842c83443f8b789ab",
@@ -21,7 +21,7 @@
     {
       "name": "Fs1",
       "midi": 30,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "1eb18bd4e97aa61e102cbf20daa9bb68d681378146aeee05aa97356043fbf5e9",
@@ -30,7 +30,7 @@
     {
       "name": "C2",
       "midi": 36,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "c6489bc3dd586a38f60a001e0590db48fc23cc67b5626ad0a98e30fa78ff17a2",
@@ -39,7 +39,7 @@
     {
       "name": "Fs2",
       "midi": 42,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "4c1b267112f0dacdf8cc6e6bf5442834dd69976ecc1923d512df430dec3ffc8d",
@@ -48,7 +48,7 @@
     {
       "name": "C3",
       "midi": 48,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "842f6d18e0cdb81828281a02beec92bd8d6e6f30ec3fc993bba9dd8543f47449",
@@ -57,7 +57,7 @@
     {
       "name": "Fs3",
       "midi": 54,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "eaeed3dd5c0ca8e454f7a0c308ee0b2c9a44a84f4e3857c18fb68285cf98d348",
@@ -66,7 +66,7 @@
     {
       "name": "C4",
       "midi": 60,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "7387c930f47d0d0cd976e3b6013549708242b5f3882f3e9358c17d503f9b4544",
@@ -75,7 +75,7 @@
     {
       "name": "Fs4",
       "midi": 66,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "b0d04d4a3fbfbab7eadaae8c2fcdb693b8c7f77e40f8b7aee509c658d3c28d6a",
@@ -84,7 +84,7 @@
     {
       "name": "C5",
       "midi": 72,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "7fac0ac902e4e2d39629af91a8fad3e50d75fbc3de7d099e914d41827cfe5a21",
@@ -93,7 +93,7 @@
     {
       "name": "Fs5",
       "midi": 78,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "f1def9b343ccb071cce0c4d32c503e74a6053896bdffbbc92cce8f7f32075c5b",
@@ -102,7 +102,7 @@
     {
       "name": "C6",
       "midi": 84,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "51f7b9b74b4c5e0e0c42931656e3867cf7f469eddfe06d33fe5bb16d302e5254",
@@ -111,7 +111,7 @@
     {
       "name": "Fs6",
       "midi": 90,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "c891b8855646ce589c631960d8ce42e5a891f5c03168cd10e09ed0e044916460",
@@ -120,7 +120,7 @@
     {
       "name": "C7",
       "midi": 96,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "2605a187056591b667bee3dbbf897866a129580131a078adf2c2d353eb92e367",
@@ -129,7 +129,7 @@
     {
       "name": "Fs7",
       "midi": 102,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "e49825eeea4c27c3e48c6ab853052c7fcd9bf93e0e8cfd6bedbede2110fad4d5",
@@ -138,7 +138,7 @@
     {
       "name": "C8",
       "midi": 108,
-      "fade_samples": 2048,
+      "fade_samples": 4096,
       "samples": 15360,
       "peak": 17788,
       "source_sha256": "8ca97938dce5b76b8ea3c4a6147f3987c9dac7c755b5880a1688048af54d981e",

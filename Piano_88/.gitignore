@@ -2,8 +2,12 @@ impl/
 tmp/
 sim/work/
 sim/transcript
+sim/transcript_sd
+sim/transcript_music
+output/sd_music_test/
 sim/vsim.wlf
 sim/*.vcd
 sim/samples.txt
 *.gprj.user
 tools/__pycache__/
+tools/vendor/

@@ -113,6 +113,18 @@ PCM 专项测试覆盖全部 88 音，各播放 32000 个样本，
 本工程固定使用 50 MHz 系统时钟；改时钟时应同步调整音频 ROM、
 启动计数、消抖计数和时序约束。
 
+## TF / SD 卡读取扩展
+
+新增了兼容 1GB SDSC 卡和 SDHC 卡的 SPI 扇区读取模块，
+以及独立的 `sd_card/SD_Card_Probe.gprj` 上板测试工程。
+引脚、接口、错误码和测试方法见 [读卡说明](sd_card/README.md)。
+另有 `sd_card/SD_Music_Player.gprj`，从 FAT16/FAT32 卡根目录读取 `MUSIC.WAV`，
+经 CRC 校验、16 KiB 音频 FIFO 后送入 PT8211，支持暂停和重播。
+它使用独立码流，占用 9 块 BSRAM，原 88 音钢琴工程保持独立。
+准备音乐、复制到卡及下载方法见 [SD 音乐播放器说明](sd_card/MUSIC_PLAYER.md)。
+当前 `sd_card/music/MUSIC.WAV` 为约 3 分 23 秒的完整《克罗地亚狂想曲》
+钢琴 MIDI 采样演奏版，整曲从卡片流式读取，不占用钢琴采样 ROM。
+
 ## 验证结果（2026-10-12）
 
 - ModelSim 10.5b：三组测试全部通过，编译和仿真均无错误 / 告警。

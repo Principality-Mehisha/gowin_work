@@ -1,0 +1,11 @@
+{
+  "source": "C:\\Users\\30415\\Desktop\\gowin_work\\Croatian_Rhapsody_PCM\\output\\piano_preview.wav",
+  "file": "C:\\Users\\30415\\Desktop\\gowin_work\\Piano_88\\sd_card\\music\\MUSIC.WAV",
+  "format": "RIFF/WAVE PCM16 little endian mono",
+  "sample_rate_hz": 16276,
+  "frames": 230772,
+  "duration_seconds": 14.178667977390022,
+  "bytes": 461588,
+  "peak": 19836,
+  "sha256": "3cd16e98145281b6ba3fbbf849a2778656381d99caf49d0a07e22f23caefb2fb"
+}

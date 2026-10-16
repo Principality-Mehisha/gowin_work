@@ -1,0 +1,16 @@
+{
+  "title": "Croatian Rhapsody - complete piano MIDI arrangement",
+  "arranger": "Aemisiya",
+  "source_page": "https://musicalnexus.net/games/ms2/songs/maksim-mrvica-croatian-rhapsody-r1430",
+  "midi_download": "https://musicalnexus.net/songs/1430/download/midi",
+  "midi_sha256": "f2478d9054e6f560546cc2a92b5f29a751697ca8de556f0d8e4d08f836d13b25",
+  "render": "Recorded VSCO2/tonejs piano samples, offline pitch conversion and mixing",
+  "notes": 1860,
+  "midi_seconds": 201.2062500000038,
+  "duration_seconds": 203.2062546080118,
+  "sample_rate": 16276,
+  "frames": 3307385,
+  "peak": 27000,
+  "clipped_samples": 0,
+  "sha256": "35d10b623c24cf37d70457ac98959eaaebd07bd6b00c723252b93a14d2f92a0a"
+}

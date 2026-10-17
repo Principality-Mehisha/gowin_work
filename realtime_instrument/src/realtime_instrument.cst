@@ -1,0 +1,26 @@
+// Known Tang Mega 60K NEO Dock mappings reused from the existing projects.
+IO_LOC "sys_clk" V22;
+IO_PORT "sys_clk" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+IO_LOC "reset_n" Y12;
+IO_PORT "reset_n" IO_TYPE=LVCMOS15 PULL_MODE=UP BANK_VCCIO=1.5;
+
+IO_LOC "HP_BCK" Y17;
+IO_PORT "HP_BCK" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "HP_WS" AB17;
+IO_PORT "HP_WS" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "HP_DIN" AA16;
+IO_PORT "HP_DIN" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "PA_EN" AB16;
+IO_PORT "PA_EN" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+
+IO_LOC "tmds_data_p[0]" J14,H14;
+IO_PORT "tmds_data_p[0]" PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC "tmds_data_p[1]" J15,H15;
+IO_PORT "tmds_data_p[1]" PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC "tmds_data_p[2]" K17,J17;
+IO_PORT "tmds_data_p[2]" PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=3.3;
+IO_LOC "tmds_clk_p" G15,G16;
+IO_PORT "tmds_clk_p" PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=3.3;
+
+// TODO: assign board-specific pins for keypad_cols_n[3:0], keypad_rows_n[3:0],
+// uart_rx_i, uart_tx_o, mic_pcm_i[15:0], and mic_valid_i.

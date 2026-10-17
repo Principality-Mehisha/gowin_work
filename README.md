@@ -25,6 +25,7 @@
 | [`GoWin_FPGA60k_Music`](./GoWin_FPGA60k_Music) | `test` | 驱动 NEO Dock 板载 **PT8211 DAC**，由 FPGA 实时合成钢琴音色，双声道播放《国际歌》（G 大调，约 120 BPM），8 个 PMOD LED 显示乐曲段落 | 见工程内 [README](./GoWin_FPGA60k_Music/README.md) |
 | [`I2S_1`](./I2S_1) | `I2S_1` | 同一 PT8211 通道上的 **32 音等程律音阶发生器**（C3…G5），三个按键控制复位 / 升半音 / 播放停止，带 20 ms 消抖 | 见工程内 [README](./I2S_1/README.md) |
 | [`Piano_88`](./Piano_88) | `piano_88` | 真实钢琴 PCM 录音音区覆盖 A0…C8 共 88 音；上电静音，KEY1 每按一次切到下一音，KEY0 暂停 / 继续，KEY2 复位 | 见工程内 [README](./Piano_88/README.md) |
+| [`realtime_instrument`](./realtime_instrument) | `realtime_instrument` | 选题 2 基础框架：矩阵键盘 / UART / 麦克风 PCM 输入，4 声部实时合成，PT8211 音响与 HDMI 状态输出 | RTL 烟测通过；待补齐板级输入管脚 |
 
 ---
 

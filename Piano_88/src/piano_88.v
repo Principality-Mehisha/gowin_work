@@ -5,7 +5,11 @@ module piano_88 #(
     parameter integer DEBOUNCE_CYCLES    = 1_000_000,
     parameter integer AUDIO_START_CYCLES = 2_500_000,
     parameter integer POWER_ON_CYCLES    = 65_536,
-    parameter ROM_FILE = "src/piano_bank.hex"
+    parameter ROM_FILE = "src/piano_bank.hex",
+    parameter integer USE_SD = 1,
+    // Zero lets the FAT reader accept both super-floppy volumes and MBR
+    // partitions. Override this only when the card layout is known.
+    parameter [31:0] SD_VOLUME_START_LBA = 0
 ) (
     input  wire sys_clk,
     input  wire KEY0,
@@ -14,7 +18,12 @@ module piano_88 #(
     output wire HP_BCK,
     output wire HP_WS,
     output wire HP_DIN,
-    output wire PA_EN
+    output wire PA_EN,
+    output wire sd_cs_n,
+    output wire sd_sck,
+    output wire sd_mosi,
+    input wire sd_miso,
+    output wire [3:0] LEDs
 );
     GSR GSR_INST (.GSRI(1'b1));
 
@@ -79,14 +88,109 @@ module piano_88 #(
 
     wire sample_tick;
     wire signed [15:0] pcm;
-    piano_pcm_voice #(.ROM_FILE(ROM_FILE)) u_voice (
+    wire [17:0] sample_addr;
+    wire [7:0] sample_data;
+    wire bank_write_en;
+    wire [13:0] bank_write_addr;
+    wire [7:0] bank_write_data;
+    wire bank_ready;
+    wire [17:0] loaded_base;
+    wire sd_initialized;
+    wire sd_file_found;
+    wire sd_loading;
+    wire sd_error;
+    wire [3:0] sd_error_code;
+    wire [23:0] sd_debug_boot_bytes;
+    wire [23:0] sd_debug_failure;
+    wire [17:0] desired_base;
+    wire [31:0] desired_step;
+    piano_sample_map u_desired_map (
+        .note_index(note_select),
+        .sample_base(desired_base),
+        .sample_step(desired_step)
+    );
+    generate
+        if (USE_SD) begin : g_sd_bank
+            sd_piano_bank_reader #(
+                .VOLUME_START_LBA(SD_VOLUME_START_LBA)
+            ) u_bank (
+                .clk(sys_clk), .rst_n(rst_n),
+                .desired_base(desired_base),
+                .bank_ready(bank_ready), .loaded_base(loaded_base),
+                .bank_write_en(bank_write_en),
+                .bank_write_addr(bank_write_addr),
+                .bank_write_data(bank_write_data),
+                .loading(sd_loading), .sd_initialized(sd_initialized),
+                .file_found(sd_file_found), .error(sd_error),
+                .error_code(sd_error_code),
+                .debug_boot_bytes(sd_debug_boot_bytes),
+                .debug_failure(sd_debug_failure),
+                .sd_cs_n(sd_cs_n), .sd_sck(sd_sck), .sd_mosi(sd_mosi),
+                .sd_miso(sd_miso)
+            );
+        end else begin : g_rom_bank
+            assign bank_ready = 1'b1;
+            assign loaded_base = 18'd0;
+            assign bank_write_en = 1'b0;
+            assign bank_write_addr = 14'd0;
+            assign bank_write_data = 8'd0;
+            assign sd_initialized = 1'b0;
+            assign sd_file_found = 1'b0;
+            assign sd_loading = 1'b0;
+            assign sd_error = 1'b0;
+            assign sd_error_code = 4'd0;
+            assign sd_debug_boot_bytes = 24'd0;
+            assign sd_debug_failure = 24'd0;
+            assign sd_cs_n = 1'b1;
+            assign sd_sck = 1'b0;
+            assign sd_mosi = 1'b1;
+        end
+    endgenerate
+    reg [7:0] sample_bank [0:15359];
+    reg [7:0] sample_ram_data;
+    always @(posedge sys_clk) begin
+        if (bank_write_en)
+            sample_bank[bank_write_addr] <= bank_write_data;
+        sample_ram_data <= sample_bank[sample_addr[13:0]];
+    end
+    assign sample_data = sample_ram_data;
+
+    piano_pcm_voice #(
+        .ROM_FILE(ROM_FILE), .USE_EXTERNAL_RAM(USE_SD)
+    ) u_voice (
         .clk(sys_clk), .rst_n(rst_n), .sample_tick(sample_tick),
         .audio_ready(audio_ready), .note_select(note_select),
-        .play_enabled(play_enabled), .pcm(pcm)
+        .play_enabled(play_enabled), .sample_addr(sample_addr),
+        .sample_data(sample_data), .bank_ready(bank_ready), .pcm(pcm)
     );
     pt8211_tx #(.BCK_HALF_DIV(48), .AMP_START_CYCLES(AUDIO_START_CYCLES)) u_audio (
         .sys_clk(sys_clk), .sys_rst_n(rst_n),
         .pcm_left(pcm), .pcm_right(pcm), .sample_tick(sample_tick),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
+    // Native SD errors show the command, last R1 and state at failure.
+    // FAT errors retain the boot signature and first-byte diagnostic.
+    wire [23:0] debug_bytes = sd_error_code >= 1 && sd_error_code <= 10
+                           ? sd_debug_failure : sd_debug_boot_bytes;
+    reg [2:0] debug_page;
+    always @(posedge sys_clk or negedge rst_n) begin
+        if (!rst_n)
+            debug_page <= 0;
+        else if (sd_error && toggle_press)
+            debug_page <= debug_page == 6 ? 3'd0 : debug_page + 1'b1;
+    end
+    reg [3:0] debug_nibble;
+    always @* begin
+        case (debug_page)
+            1: debug_nibble = debug_bytes[3:0];
+            2: debug_nibble = debug_bytes[7:4];
+            3: debug_nibble = debug_bytes[11:8];
+            4: debug_nibble = debug_bytes[15:12];
+            5: debug_nibble = debug_bytes[19:16];
+            6: debug_nibble = debug_bytes[23:20];
+            default: debug_nibble = sd_error_code;
+        endcase
+    end
+    assign LEDs = sd_error ? ~debug_nibble
+                           : ~{sd_error, sd_loading, sd_file_found, sd_initialized};
 endmodule

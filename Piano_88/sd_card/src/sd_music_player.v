@@ -3,6 +3,9 @@ module sd_music_player #(
     parameter integer POWER_ON_CYCLES = 65_536,
     parameter integer SD_POWER_WAIT_CYCLES = 500_000,
     parameter integer SD_INIT_HALF_DIV = 63,
+    parameter integer SD_READ_HALF_DIV = 2,
+    parameter [87:0] FILE_NAME = "MUSIC   WAV",
+    parameter integer RAW_PCM = 0,
     parameter integer FIFO_ADDRESS_BITS = 13,
     parameter integer PREFILL_SAMPLES = 4096,
     parameter integer AMP_START_CYCLES = 2_500_000
@@ -61,20 +64,22 @@ module sd_music_player #(
     wire sd_valid;
     wire [3:0] sd_error_code;
     sd_spi_reader #(
-        .POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES), .INIT_HALF_DIV(SD_INIT_HALF_DIV)
+        .POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES), .INIT_HALF_DIV(SD_INIT_HALF_DIV),
+        .READ_HALF_DIV(SD_READ_HALF_DIV)
     ) u_sd (
         .clk(sys_clk), .rst_n(stream_rst_n),
         .read_start(sd_start), .read_lba(sd_lba), .read_ready(sd_ready), .busy(),
         .initialized(sd_initialized), .high_capacity(),
         .data(sd_data), .data_index(sd_index), .data_valid(sd_valid), .data_ready(1'b1),
         .read_done(sd_done), .error_pulse(sd_error), .error_code(sd_error_code),
+        .debug_failure(),
         .sd_cs_n(sd_cs_n), .sd_sck(sd_sck), .sd_mosi(sd_mosi), .sd_miso(sd_miso)
     );
     wire [7:0] file_data;
     wire file_valid, file_ready, file_found, file_done;
     wire [31:0] file_size;
     wire [3:0] fat_error;
-    fat_file_reader u_file (
+    fat_file_reader #(.FILE_NAME(FILE_NAME)) u_file (
         .clk(sys_clk), .rst_n(stream_rst_n), .sd_ready(sd_ready),
         .sd_start(sd_start), .sd_lba(sd_lba),
         .sd_data(sd_data), .sd_index(sd_index), .sd_valid(sd_valid),
@@ -86,6 +91,15 @@ module sd_music_player #(
     wire signed [15:0] decoded_pcm;
     wire decoded_valid, decoded_ready, format_ok, audio_end;
     wire [3:0] wav_error;
+    generate if (RAW_PCM) begin: raw_decoder
+    raw_pcm_reader u_raw (
+        .clk(sys_clk), .rst_n(stream_rst_n),
+        .data(file_data), .valid(file_valid), .ready(file_ready),
+        .file_found(file_found), .file_size(file_size), .file_done(file_done),
+        .pcm(decoded_pcm), .pcm_valid(decoded_valid), .pcm_ready(decoded_ready),
+        .format_ok(format_ok), .audio_end(audio_end), .error_code(wav_error)
+    );
+    end else begin: wav_decoder
     wav_pcm_reader u_wav (
         .clk(sys_clk), .rst_n(stream_rst_n),
         .data(file_data), .valid(file_valid), .ready(file_ready),
@@ -93,6 +107,7 @@ module sd_music_player #(
         .pcm(decoded_pcm), .pcm_valid(decoded_valid), .pcm_ready(decoded_ready),
         .format_ok(format_ok), .audio_end(audio_end), .error_code(wav_error)
     );
+    end endgenerate
 
     localparam integer FIFO_DEPTH = 1 << FIFO_ADDRESS_BITS;
     reg [15:0] fifo [0:FIFO_DEPTH-1];

@@ -4,7 +4,13 @@
 器件 `GW5AT-LV60PG484AC1/I0`，系统时钟 50 MHz。
 当前提供只读的 512 字节扇区接口、独立的上板测试工程，
 以及 [SD 音乐播放器](MUSIC_PLAYER.md)。
-不会写入、格式化或修改卡片。原 `Piano_88.gprj` 的钢琴播放逻辑保持原样。
+不会写入、格式化或修改卡片。主钢琴工程也可从卡根目录读取 `PIANO.BIN`。
+
+《克罗地亚狂想曲》乐谱演奏使用 `../Piano_Score.gprj`，
+见 [乐谱演奏说明](../SCORE_PLAYER.md)。配套文件为 `score/PIANO.BIN`，
+保存音符、力度与时间，由原有钢琴音色生成声音。
+旧 `piano_music/PIANO.BIN` 是整曲 PCM，`music/PIANO.BIN` 是音色采样库，
+不能当作乐谱使用。
 
 ## 已核对的引脚
 

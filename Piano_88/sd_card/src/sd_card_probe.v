@@ -35,6 +35,7 @@ module sd_card_probe (
         .data(), .data_index(),
         .data_valid(), .data_ready(1'b1),
         .read_done(read_done), .error_pulse(), .error_code(error_code),
+        .debug_failure(),
         .sd_cs_n(sd_cs_n), .sd_sck(sd_sck),
         .sd_mosi(sd_mosi), .sd_miso(sd_miso)
     );
@@ -54,6 +55,9 @@ module sd_card_probe (
                 complete <= 1;
         end
     end
-    // Only the first four Dock LED pins are available with default CPU options.
-    assign LEDs = ~{(error_code != 0), complete, high_capacity, initialized};
+    // On failure, show the SD controller error code directly:
+    // LED0..LED3 correspond to error bits 0..3 and are active low.
+    assign LEDs = (error_code != 0)
+                ? ~error_code
+                : ~{1'b0, complete, high_capacity, initialized};
 endmodule

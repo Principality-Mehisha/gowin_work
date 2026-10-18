@@ -1,0 +1,39 @@
+# do run_sd_bin_led_test.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 16:31:35 on Oct 18,2026
+# vlog -work work_bin_led ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../sd_card/src/sd_bin_led_test.v sd_card_model.v tb_sd_bin_led_test.v 
+# -- Compiling module sd_spi_byte
+# -- Compiling module sd_spi_reader
+# -- Compiling module fat_file_reader
+# -- Compiling module sd_bin_led_test
+# -- Compiling module sd_card_model
+# -- Compiling module GSR
+# -- Compiling module sd_bin_led_case
+# -- Compiling module tb_sd_bin_led_test
+# 
+# Top level modules:
+# 	tb_sd_bin_led_test
+# End time: 16:31:35 on Oct 18,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim work_bin_led.tb_sd_bin_led_test 
+# Start time: 16:31:35 on Oct 18,2026
+# Loading work_bin_led.tb_sd_bin_led_test
+# Loading work_bin_led.sd_bin_led_case
+# Loading work_bin_led.sd_bin_led_test
+# Loading work_bin_led.GSR
+# Loading work_bin_led.sd_spi_reader
+# Loading work_bin_led.sd_spi_byte
+# Loading work_bin_led.fat_file_reader
+# Loading work_bin_led.sd_card_model
+# PASS: BIN/LED FAT32=0 failure=4
+# PASS: BIN/LED FAT32=0 failure=2
+# PASS: BIN/LED FAT32=0 failure=1
+# PASS: BIN/LED FAT32=0 failure=3
+# PASS: BIN/LED FAT32=0 failure=0
+# PASS: BIN/LED FAT32=1 failure=0
+# ** Note: $finish    : tb_sd_bin_led_test.v(95)
+#    Time: 7251230 ns  Iteration: 3  Instance: /tb_sd_bin_led_test
+# Break in Module tb_sd_bin_led_test at tb_sd_bin_led_test.v line 95
+# Stopped at tb_sd_bin_led_test.v line 95
+# End time: 16:31:38 on Oct 18,2026, Elapsed time: 0:00:03
+# Errors: 0, Warnings: 0

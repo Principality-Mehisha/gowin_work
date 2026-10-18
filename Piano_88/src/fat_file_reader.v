@@ -1,7 +1,9 @@
 // Read one root-directory 8.3 file from a FAT16/FAT32 volume.
 // A sector is exposed only after the SD host has validated its CRC.
 module fat_file_reader #(
-    parameter [87:0] FILE_NAME = "MUSIC   WAV"
+    parameter [87:0] FILE_NAME = "MUSIC   WAV",
+    // Zero selects automatic MBR/superfloppy discovery.
+    parameter [31:0] VOLUME_START_LBA = 0
 ) (
     input wire clk,
     input wire rst_n,
@@ -46,6 +48,8 @@ module fat_file_reader #(
     reg [7:0] jump_byte, sectors_per_cluster, fat_count;
     reg [15:0] sector_size, reserved_sectors, root_entries;
     reg [15:0] total16, fat16_size, signature, flags32, version32;
+    reg [15:0] received_signature;
+    reg [9:0] received_bytes;
     reg [31:0] total32, fat32_size, root_cluster;
     reg [7:0] partition_type [0:3];
     reg [31:0] partition_lba [0:3];
@@ -147,6 +151,8 @@ module fat_file_reader #(
             total16 <= 0;
             fat16_size <= 0;
             signature <= 0;
+            received_signature <= 0;
+            received_bytes <= 0;
             flags32 <= 0;
             version32 <= 0;
             total32 <= 0;
@@ -157,8 +163,8 @@ module fat_file_reader #(
                 partition_lba[p] <= 0;
             end
             partition_index <= 0;
-            partition_loaded <= 0;
-            volume_base <= 0;
+            partition_loaded <= VOLUME_START_LBA != 0;
+            volume_base <= VOLUME_START_LBA;
             fat_base <= 0;
             root_base <= 0;
             data_base <= 0;
@@ -199,13 +205,23 @@ module fat_file_reader #(
         end else begin
             sd_start <= 0;
             file_done <= 0;
+            if (sd_valid) begin
+                if (received_bytes < 10'd513)
+                    received_bytes <= received_bytes + 1'b1;
+                if (sd_index == 510)
+                    received_signature[7:0] <= sd_data;
+                if (sd_index == 511)
+                    received_signature[15:8] <= sd_data;
+            end
             if (sd_error) begin
                 fail(1);
             end else begin
                 case (state)
-                    START: if (sd_ready) fetch(0, BOOT_BEGIN);
+                    START: if (sd_ready) fetch(VOLUME_START_LBA, BOOT_BEGIN);
                     REQUEST: if (sd_ready) begin
                         sd_start <= 1;
+                        received_signature <= 0;
+                        received_bytes <= 0;
                         state <= WAIT_SECTOR;
                     end
                     WAIT_SECTOR: if (sd_done) state <= sector_return;
@@ -256,8 +272,13 @@ module fat_file_reader #(
                         end
                     end
                     BOOT_CHECK: begin
-                        if (signature != 16'haa55)
-                            fail(2);
+                        if (received_bytes != 512)
+                            fail(14);
+                        else if (signature != received_signature)
+                            // Separate RAM/readback errors from card contents.
+                            fail(13);
+                        else if (signature != 16'haa55)
+                            fail(partition_loaded ? 4'd12 : 4'd10);
                         else if ((jump_byte == 8'heb || jump_byte == 8'he9)
                                  && sector_size == 512)
                             state <= GEOMETRY;
@@ -265,7 +286,9 @@ module fat_file_reader #(
                             partition_index <= 0;
                             state <= PARTITION;
                         end else
-                            fail(2);
+                            // A selected partition did not contain a valid
+                            // FAT boot sector.
+                            fail(12);
                     end
                     PARTITION: begin
                         if (supported_partition(partition_type[partition_index])
@@ -274,7 +297,9 @@ module fat_file_reader #(
                             partition_loaded <= 1;
                             fetch(partition_lba[partition_index], BOOT_BEGIN);
                         end else if (partition_index == 3)
-                            fail(2);
+                            // The MBR is valid, but no FAT16/FAT32 primary
+                            // partition was found.
+                            fail(11);
                         else
                             partition_index <= partition_index + 1'b1;
                     end
@@ -309,20 +334,24 @@ module fat_file_reader #(
                         if (sectors_per_cluster == 0 || sectors_per_cluster > 128
                             || (sectors_per_cluster & (sectors_per_cluster - 1'b1)) != 0
                             || reserved_sectors == 0 || fat_length == 0
-                            || (fat_count != 1 && fat_count != 2)
-                            || checked_volume_end[32] || layout_data_offset >= {1'b0, checked_total}
+                            || (fat_count != 1 && fat_count != 2)) begin
+                            fail(6);
+                        end else if (checked_volume_end[32]
+                            || layout_data_offset >= {1'b0, checked_total}
                             || calculated_clusters < 4085
-                            || calculated_clusters >= 32'h0ffffff5
-                            || (calculated_clusters < 65525
-                                && (fat16_size == 0 || root_entries == 0
-                                    || calculated_clusters + 2 > (checked_fat_length << 8)))
-                            || (calculated_clusters >= 65525
-                                && (fat16_size != 0 || root_entries != 0
-                                    || version32 != 0
-                                    || root_cluster < 2 || root_cluster >= calculated_clusters + 2
-                                    || calculated_clusters + 2 > (checked_fat_length << 7)
-                                    || (flags32[7] && flags32[3:0] >= fat_count)))) begin
-                            fail(3);
+                            || calculated_clusters >= 32'h0ffffff5) begin
+                            fail(7);
+                        end else if (calculated_clusters < 65525
+                            && (fat16_size == 0 || root_entries == 0
+                                || calculated_clusters + 2 > (checked_fat_length << 8))) begin
+                            fail(8);
+                        end else if (calculated_clusters >= 65525
+                            && (fat16_size != 0 || root_entries != 0
+                                || version32 != 0
+                                || root_cluster < 2 || root_cluster >= calculated_clusters + 2
+                                || calculated_clusters > (checked_fat_length << 7)
+                                || (flags32[7] && flags32[3:0] >= fat_count))) begin
+                            fail(9);
                         end else begin
                             mounted <= 1;
                             is_fat32 <= calculated_clusters >= 65525;

@@ -4,6 +4,11 @@
 器件 `GW5AT-LV60PG484AC1/I0`（GW5AT-60B）。
 使用底板 PT8211 DAC 和功放输出，左右声道播放相同音调。
 
+从 SD 卡乐谱自动演奏《克罗地亚狂想曲》请使用
+[`Piano_Score.gprj`](Piano_Score.gprj)，详见 [乐谱演奏说明](SCORE_PLAYER.md)。
+配套 `sd_card/score/PIANO.BIN` 保存音符事件，由本工程现有钢琴音色演奏，
+支持和弦；它与采样库、整曲 PCM BIN 的格式不同。
+
 ## 操作
 
 上电或复位后保持静音，不会自动跳音。
@@ -24,7 +29,8 @@
 第 89 次回到 A0。全部音名和频率见 [NOTES.md](NOTES.md)。
 
 参照 `Croatian_Rhapsody_PCM` 的架构，电脑端预处理钢琴录音，
-FPGA 从外置 HEX 初始化的片上 ROM 读取 8-bit μ-law 数据，
+电脑端同时生成 `sd_card/music/PIANO.BIN`，FPGA 从 SD 卡按音区读取
+8-bit μ-law 数据并缓存当前音区，
 解码为 16-bit PCM 后发送给 PT8211。
 使用 15 个真实钢琴录音音区覆盖 88 音，不再使用正弦谐波振荡器。
 每次切换从录音的击弦起音开始播放一遍，约 0.79–1.12 秒后结束，
@@ -37,6 +43,25 @@ KEY0 关闭后再开启会从头重播当前音。
 
 电脑端可试听 `output/piano_88_preview.wav`（88 音顺序预览），
 或 `output/piano_A4_rtl.wav`（由实际 RTL 仿真输出导出的 A4）。
+将 `sd_card/music/PIANO.BIN` 复制到 FAT16/FAT32 卡根目录后，
+下载本工程的 `impl/pnr/Piano_88.fs` 即可使用 SD 采样播放。
+可用 `tools/copy_piano_bank_to_sd.ps1 -DriveLetter H` 复制并校验文件。
+换音区时 FPGA 会短暂静音并重新从文件头读取、跳过前面的音区。
+
+顶层默认 `SD_VOLUME_START_LBA=0`，自动兼容无分区（super-floppy）卷和
+MBR 主分区；只有在明确知道卡的卷起始扇区时才需要覆盖这个参数。
+SD 读时钟暂降至约 397 kHz（50 MHz / 126），实卡播放仍待验证。
+CMD0/CMD8 使用规范要求的固定 CRC；其余命令不强制打开 SPI 命令 CRC，
+以兼容不接受 CMD59 的存储卡。
+报错后每次按下并松开 KEY0，依次显示首次读取的字节 510 低/高半字节、
+字节 511 低/高半字节、字节 0 低/高半字节；第七次回到错误码。
+LED0..3 分别表示半字节的 bit0..3，亮灯为 1；全灭表示 0。
+正常签名的前四页应为 `5,5,A,A`，即 LED0+LED2、LED0+LED2、
+LED1+LED3、LED1+LED3。KEY2 复位到错误码页面。
+原生 SD 错误码 1..10 时，这六页改为故障前的命令编号低/高半字节、
+最后一次 R1 返回值低/高半字节、控制器状态编号低/高半字节。
+这些值在故障时锁存，恢复 SPI 空闲时不会覆盖；R1 是最后一次完整
+接收到的响应，超时所在命令尚未响应时可能属于上一条命令。
 
 ## 接线与时序
 
@@ -49,6 +74,7 @@ KEY0 关闭后再开启会从头重播当前音。
 | HP_WS | AB17 | 0 为右声道，1 为左声道 |
 | HP_DIN | AA16 | 16 位有符号 PCM，MSB 先发 |
 | PA_EN | AB16 | 低电平使能功放 |
+| sd_miso / sd_sck / sd_cs_n / sd_mosi | AA15 / V15 / W15 / Y16 | SD 卡 SPI |
 
 连接底板音频输出到耳机或音箱即可，不需要外接蜂鸣器。
 PT8211 使用 16 位 LSBJ / 右对齐格式，DIN、WS 在 BCK 下降沿更新。
@@ -81,8 +107,9 @@ Gowin EDA 打开 `Piano_88.gprj`，顶层为 `piano_88`，
 
 构建脚本按自身路径定位工程，移动目录后不必修改绝对路径。
 生成码流：`impl/pnr/Piano_88.fs`，使用 Gowin Programmer 下载。
-源码及 `.gprj` 已包含生成的采样 ROM 和音区映射表，
-不必联网或运行生成器即可构建。
+源码及 `.gprj` 包含 SD 读取链路和音区映射表；
+采样数据由 `tools/generate_pcm_bank.py` 生成后复制到卡片，
+不再需要把 230400 字节采样库放入 FPGA 配置 ROM。
 
 ## 仿真
 

@@ -15,13 +15,17 @@ module tb_sd_spi_reader;
     wire [8:0] data_index;
     wire data_valid, done, error_pulse;
     wire [3:0] error_code;
+    wire [23:0] debug_failure;
     wire cs_n, sck, mosi, miso;
     wire [31:0] last_argument, read_commands;
     wire cmd16_seen;
+    reg corrupt_command_address = 0;
+    wire card_mosi = mosi ^ (corrupt_command_address
+                          && dut.command == 17 && dut.command_index == 2);
     sd_spi_reader #(
         .POWER_WAIT_CYCLES(16), .INIT_HALF_DIV(3), .READ_HALF_DIV(2),
         .INIT_TIMEOUT_CYCLES(100000), .READ_TIMEOUT_CYCLES(1000),
-        .RESPONSE_BYTES(16), .BUSY_BYTES(8)
+        .RESPONSE_BYTES(16), .BUSY_BYTES(8), .ENABLE_COMMAND_CRC(1)
     ) dut (
         .clk(clk), .rst_n(rst_n), .read_start(read_start), .read_lba(read_lba),
         .read_ready(ready), .busy(busy), .initialized(initialized),
@@ -29,10 +33,11 @@ module tb_sd_spi_reader;
         .data(data), .data_index(data_index), .data_valid(data_valid),
         .data_ready(data_ready), .read_done(done),
         .error_pulse(error_pulse), .error_code(error_code),
+        .debug_failure(debug_failure),
         .sd_cs_n(cs_n), .sd_sck(sck), .sd_mosi(mosi), .sd_miso(miso)
     );
     sd_card_model card (
-        .rst_n(rst_n), .cs_n(cs_n), .sck(sck), .mosi(mosi), .miso(miso),
+        .rst_n(rst_n), .cs_n(cs_n), .sck(sck), .mosi(card_mosi), .miso(miso),
         .profile(profile), .fault(fault),
         .last_argument(last_argument), .read_commands(read_commands),
         .cmd16_seen(cmd16_seen)
@@ -127,6 +132,8 @@ module tb_sd_spi_reader;
                 || cmd16_seen !== (new_profile != 2))
                 $fatal(1, "Initialization failed for profile %0d code=%0d",
                        new_profile, error_code);
+            if (!card.command_crc_enabled)
+                $fatal(1, "Initialization completed without enabling command CRC");
         end
     endtask
 
@@ -170,6 +177,7 @@ module tb_sd_spi_reader;
     task init_error;
         input [3:0] new_fault;
         input [3:0] expected_error;
+        reg [23:0] captured_failure;
         begin
             reset_card(2, new_fault);
             wait (error_pulse);
@@ -177,8 +185,21 @@ module tb_sd_spi_reader;
             if (error_code !== expected_error || initialized)
                 $fatal(1, "Wrong init error fault=%0d got=%0d expected=%0d",
                        new_fault, error_code, expected_error);
+            captured_failure = debug_failure;
+            if (new_fault == 6 && captured_failure[7:0] !== 8'd8)
+                $fatal(1, "CMD8 failure command was not captured");
+            if (new_fault == 7 && captured_failure[7:0] !== 8'd58)
+                $fatal(1, "CMD58 failure command was not captured");
+            if (new_fault == 11 && captured_failure[7:0] !== 8'd59)
+                $fatal(1, "CMD59 rejection command was not captured");
+            if (new_fault == 8 && (captured_failure[15:8] !== 8'd1
+                || (captured_failure[7:0] !== 8'd41
+                    && captured_failure[7:0] !== 8'd55)))
+                $fatal(1, "Initialization timeout lost polling command/R1");
             wait (!busy);
             repeat (20) @(negedge clk);
+            if (debug_failure !== captured_failure)
+                $fatal(1, "Failure diagnostics changed during recovery");
             if (ready || !cs_n || sck || data_valid)
                 $fatal(1, "Failed initialization did not stop safely");
         end
@@ -190,10 +211,13 @@ module tb_sd_spi_reader;
         for (kind = 0; kind < 3; kind = kind + 1) begin
             initialize(kind);
             read_sector(0, 0, 512);
+            read_sector(32'd32, 0, 512);
+            if (last_argument !== ((kind == 2) ? 32'd32 : 32'h00004000))
+                $fatal(1, "LBA32 command address differs for profile %0d", kind);
             read_sector(32'd2049, 0, 512);
             if (last_argument !== ((kind == 2) ? 32'd2049 : 32'd1049088))
                 $fatal(1, "SDSC/SDHC address translation incorrect");
-            $display("PASS: card profile %0d, CMD8/CMD16, retries, two sectors and backpressure", kind);
+            $display("PASS: card profile %0d, CMD8/CMD16, LBA0/32/2049 and backpressure", kind);
         end
 
         // Address conversion must never silently truncate.
@@ -228,7 +252,17 @@ module tb_sd_spi_reader;
         init_error(8, 1);
         init_error(9, 2);
         init_error(10, 3);
+        init_error(11, 4);
         $display("PASS: bad CMD8/OCR, initialization timeout, stuck bus and absent card");
+
+        initialize(2);
+        corrupt_command_address = 1;
+        read_sector(32, 4, 0);
+        if (debug_failure[15:0] !== 16'h0811)
+            $fatal(1, "Corrupted CMD17 address did not report command CRC rejection");
+        corrupt_command_address = 0;
+        read_sector(32, 0, 512);
+        $display("PASS: wire-corrupted CMD17 address rejected by CRC7, then retry succeeds");
 
         // Reset aborts an incomplete sector; no stale valid/data_done survives.
         initialize(0);

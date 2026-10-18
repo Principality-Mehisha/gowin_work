@@ -1,0 +1,2 @@
+`define SCORE_EVENTS 3721
+`define SCORE_BYTES 29784

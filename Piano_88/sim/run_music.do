@@ -1,6 +1,6 @@
 onerror {quit -code 1 -f}
 if {![file isdirectory work]} {vlib work}
-vlog ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/wav_pcm_reader.v ../src/button_debounce.v ../src/pt8211_tx.v ../sd_card/src/sd_music_player.v sd_card_model.v tb_sd_music.v tb_wav_pcm_reader.v tb_fat_full_music.v
+vlog ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/wav_pcm_reader.v ../src/raw_pcm_reader.v ../src/button_debounce.v ../src/pt8211_tx.v ../sd_card/src/sd_music_player.v sd_card_model.v tb_sd_music.v tb_wav_pcm_reader.v tb_fat_full_music.v
 vsim work.tb_sd_music
 onfinish stop
 run -all

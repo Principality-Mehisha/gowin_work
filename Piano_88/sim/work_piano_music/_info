@@ -1,0 +1,326 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/30415/Desktop/gowin_work/Piano_88/sim
+vbutton_debounce
+Z1 !s110 1792314079
+!i10b 1
+!s100 @5gU`Me4d@@L<0K1?N;:63
+IGmB>]IiZ1?8k66:ogJZEW3
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1791807056
+8../src/button_debounce.v
+F../src/button_debounce.v
+L0 2
+Z3 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z4 !s108 1792314079.000000
+Z5 !s107 ../output/piano_music_test/params.vh|tb_piano_bin_full.v|tb_raw_pcm_reader.v|tb_sd_piano_music.v|tb_sd_music.v|sd_card_model.v|../sd_card/src/sd_music_player.v|../src/pt8211_tx.v|../src/button_debounce.v|../src/wav_pcm_reader.v|../src/raw_pcm_reader.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|
+Z6 !s90 -work|work_piano_music|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/raw_pcm_reader.v|../src/wav_pcm_reader.v|../src/button_debounce.v|../src/pt8211_tx.v|../sd_card/src/sd_music_player.v|sd_card_model.v|tb_sd_music.v|tb_sd_piano_music.v|tb_raw_pcm_reader.v|tb_piano_bin_full.v|
+!i113 1
+Z7 o-work work_piano_music
+Z8 tCvgOpt 0
+vfat_file_reader
+R1
+!i10b 1
+!s100 EO<mdBPbGH5FS_6@1N[3D0
+IW6Y;k[g58Vbol6D4T4@660
+R2
+R0
+w1792248854
+8../src/fat_file_reader.v
+F../src/fat_file_reader.v
+L0 3
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vGSR
+R1
+!i10b 1
+!s100 4eWhcbja4OaXk3R2_7kFG0
+IT7kMjfH2K`A=:3^MM1z;42
+R2
+R0
+Z9 w1792314056
+Z10 8tb_sd_music.v
+Z11 Ftb_sd_music.v
+L0 2
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+n@g@s@r
+vpt8211_tx
+R1
+!i10b 1
+!s100 3eM:m<[oeXHj]U_Ji81e60
+IHW[E[MVgS=[HiW>;9WhD02
+R2
+R0
+w1791808956
+8../src/pt8211_tx.v
+F../src/pt8211_tx.v
+L0 5
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vraw_pcm_reader
+R1
+!i10b 1
+!s100 dg>^a5Ec]MMzJZ?hlL^mb3
+Iz36XI2bW?9SA2iS7oWHjV3
+R2
+R0
+Z12 w1792313306
+8../src/raw_pcm_reader.v
+F../src/raw_pcm_reader.v
+L0 2
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vsd_card_model
+R1
+!i10b 1
+!s100 oHEkCdga=cLkC0eNCO^X80
+Ig:mhFVHEB9l1gF?7mP2oz0
+R2
+R0
+w1792251784
+8sd_card_model.v
+Fsd_card_model.v
+L0 4
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vsd_music_case
+R1
+!i10b 1
+!s100 WE6]@Z]aUG14omHmoiPVB2
+IHUakn3AX7LzA2Ji3jCOS:0
+R2
+R0
+R9
+R10
+R11
+L0 5
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vsd_music_player
+R1
+!i10b 1
+!s100 c[VGbHgE8mZfW^<jh_mfO2
+IfZo=BQP1EJc3e71?DT28l1
+R2
+R0
+R12
+8../sd_card/src/sd_music_player.v
+F../sd_card/src/sd_music_player.v
+L0 1
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vsd_spi_byte
+R1
+!i10b 1
+!s100 d^zGgTclPm?S5^nFMVT?Z2
+I7`A?QiDQzgiMONm<Naa2^0
+R2
+R0
+w1792160308
+8../src/sd_spi_byte.v
+F../src/sd_spi_byte.v
+L0 2
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vsd_spi_reader
+R1
+!i10b 1
+!s100 B:MSOMLC]a9ZWQBkIMLV<2
+I[jz6A?>:7Wmcj=^AnSoN^3
+R2
+R0
+w1792251737
+8../src/sd_spi_reader.v
+F../src/sd_spi_reader.v
+L0 4
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vtb_piano_bin_full
+R1
+!i10b 1
+!s100 GAGnI;3C?a4h>@:C2`_eB0
+Ic?a`dhW5=XoN2HaeHHm>D3
+R2
+R0
+Z13 w1792313408
+8tb_piano_bin_full.v
+Ftb_piano_bin_full.v
+L0 3
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vtb_raw_pcm_reader
+R1
+!i10b 1
+!s100 =GWkfaf>2:CkMeSjAn97R3
+IU<^k:khO]]8UiRJ4kKb5e0
+R2
+R0
+R13
+8tb_raw_pcm_reader.v
+Ftb_raw_pcm_reader.v
+L0 2
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vtb_sd_music
+R1
+!i10b 1
+!s100 ZPPK_c1@C]O0aDEo`Q6^>3
+I?CKgGDAE=e@0Fl9]>^KX?2
+R2
+R0
+R9
+R10
+R11
+L0 154
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vtb_sd_piano_music
+R1
+!i10b 1
+!s100 lM73bm42Hc>U]zBLn3MII3
+IH3^3WJS80CKCKKLoCHO181
+R2
+R0
+w1792314057
+8tb_sd_piano_music.v
+Ftb_sd_piano_music.v
+L0 2
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8
+vwav_pcm_reader
+R1
+!i10b 1
+!s100 >W9iR53FQCmLXnC;ei^Zc1
+ILlI33UhT@nf?WTgFGbTaL0
+R2
+R0
+w1792162720
+8../src/wav_pcm_reader.v
+F../src/wav_pcm_reader.v
+L0 3
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8

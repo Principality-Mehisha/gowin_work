@@ -1,0 +1,13 @@
+{
+  "title": "Croatian Rhapsody - Aemisiya piano MIDI arrangement",
+  "format": "P88S v1, timestamped note on/off and velocity; no audio samples",
+  "source_page": "https://musicalnexus.net/games/ms2/songs/maksim-mrvica-croatian-rhapsody-r1430",
+  "midi_sha256": "f2478d9054e6f560546cc2a92b5f29a751697ca8de556f0d8e4d08f836d13b25",
+  "notes": 1860,
+  "events": 3721,
+  "voices": 8,
+  "peak_polyphony": 6,
+  "duration_ms": 202706,
+  "bytes": 29784,
+  "sha256": "81f10ba6dcd06f2af75f02d276c1f1e057ded1bfc5c80793e9b7790e93a0f663"
+}

@@ -1,0 +1,101 @@
+# do run_piano_music.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 17:01:19 on Oct 18,2026
+# vlog -work work_piano_music ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/raw_pcm_reader.v ../src/wav_pcm_reader.v ../src/button_debounce.v ../src/pt8211_tx.v ../sd_card/src/sd_music_player.v sd_card_model.v tb_sd_music.v tb_sd_piano_music.v tb_raw_pcm_reader.v tb_piano_bin_full.v 
+# -- Compiling module sd_spi_byte
+# -- Compiling module sd_spi_reader
+# -- Compiling module fat_file_reader
+# -- Compiling module raw_pcm_reader
+# -- Compiling module wav_pcm_reader
+# -- Compiling module button_debounce
+# -- Compiling module pt8211_tx
+# -- Compiling module sd_music_player
+# -- Compiling module sd_card_model
+# -- Compiling module GSR
+# -- Compiling module sd_music_case
+# -- Compiling module tb_sd_music
+# -- Compiling module tb_sd_piano_music
+# -- Compiling module tb_raw_pcm_reader
+# -- Compiling module tb_piano_bin_full
+# 
+# Top level modules:
+# 	tb_sd_music
+# 	tb_sd_piano_music
+# 	tb_raw_pcm_reader
+# 	tb_piano_bin_full
+# End time: 17:01:19 on Oct 18,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim work_piano_music.tb_raw_pcm_reader 
+# Start time: 17:01:19 on Oct 18,2026
+# Loading work_piano_music.tb_raw_pcm_reader
+# Loading work_piano_music.raw_pcm_reader
+# PASS: discovery, final-sample stall, signed PCM, odd/empty lengths, truncated EOF
+# ** Note: $finish    : tb_raw_pcm_reader.v(59)
+#    Time: 1640 ns  Iteration: 1  Instance: /tb_raw_pcm_reader
+# Break in Module tb_raw_pcm_reader at tb_raw_pcm_reader.v line 59
+# Stopped at tb_raw_pcm_reader.v line 59
+# End time: 17:01:19 on Oct 18,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim work_piano_music.tb_sd_piano_music 
+# Start time: 17:01:19 on Oct 18,2026
+# Loading work_piano_music.tb_sd_piano_music
+# Loading work_piano_music.sd_music_case
+# Loading work_piano_music.sd_music_player
+# Loading work_piano_music.GSR
+# Loading work_piano_music.button_debounce
+# Loading work_piano_music.sd_spi_reader
+# Loading work_piano_music.sd_spi_byte
+# Loading work_piano_music.fat_file_reader
+# Loading work_piano_music.pt8211_tx
+# Loading work_piano_music.sd_card_model
+# Loading work_piano_music.raw_pcm_reader
+# PASS: filesystem error 4 reported and silenced
+# PASS: filesystem error 5 reported and silenced
+# PASS: fragmented profile 0, RAW=1, divider=2, 1025 exact stereo frames and EOF
+# PASS: fragmented profile 2, RAW=1, divider=2, 1025 exact stereo frames and EOF
+# PASS: KEY0 pause/resume and KEY1 full replay
+# PASS: bad-CRC filesystem sector rejected before audio
+# PASS: fragmented profile 2, RAW=1, divider=63, 4097 exact stereo frames and EOF
+# ** Note: $finish    : tb_sd_piano_music.v(33)
+#    Time: 305727550 ns  Iteration: 3  Instance: /tb_sd_piano_music
+# Break in Module tb_sd_piano_music at tb_sd_piano_music.v line 33
+# Stopped at tb_sd_piano_music.v line 33
+# End time: 17:02:15 on Oct 18,2026, Elapsed time: 0:00:56
+# Errors: 0, Warnings: 0
+# vsim work_piano_music.tb_piano_bin_full 
+# Start time: 17:02:16 on Oct 18,2026
+# Loading work_piano_music.tb_piano_bin_full
+# Loading work_piano_music.fat_file_reader
+# Loading work_piano_music.raw_pcm_reader
+# PASS: complete PIANO.BIN, 3307385 exact PCM samples through fragmented FAT32, 14537 sectors
+# ** Note: $finish    : tb_piano_bin_full.v(77)
+#    Time: 681269610 ns  Iteration: 1  Instance: /tb_piano_bin_full
+# Break in Module tb_piano_bin_full at tb_piano_bin_full.v line 77
+# Stopped at tb_piano_bin_full.v line 77
+# End time: 17:03:06 on Oct 18,2026, Elapsed time: 0:00:50
+# Errors: 0, Warnings: 0
+# vsim work_piano_music.tb_sd_music 
+# Start time: 17:03:06 on Oct 18,2026
+# Loading work_piano_music.tb_sd_music
+# Loading work_piano_music.sd_music_case
+# Loading work_piano_music.sd_music_player
+# Loading work_piano_music.GSR
+# Loading work_piano_music.button_debounce
+# Loading work_piano_music.sd_spi_reader
+# Loading work_piano_music.sd_spi_byte
+# Loading work_piano_music.fat_file_reader
+# Loading work_piano_music.pt8211_tx
+# Loading work_piano_music.sd_card_model
+# Loading work_piano_music.wav_pcm_reader
+# PASS: filesystem error 4 reported and silenced
+# PASS: filesystem error 5 reported and silenced
+# PASS: fragmented profile 0, RAW=0, divider=2, 1025 exact stereo frames and EOF
+# PASS: fragmented profile 2, RAW=0, divider=2, 1025 exact stereo frames and EOF
+# PASS: KEY0 pause/resume and KEY1 full replay
+# PASS: bad-CRC filesystem sector rejected before audio
+# ** Note: $finish    : tb_sd_music.v(170)
+#    Time: 131115070 ns  Iteration: 3  Instance: /tb_sd_music
+# Break in Module tb_sd_music at tb_sd_music.v line 170
+# Stopped at tb_sd_music.v line 170
+# End time: 17:03:28 on Oct 18,2026, Elapsed time: 0:00:22
+# Errors: 0, Warnings: 0

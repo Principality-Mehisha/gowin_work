@@ -8,7 +8,8 @@ module sd_spi_reader #(
     parameter integer INIT_TIMEOUT_CYCLES = 100_000_000,
     parameter integer READ_TIMEOUT_CYCLES = 12_500_000,
     parameter integer RESPONSE_BYTES = 16,
-    parameter integer BUSY_BYTES = 1024
+    parameter integer BUSY_BYTES = 1024,
+    parameter integer ENABLE_COMMAND_CRC = 0
 ) (
     input  wire clk,
     input  wire rst_n,
@@ -25,6 +26,7 @@ module sd_spi_reader #(
     output reg  read_done,
     output reg  error_pulse,
     output reg  [3:0] error_code,
+    output reg  [23:0] debug_failure,
     output reg  sd_cs_n,
     output wire sd_sck,
     output wire sd_mosi,
@@ -45,7 +47,8 @@ module sd_spi_reader #(
         COMMAND_READY = 23, COMMAND_SENT = 24,
         COMMAND_RESPONSE = 25, COMMAND_EXTRA = 26,
         BYTE_START = 27, BYTE_WAIT = 28,
-        ERROR_RECOVER = 29, ERROR_DONE = 30, FAILED = 31;
+        ERROR_RECOVER = 29, ERROR_DONE = 30, FAILED = 31,
+        INIT_CRC = 32, CMD59_RESULT = 33;
     localparam [3:0]
         ERR_INIT_TIMEOUT = 1, ERR_CARD_BUSY = 2,
         ERR_RESPONSE_TIMEOUT = 3, ERR_R1 = 4,
@@ -101,6 +104,23 @@ module sd_spi_reader #(
         end
     endfunction
 
+    function [7:0] crc7_command;
+        input [39:0] message;
+        reg [6:0] work;
+        reg feedback;
+        integer bit_number;
+        begin
+            work = 0;
+            for (bit_number = 39; bit_number >= 0; bit_number = bit_number - 1) begin
+                feedback = work[6] ^ message[bit_number];
+                work = {work[5:0], 1'b0};
+                if (feedback)
+                    work = work ^ 7'h09;
+            end
+            crc7_command = {work, 1'b1};
+        end
+    endfunction
+
     task transfer_byte;
         input [7:0] value;
         input [5:0] resume_state;
@@ -118,7 +138,9 @@ module sd_spi_reader #(
         input [5:0] resume_state;
         begin
             command <= number;
-            packet <= {2'b01, number, argument, command_crc};
+            packet <= {2'b01, number, argument,
+                       ENABLE_COMMAND_CRC
+                       ? crc7_command({2'b01, number, argument}) : command_crc};
             command_return <= resume_state;
             command_index <= 0;
             poll_count <= 0;
@@ -139,6 +161,7 @@ module sd_spi_reader #(
         input [3:0] code;
         begin
             error_code <= code;
+            debug_failure <= {2'b0, state, r1, 2'b0, command};
             error_pulse <= 1;
             data_valid <= 0;
             init_timing <= 0;
@@ -182,6 +205,7 @@ module sd_spi_reader #(
             read_done <= 0;
             error_pulse <= 0;
             error_code <= 0;
+            debug_failure <= 0;
             sd_cs_n <= 1;
         end else begin
             spi_start <= 0;
@@ -257,15 +281,27 @@ module sd_spi_reader #(
                         end else begin
                             high_capacity <= card_v2 && extra[30];
                             deselect_card((card_v2 && extra[30])
-                                          ? INIT_DONE : CMD16_START);
+                                          ? INIT_CRC : CMD16_START);
                         end
                     end
                     CMD16_START: send_command(16, 32'd512, 8'h01, CMD16_RESULT);
                     CMD16_RESULT: begin
                         if (r1 == 0)
-                            deselect_card(INIT_DONE);
+                            deselect_card(INIT_CRC);
                         else
                             fail(ERR_R1);
+                    end
+                    INIT_CRC: begin
+                        if (ENABLE_COMMAND_CRC)
+                            send_command(59, 32'd1, 8'h01, CMD59_RESULT);
+                        else
+                            state <= INIT_DONE;
+                    end
+                    CMD59_RESULT: begin
+                        if (r1 != 0)
+                            fail(ERR_R1);
+                        else
+                            deselect_card(INIT_DONE);
                     end
                     INIT_DONE: begin
                         initialized <= 1;

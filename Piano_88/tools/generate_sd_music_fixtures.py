@@ -23,7 +23,8 @@ def make_wav() -> tuple[bytes, list[int]]:
     return b"RIFF" + struct.pack("<I", len(payload)) + payload, pcm
 
 
-def build(fat32: bool, wav: bytes, *, missing=False, broken=False) -> dict[int, bytearray]:
+def build(fat32: bool, wav: bytes, *, missing=False, broken=False,
+          filename: bytes = b"MUSIC   WAV") -> dict[int, bytearray]:
     sectors: dict[int, bytearray] = {}
 
     def sector(lba: int) -> bytearray:
@@ -91,13 +92,13 @@ def build(fat32: bool, wav: bytes, *, missing=False, broken=False) -> dict[int, 
     for entry in range(16):
         first_dir[entry * 32] = 0xE5
     # An apparent filename with LFN attributes must not be selected.
-    target_dir[0:11] = b"MUSIC   WAV"
+    target_dir[0:11] = filename
     target_dir[11] = 0x0F
     entry = 32
     if missing:
         target_dir[entry] = 0
     else:
-        target_dir[entry:entry + 11] = b"MUSIC   WAV"
+        target_dir[entry:entry + 11] = filename
         target_dir[entry + 11] = 0x20
         u16(target_dir, entry + 26, chain[0])
         u32(target_dir, entry + 28, len(wav))
@@ -123,14 +124,15 @@ def save_hex(path: Path, sectors: dict[int, bytearray]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
-def save_full_fat32(wav: bytes) -> None:
+def save_full_fat32(wav: bytes, *, output: Path = OUT / "full_fat32.img",
+                    filename: bytes = b"MUSIC   WAV") -> None:
     # 8 sectors/cluster, fragmented file spanning many FAT sectors.
     base, reserved, fat_length, spc = 8, 32, 1024, 8
     data_base = base + reserved + fat_length * 2
     clusters = (len(wav) + spc * 512 - 1) // (spc * 512)
     chain = [10 + index * 2 for index in range(clusters)]
     chain[1::2] = reversed(chain[1::2])
-    with (OUT / "full_fat32.img").open("wb") as output:
+    with output.open("wb") as output:
         def put(lba: int, payload: bytes) -> None:
             output.seek(lba * 512)
             output.write(payload)
@@ -159,7 +161,7 @@ def save_full_fat32(wav: bytes) -> None:
         put(base + reserved, fat)
         put(base + reserved + fat_length, fat)
         root = bytearray(spc * 512)
-        root[:11] = b"MUSIC   WAV"
+        root[:11] = filename
         root[11] = 0x20
         struct.pack_into("<H", root, 26, chain[0])
         struct.pack_into("<I", root, 28, len(wav))

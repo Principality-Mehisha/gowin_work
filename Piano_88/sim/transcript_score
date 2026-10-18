@@ -1,0 +1,108 @@
+# do run_score.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+# Start time: 18:01:04 on Oct 18,2026
+# vlog -work work_score ../src/piano_sample_map.v ../src/piano_pcm_voice.v ../src/piano_polyphony.v ../src/piano_score_reader.v ../src/piano_score_sequencer.v ../src/piano_score_player.v ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/button_debounce.v ../src/pt8211_tx.v sd_card_model.v tb_piano_polyphony.v tb_score_full.v tb_score_player.v tb_piano_88.v ../src/piano_88.v ../src/sd_piano_bank_reader.v 
+# -- Compiling module piano_sample_map
+# -- Compiling module piano_pcm_voice
+# -- Compiling module piano_polyphony
+# -- Compiling module piano_score_reader
+# -- Compiling module piano_score_sequencer
+# -- Compiling module piano_score_player
+# -- Compiling module sd_spi_byte
+# -- Compiling module sd_spi_reader
+# -- Compiling module fat_file_reader
+# -- Compiling module button_debounce
+# -- Compiling module pt8211_tx
+# -- Compiling module sd_card_model
+# -- Compiling module tb_piano_polyphony
+# -- Compiling module tb_score_full
+# -- Compiling module score_player_case
+# -- Compiling module tb_score_player
+# -- Compiling module GSR
+# -- Compiling module tb_piano_88
+# -- Compiling module piano_88
+# -- Compiling module sd_piano_bank_reader
+# 
+# Top level modules:
+# 	tb_piano_polyphony
+# 	tb_score_full
+# 	tb_score_player
+# 	tb_piano_88
+# End time: 18:01:04 on Oct 18,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vsim work_score.tb_piano_polyphony 
+# Start time: 18:01:04 on Oct 18,2026
+# Loading work_score.tb_piano_polyphony
+# Loading work_score.piano_polyphony
+# Loading work_score.piano_pcm_voice
+# Loading work_score.piano_sample_map
+# PASS: eight shared-ROM voices exactly match original Piano_88 voices, velocity, pause, retrigger and release
+# ** Note: $finish    : tb_piano_polyphony.v(68)
+#    Time: 3101420 ns  Iteration: 1  Instance: /tb_piano_polyphony
+# Break in Module tb_piano_polyphony at tb_piano_polyphony.v line 68
+# Stopped at tb_piano_polyphony.v line 68
+# End time: 18:01:06 on Oct 18,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0
+# vsim work_score.tb_score_full 
+# Start time: 18:01:06 on Oct 18,2026
+# Loading work_score.tb_score_full
+# Loading work_score.fat_file_reader
+# Loading work_score.piano_score_reader
+# Loading work_score.piano_score_sequencer
+# PASS: complete Croatian Rhapsody, 3721 exact events through fragmented FAT32 and timed sequencer
+# ** Note: $finish    : tb_score_full.v(87)
+#    Time: 405539190 ns  Iteration: 1  Instance: /tb_score_full
+# Break in Module tb_score_full at tb_score_full.v line 87
+# Stopped at tb_score_full.v line 87
+# End time: 18:01:31 on Oct 18,2026, Elapsed time: 0:00:25
+# Errors: 0, Warnings: 0
+# vsim work_score.tb_score_player 
+# Start time: 18:01:31 on Oct 18,2026
+# Loading work_score.tb_score_player
+# Loading work_score.score_player_case
+# Loading work_score.piano_score_player
+# Loading work_score.GSR
+# Loading work_score.button_debounce
+# Loading work_score.sd_spi_reader
+# Loading work_score.sd_spi_byte
+# Loading work_score.fat_file_reader
+# Loading work_score.piano_score_reader
+# Loading work_score.piano_score_sequencer
+# Loading work_score.piano_polyphony
+# Loading work_score.pt8211_tx
+# Loading work_score.sd_card_model
+# Loading work_score.piano_pcm_voice
+# Loading work_score.piano_sample_map
+# PASS: score failure case 1 rejected and silent
+# PASS: score failure case 2 rejected and silent
+# PASS: SPI divider 63, FAT profile 2, chord, repeated note, DAC audio, controls/EOF
+# PASS: SPI divider 63, FAT profile 0, chord, repeated note, DAC audio, controls/EOF
+# ** Note: $finish    : tb_score_player.v(113)
+#    Time: 297323390 ns  Iteration: 3  Instance: /tb_score_player
+# Break in Module tb_score_player at tb_score_player.v line 113
+# Stopped at tb_score_player.v line 113
+# End time: 18:03:19 on Oct 18,2026, Elapsed time: 0:01:48
+# Errors: 0, Warnings: 0
+# vsim work_score.tb_piano_88 
+# Start time: 18:03:19 on Oct 18,2026
+# Loading work_score.tb_piano_88
+# Loading work_score.piano_88
+# Loading work_score.GSR
+# Loading work_score.button_debounce
+# Loading work_score.piano_sample_map
+# Loading work_score.piano_pcm_voice
+# Loading work_score.pt8211_tx
+# ** Warning: (vsim-3017) tb_piano_88.v(15): [TFMPC] - Too few port connections. Expected 13, found 8.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_piano_88/dut File: ../src/piano_88.v
+# ** Warning: (vsim-3722) tb_piano_88.v(15): [TFMPC] - Missing connection for port 'sd_cs_n'.
+# ** Warning: (vsim-3722) tb_piano_88.v(15): [TFMPC] - Missing connection for port 'sd_sck'.
+# ** Warning: (vsim-3722) tb_piano_88.v(15): [TFMPC] - Missing connection for port 'sd_mosi'.
+# ** Warning: (vsim-3722) tb_piano_88.v(15): [TFMPC] - Missing connection for port 'sd_miso'.
+# ** Warning: (vsim-3722) tb_piano_88.v(15): [TFMPC] - Missing connection for port 'LEDs'.
+# PASS: power-on, debounce, hold, all 88 selections, wrap, pause and reset
+# ** Note: $finish    : tb_piano_88.v(133)
+#    Time: 128045200 ns  Iteration: 1  Instance: /tb_piano_88
+# Break in Module tb_piano_88 at tb_piano_88.v line 133
+# Stopped at tb_piano_88.v line 133
+# End time: 18:03:30 on Oct 18,2026, Elapsed time: 0:00:11
+# Errors: 0, Warnings: 6

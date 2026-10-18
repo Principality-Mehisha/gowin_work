@@ -21,7 +21,7 @@ module sd_card_model #(
     reg [7:0] tx_shift, rx_shift;
     integer rx_bits, command_bytes;
     reg [47:0] command_frame;
-    reg card_ready, app_pending;
+    reg card_ready, app_pending, command_crc_enabled;
     integer attempts, power_clocks;
     reg [7:0] host_byte;
     reg [7:0] image [0:IMAGE_BYTES-1];
@@ -88,12 +88,25 @@ module sd_card_model #(
         reg [31:0] argument, lba;
         reg [15:0] block_crc;
         reg [7:0] value;
+        reg [46:0] crc_dividend;
         integer i;
-        begin
+        begin : command_response
             number = frame[45:40];
             argument = frame[39:8];
             if (frame[47:46] !== 2'b01 || frame[0] !== 1'b1)
                 $fatal(1, "Malformed SD command %h", frame);
+            // Independent polynomial division checks the host CRC generator.
+            crc_dividend = {frame[47:8], 7'd0};
+            for (i = 46; i >= 7; i = i - 1)
+                if (crc_dividend[i])
+                    crc_dividend = crc_dividend ^ (47'h89 << (i - 7));
+            if ((command_crc_enabled || number == 59)
+                && frame[7:0] !== {crc_dividend[6:0], 1'b1}) begin
+                enqueue(8'hff);
+                enqueue(8'hff);
+                enqueue(8'h08);
+                disable command_response;
+            end
             if (fault != 10) begin
                 // Nonzero Ncr exercises response polling.
                 enqueue(8'hff);
@@ -105,6 +118,7 @@ module sd_card_model #(
                         card_ready = 0;
                         app_pending = 0;
                         attempts = 0;
+                        command_crc_enabled = 0;
                         enqueue(8'h01);
                     end
                     8: begin
@@ -149,6 +163,16 @@ module sd_card_model #(
                             $fatal(1, "CMD16 must set 512 bytes only for SDSC");
                         cmd16_seen = 1;
                         enqueue(0);
+                    end
+                    59: begin
+                        if (!card_ready || argument !== 32'd1)
+                            $fatal(1, "CMD59 must enable CRC after initialization");
+                        if (fault == 11)
+                            enqueue(8'h04);
+                        else begin
+                            command_crc_enabled = 1;
+                            enqueue(8'h00);
+                        end
                     end
                     17: begin
                         if (!card_ready || (profile != 2 && !cmd16_seen))
@@ -202,6 +226,7 @@ module sd_card_model #(
             power_clocks = 0;
             card_ready = 0;
             app_pending = 0;
+            command_crc_enabled = 0;
             attempts = 0;
             last_argument = 0;
             read_commands = 0;

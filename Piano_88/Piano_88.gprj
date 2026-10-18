@@ -9,7 +9,10 @@
         <File path="src/button_debounce.v" type="file.verilog" enable="1"/>
         <File path="src/piano_pcm_voice.v" type="file.verilog" enable="1"/>
         <File path="src/piano_sample_map.v" type="file.verilog" enable="1"/>
-        <File path="src/piano_bank.hex" type="file.hex" enable="1"/>
+        <File path="src/sd_piano_bank_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/sd_spi_byte.v" type="file.verilog" enable="1"/>
+        <File path="src/sd_spi_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/fat_file_reader.v" type="file.verilog" enable="1"/>
         <File path="src/pt8211_tx.v" type="file.verilog" enable="1"/>
         <File path="src/piano_88.cst" type="file.cst" enable="1"/>
         <File path="src/piano_88.sdc" type="file.sdc" enable="1"/>

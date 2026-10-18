@@ -11,7 +11,7 @@ module tb_piano_88;
     wire bck, ws, din, amp;
     piano_88 #(
         .DEBOUNCE_CYCLES(8), .AUDIO_START_CYCLES(64), .POWER_ON_CYCLES(8),
-        .ROM_FILE("../src/piano_bank.hex")
+        .ROM_FILE("../src/piano_bank.hex"), .USE_SD(0)
     ) dut (
         .sys_clk(clk), .KEY0(KEY0), .KEY1(KEY1), .KEY2(KEY2),
         .HP_BCK(bck), .HP_WS(ws), .HP_DIN(din), .PA_EN(amp)

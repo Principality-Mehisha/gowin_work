@@ -1,0 +1,9 @@
+impl/
+output/
+sim/work*/
+sim/transcript*
+sim/*.wlf
+sim/*.vcd
+*.gprj.user
+tools/__pycache__/
+tools/vendor/

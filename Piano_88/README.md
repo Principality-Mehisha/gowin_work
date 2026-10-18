@@ -5,8 +5,8 @@
 使用底板 PT8211 DAC 和功放输出，左右声道播放相同音调。
 
 从 SD 卡乐谱自动演奏《克罗地亚狂想曲》请使用
-[`Piano_Score.gprj`](Piano_Score.gprj)，详见 [乐谱演奏说明](SCORE_PLAYER.md)。
-配套 `sd_card/score/PIANO.BIN` 保存音符事件，由本工程现有钢琴音色演奏，
+[`../Piano_Score/Piano_Score.gprj`](../Piano_Score/Piano_Score.gprj)，详见 [乐谱演奏说明](../Piano_Score/README.md)。
+配套 `../Piano_Score/sd_card/PIANO.BIN` 保存音符事件，由原有钢琴音色演奏，
 支持和弦；它与采样库、整曲 PCM BIN 的格式不同。
 
 ## 操作
@@ -142,15 +142,12 @@ PCM 专项测试覆盖全部 88 音，各播放 32000 个样本，
 
 ## TF / SD 卡读取扩展
 
-新增了兼容 1GB SDSC 卡和 SDHC 卡的 SPI 扇区读取模块，
-以及独立的 `sd_card/SD_Card_Probe.gprj` 上板测试工程。
-引脚、接口、错误码和测试方法见 [读卡说明](sd_card/README.md)。
-另有 `sd_card/SD_Music_Player.gprj`，从 FAT16/FAT32 卡根目录读取 `MUSIC.WAV`，
-经 CRC 校验、16 KiB 音频 FIFO 后送入 PT8211，支持暂停和重播。
-它使用独立码流，占用 9 块 BSRAM，原 88 音钢琴工程保持独立。
-准备音乐、复制到卡及下载方法见 [SD 音乐播放器说明](sd_card/MUSIC_PLAYER.md)。
-当前 `sd_card/music/MUSIC.WAV` 为约 3 分 23 秒的完整《克罗地亚狂想曲》
-钢琴 MIDI 采样演奏版，整曲从卡片流式读取，不占用钢琴采样 ROM。
+保留兼容 1GB SDSC 卡和 SDHC 卡的 SPI 扇区读取模块，
+供本工程的音色采样库读取使用。采样库文件仍为
+`sd_card/music/PIANO.BIN`，复制脚本及相关仿真保持可用。
+原读卡探测、BIN 流水灯及 WAV/PCM 播放测试工程已清理。
+乐谱自动演奏已独立至相邻的 `Piano_Score` 目录，
+其 `PIANO.BIN` 为乐谱事件格式，与本工程的采样库格式不同。
 
 ## 验证结果（2026-10-12）
 

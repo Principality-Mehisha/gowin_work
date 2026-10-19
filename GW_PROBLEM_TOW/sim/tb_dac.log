@@ -1,0 +1,16 @@
+# vsim -c -voptargs="+acc" -lib sim/work tb_dac -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_dac/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_dac.log 
+# Start time: 23:06:01 on Oct 19,2026
+# Loading sv_std.std
+# Loading sim/work.tb_dac
+# Loading sim/work.pt8211_tx
+# onfinish stop
+#  run -all
+# PASS tb_dac: 3200 clocks/frame, LSBJ, identical stereo, mute
+# ** Note: $finish    : sim/tb_dac.sv(43)
+#    Time: 104514795 ps  Iteration: 3  Instance: /tb_dac
+# Break in Module tb_dac at sim/tb_dac.sv line 43
+# Stopped at sim/tb_dac.sv line 43
+#  if {[examine -radix unsigned /tb_dac/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 23:06:01 on Oct 19,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

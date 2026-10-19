@@ -1,0 +1,30 @@
+{
+  "sample_rate": 48000,
+  "frames": 126010,
+  "peak_pcm": 30000,
+  "max_active_voices": 88,
+  "limiter_frames": 11977,
+  "a4_harmonic_amplitudes": [
+    1181.34,
+    452.62,
+    294.79,
+    184.61,
+    120.42,
+    80.68,
+    52.55,
+    32.32
+  ],
+  "a4_8th_partial_ratio_early": 0.0392,
+  "a4_8th_partial_ratio_late": 0.0211,
+  "chord_tone_amplitudes": [
+    1181.23,
+    1181.36,
+    1180.75
+  ],
+  "c8_folded_harmonics_db": [
+    -110.79,
+    -98.41,
+    -97.02
+  ],
+  "source": "ModelSim RTL output; not prerecorded RTL inputs"
+}

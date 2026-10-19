@@ -1,0 +1,130 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/30415/Desktop/GW_PROBLEM_TOW
+vadsr_pipeline
+Z1 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+Z2 !s110 1792421331
+!i10b 1
+!s100 [3]CDjdBhQE=^CXS;zCcH2
+IB:KeL83ZW@?jBmnZI5bZA1
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+Z4 !s105 adsr_step_v_unit
+S1
+R0
+Z5 w1792339368
+Z6 8src/adsr_step.v
+Z7 Fsrc/adsr_step.v
+L0 51
+Z8 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z9 !s108 1792421331.000000
+Z10 !s107 sim/tb_tone_realism.sv|src/piano_synth.v|src/output_limiter.v|src/adsr_step.v|
+Z11 !s90 -sv|-work|sim/tone_work|src/adsr_step.v|src/output_limiter.v|src/piano_synth.v|sim/tb_tone_realism.sv|
+!i113 1
+Z12 o-sv -work sim/tone_work
+Z13 tCvgOpt 0
+vadsr_step
+R1
+R2
+!i10b 1
+!s100 FA<9KhPOTjjFIkQWa]QF40
+IA5BZgS6dol_ELozFdH:hY1
+R3
+R4
+S1
+R0
+R5
+R6
+R7
+L0 2
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13
+voutput_limiter
+R1
+R2
+!i10b 1
+!s100 d3>V_3V?N0`27XN@PBJ`H0
+IbFCGZSAn5RaGK=]PN?kgM1
+R3
+!s105 output_limiter_v_unit
+S1
+R0
+w1792337522
+8src/output_limiter.v
+Fsrc/output_limiter.v
+L0 3
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13
+vpiano_synth
+R1
+R2
+!i10b 1
+!s100 zRJmAe;LW61iEOMY6HNcO2
+I20o=TD>m]ZK6HSUFoa2_:3
+R3
+!s105 piano_synth_v_unit
+S1
+R0
+w1792421308
+8src/piano_synth.v
+Fsrc/piano_synth.v
+L0 3
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13
+vtb_tone_realism
+R1
+R2
+!i10b 1
+!s100 `Lk`QNmDjFGJD4NiUT5]I3
+Izf1mZbeQ3XHSM=6QE[efP0
+R3
+!s105 tb_tone_realism_sv_unit
+S1
+R0
+w1792421042
+8sim/tb_tone_realism.sv
+Fsim/tb_tone_realism.sv
+L0 2
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13

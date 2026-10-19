@@ -1,0 +1,17 @@
+# vsim -c -lib sim/bass_work tb_bass -do "onfinish stop; run -all; quit -code 0 -f" -l sim/tb_bass.log 
+# Start time: 21:54:49 on Oct 19,2026
+# Loading sv_std.std
+# Loading sim/bass_work.tb_bass
+# Loading sim/bass_work.piano_synth
+# Loading sim/bass_work.adsr_pipeline
+# Loading sim/bass_work.output_limiter
+# onfinish stop
+#  run -all
+# PASS tb_bass: 216000 A/B frames; max 563 cycles
+# ** Note: $finish    : sim/tb_bass.sv(75)
+#    Time: 797604972150 ps  Iteration: 1  Instance: /tb_bass
+# Break in Module tb_bass at sim/tb_bass.sv line 75
+# Stopped at sim/tb_bass.sv line 75
+#  quit -code 0 -f
+# End time: 22:06:35 on Oct 19,2026, Elapsed time: 0:11:46
+# Errors: 0, Warnings: 0

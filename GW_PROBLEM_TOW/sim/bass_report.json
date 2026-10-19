@@ -1,0 +1,134 @@
+{
+  "sample_rate": 48000,
+  "source": "ModelSim core output; omitted idle clocks, not prerecorded RTL inputs",
+  "wav_note_order": [
+    "A0",
+    "A1",
+    "A2",
+    "A4"
+  ],
+  "wav_gain": "identical fixed gain; no peak/RMS normalization",
+  "all_88_fundamental_max_error_cents": 0.0002457146211747061,
+  "notes": [
+    {
+      "note_index": 0,
+      "name": "A0",
+      "fundamental_hz": 27.49999612569809,
+      "rms_change_db_50_to_500_ms": 13.24,
+      "old_rms": 975.42,
+      "new_rms": 4479.23,
+      "new_peak_pcm": 15360,
+      "all_54000_samples_bit_exact_both_versions": true,
+      "partial_hz": [
+        27.499996,
+        55.00254,
+        82.510181,
+        110.025465,
+        137.550943,
+        165.08916,
+        192.642666,
+        220.214009
+      ],
+      "partial_amplitudes": [
+        2956.84,
+        3731.98,
+        3210.6,
+        839.51,
+        569.1,
+        373.21,
+        240.37,
+        177.64
+      ]
+    },
+    {
+      "note_index": 12,
+      "name": "A1",
+      "fundamental_hz": 55.000003427267075,
+      "rms_change_db_50_to_500_ms": 10.186,
+      "old_rms": 1002.63,
+      "new_rms": 3239.2,
+      "new_peak_pcm": 10806,
+      "all_54000_samples_bit_exact_both_versions": true,
+      "partial_hz": [
+        55.000003,
+        110.00336,
+        165.013421,
+        220.033541,
+        275.067072,
+        330.117367,
+        385.187779,
+        440.281659
+      ],
+      "partial_amplitudes": [
+        2722.79,
+        2070.11,
+        1549.24,
+        366.12,
+        233.72,
+        139.55,
+        92.09,
+        68.02
+      ]
+    },
+    {
+      "note_index": 24,
+      "name": "A2",
+      "fundamental_hz": 109.99999567866325,
+      "rms_change_db_50_to_500_ms": 5.641,
+      "old_rms": 991.35,
+      "new_rms": 1897.9,
+      "new_peak_pcm": 6864,
+      "all_54000_samples_bit_exact_both_versions": true,
+      "partial_hz": [
+        109.999996,
+        220.003344,
+        330.013398,
+        440.03351,
+        550.067034,
+        660.117321,
+        770.187724,
+        880.281597
+      ],
+      "partial_amplitudes": [
+        1575.24,
+        862.71,
+        616.41,
+        138.76,
+        85.46,
+        53.87,
+        36.15,
+        30.78
+      ]
+    },
+    {
+      "note_index": 48,
+      "name": "A4",
+      "fundamental_hz": 440.0000050663948,
+      "rms_change_db_50_to_500_ms": 0.0,
+      "old_rms": 991.44,
+      "new_rms": 991.44,
+      "new_peak_pcm": 3629,
+      "all_54000_samples_bit_exact_both_versions": true,
+      "partial_hz": [
+        440.000005,
+        880.00001,
+        1320.000015,
+        1760.00002,
+        2200.000025,
+        2640.00003,
+        3080.000035,
+        3520.000041
+      ],
+      "partial_amplitudes": [
+        748.11,
+        273.34,
+        173.86,
+        111.33,
+        73.9,
+        51.3,
+        36.41,
+        26.72
+      ]
+    }
+  ]
+}

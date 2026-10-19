@@ -1,0 +1,32 @@
+# vsim -c -voptargs="+acc" -lib sim/work tb_synth -do "do sim/waves.do; if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/waves_check.log 
+# Start time: 22:00:52 on Oct 18,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  ModelSim SE-64 2020.4 Oct 13 2020
+# //
+# //  Copyright 1991-2020 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_synth(fast)
+# Loading work.piano_synth(fast)
+# Loading work.adsr_pipeline(fast)
+# Loading work.output_limiter(fast)
+# do sim/waves.do
+# PASS tb_synth: 89 frames, 88 voices, ADSR, pitch, hard stop; max latency 3121 clocks
+# ** Note: $finish    : sim/tb_synth.sv(106)
+#    Time: 1857042600 ps  Iteration: 1  Instance: /tb_synth
+# Break in Module tb_synth at sim/tb_synth.sv line 106
+# Stopped at sim/tb_synth.sv line 106
+# wave zoomfull not supported in batch mode
+#  if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 22:00:53 on Oct 18,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

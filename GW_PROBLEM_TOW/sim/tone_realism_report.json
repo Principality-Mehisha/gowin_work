@@ -1,0 +1,28 @@
+{
+  "sample_rate": 48000,
+  "frames": 42000,
+  "peak_pcm": 3612,
+  "a4_partial_amplitudes_early": [
+    1649.09,
+    735.3,
+    465.22,
+    296.03,
+    194.2,
+    131.59,
+    88.82,
+    58.07
+  ],
+  "a4_partial_amplitudes_late": [
+    705.41,
+    241.65,
+    152.46,
+    96.17,
+    61.88,
+    40.48,
+    25.42,
+    14.29
+  ],
+  "a4_8th_to_fundamental_ratio_early": 0.03521,
+  "a4_8th_to_fundamental_ratio_late": 0.02025,
+  "source": "ModelSim RTL output; not prerecorded RTL inputs"
+}

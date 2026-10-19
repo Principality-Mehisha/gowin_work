@@ -1,0 +1,9 @@
+impl/
+sim/work/
+sim/clock_work/
+sim/bass_work/
+sim/*.vvp
+sim/*.wlf
+sim/*_pcm.txt
+transcript
+vsim.wlf

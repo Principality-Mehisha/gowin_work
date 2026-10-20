@@ -2,7 +2,8 @@
 module tb_synth;
     reg clk=0;
     always #3.255208333 clk=~clk;
-    reg reset_n=0, stop_all=0, tick=0, valid=0, note_on=0;
+    reg reset_n=0, stop_all=0, instrument_change=0, tick=0, valid=0, note_on=0;
+    reg instrument_mode=0;
     reg [6:0] note=0;
     reg [7:0] dynamics=192;
     reg [17:0] pitch=65536;
@@ -23,6 +24,7 @@ module tb_synth;
     piano_synth #(.ATTACK_STEP(24'd4194304), .DECAY_STEP(24'd1048576),
         .SUSTAIN_LEVEL(24'd4194304), .RELEASE_SHIFT(4)) dut (
         .clk(clk), .reset_n(reset_n), .sample_tick(tick), .stop_all(stop_all),
+        .instrument_change(instrument_change), .instrument_mode(instrument_mode),
         .event_valid(valid), .event_on(note_on), .event_note(note),
         .event_dynamics(dynamics), .pitch_ratio(pitch), .event_ready(ready),
         .mix_sample(mix), .mix_valid(mix_valid), .pcm(pcm), .pcm_valid(pcm_valid),
@@ -118,6 +120,18 @@ module tb_synth;
         if (active!=0) $fatal(1,"Polyphonic note-offs did not finish");
         if (nonzero<20) $fatal(1,"Audio remained silent");
         clear_all();
+        event_send(1,48); frame();
+        @(negedge clk); instrument_mode=1; instrument_change=1;
+        @(negedge clk); instrument_change=0;
+        frame();
+        if (dut.profile !== dut.VIOLIN_PROFILE || state_a4!=1)
+            $fatal(1,"Violin profile did not retrigger the held note");
+        @(negedge clk); instrument_mode=0; instrument_change=1;
+        @(negedge clk); instrument_change=0;
+        frame();
+        if (dut.profile === dut.VIOLIN_PROFILE || state_a4!=1)
+            $fatal(1,"Piano profile did not return on instrument switch");
+        event_send(0,48); repeat(18) frame();
         $fclose(fd);
         passed=1;
         $display("PASS tb_synth: %0d frames, 88 voices, ADSR, pitch, hard stop; max latency %0d clocks",

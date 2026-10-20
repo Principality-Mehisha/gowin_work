@@ -2,7 +2,7 @@
 // Full-rate functional render: generated PCM is verification output only.
 module tb_demo;
     reg clk=0; always #3.255208333 clk=~clk;
-    reg reset_n=0,stop_all=0,valid=0,on_value=0;
+    reg reset_n=0,stop_all=0,instrument_change=0,valid=0,on_value=0;
     reg [6:0] note=0;
     reg [17:0] pitch=65536;
     wire ready,tick,pcm_valid,deadline,limiting,saturated;
@@ -13,6 +13,7 @@ module tb_demo;
     integer count=0,fd,n,limiter_frames=0;
     piano_synth dut (
         .clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
+        .instrument_change(instrument_change), .instrument_mode(1'b0),
         .event_valid(valid),.event_on(on_value),.event_note(note),
         .event_dynamics(8'd192),.pitch_ratio(pitch),.event_ready(ready),
         .pcm(pcm),.pcm_valid(pcm_valid),.mix_sample(mix),.mix_valid(),

@@ -3,7 +3,7 @@
 工程：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`。
 当前默认顶层从 SD 卡 FAT16/FAT32 分区读取根目录 `PIANO.BIN`，解析 88 音区的 P88S 乐谱，并把 note-on/note-off 事件送入 88 键 DDS 钢琴合成器，实时生成 PCM 样本后输出到 PT8211。旧的 PCM 采样链路已从工程源文件中移除。
 
-## SD 播放
+## SD 播放与音色切换
 
 工程自带 `sd_card/PIANO.BIN` 示例乐谱和 DDS 所需的正弦表、频率表、音色参数表。播放器只从 SD 卡读取乐谱；音高、谐波、ADSR、力度和复音状态均在 FPGA 内实时计算，不依赖整段录音或每键 PCM 波形。
 
@@ -15,7 +15,9 @@ powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter
 
 该脚本只在目标文件缺失或内容一致时直接写入；若卡上已有不同的 `PIANO.BIN`，必须额外指定 `-Replace`，旧文件会先备份到 `output/sd_backup`。目前检测到的 H: 卡根目录没有 `PIANO.BIN`，所以需要先运行该命令，播放器才有乐谱可读。
 
-KEY0 暂停/继续，KEY1 从头重播，KEY2 复位并重新读取卡。LED0 表示 SD 初始化成功，LED1 表示找到乐谱，LED2 表示播放中，LED3 表示错误。文件缺失、格式错误或 SD 读错时会停止并静音。
+KEY0 在钢琴和小提琴 DDS 音色之间切换，KEY1 从头重播，KEY2 复位并重新读取卡。音色切换不重置乐谱时间，当前按住的音符会用新音色重新起音。LED0 表示 SD 初始化成功，LED1 表示找到乐谱，LED2 表示播放中，LED3 表示错误。文件缺失、格式错误或 SD 读错时会停止并静音。
+
+钢琴和小提琴共享 DDS 相位、正弦 ROM、音高表、分时谐波运算和 DAC；小提琴模式切换泛音谱，并关闭钢琴低音补偿与击弦瞬态。它是参数化的弓弦倾向合成音色，不是采样音色或完整物理弓弦模型。
 
 SD 接口使用 3.3 V SPI：MISO AA15、SCK V15、CS W15、MOSI Y16。其余 PT8211 和按键沿用原板卡引脚。SD 初始化和读取都使用约 397 kHz SPI 时钟。音频输出保持参考采样库的 16.276 kHz 采样率。
 
@@ -46,10 +48,9 @@ SD 卡读写、FAT、P88S 解析及调度测试由 `sim/run_score.do` 覆盖。
 | KEY1 | 每次按下播放下一个音符，A0 到 C8，再循环到 A0 |
 | KEY1 保持按下 | 经 Attack、Decay，停留在 Sustain |
 | KEY1 松开 | 从当时的包络电平开始 Release，相位继续运行 |
-| KEY0 | 强制终止所有声部，包括 Release；下一完整 DAC 帧输出零 |
+| KEY0 | 在钢琴/小提琴音色之间切换，并重新触发当前活动音符 |
 
-KEY0 不重置音符轮询编号。KEY0 按住时禁止发声；如果此时 KEY1 仍被按住，必须先松开 KEY1 再重新按下。
-KEY0/KEY1 使用双触发器同步与约 1 ms 稳定时间去抖。“强制终止”指 KEY0 经过同步去抖后直接清除合成状态，**不再经过 R**。
+KEY0 不重置乐谱位置；切换时保留当前 gate，并让活动音符从新的音色重新起音。KEY0/KEY1 使用双触发器同步与约 1 ms 稳定时间去抖。
 正在发送的一帧必须保持左右声道字一致，不能从半个字中间截断；因此模拟输出最迟在下一完整帧更新，约 20.83 us，另有 DAC 自身的更新延迟。
 
 ## 实时生成与存储边界
@@ -185,7 +186,7 @@ R 步长在松键时根据**当时**的包络电平计算，A/D/S 任意阶段�
 ## 模块与引脚
 
 `GW_PROBLEM_TOW.v` 仅有端口、连线和模块例化。
-`audio_clock.v` 管 PLL 与复位；`key_control.v` 管同步、去抖、轮询与固定力度；
+`audio_clock.v` 管 PLL 与复位；`key_control.v` 保留独立按键试听与固定力度接口；
 `adsr_step.v` 中的 `adsr_pipeline` 管包络；`piano_synth.v` 管 DDS/谐波/复音；
 `output_limiter.v` 管主增益与限制；`pt8211_score_tx.v` 管当前串行音频输出。
 
@@ -234,7 +235,7 @@ powershell -ExecutionPolicy Bypass -File sim/bass.ps1
 现场运行 `powershell -ExecutionPolicy Bypass -File sim/gui.ps1` 打开 ModelSim 波形界面；
 已有 `tb_synth` 仿真时可直接执行 `do sim/waves.do`。
 观察 `valid/ready/note_on/note`、A4 的 `phase_a4/envelope_a4/state_a4`、分时谐波计算和最终 PCM：
-松开时进入 R，R 期间相位继续变化，KEY0 直接清零；不同事件时刻可立即影响后续输出。
+松开时进入 R，R 期间相位继续变化；KEY0 音色切换会保留当前乐谱位置并重新触发当前活动声部。
 波形脚本默认使用缩短 ADSR 的快速自测，完整默认时长可运行 `tb_demo`。
 已保存一份可直接载入的 `sim/realtime_evidence.wlf`，与对应的 `sim/evidence.log` 一起用于复查。
 这些测试提供实时生成的技术证据，最终赛题判定仍以评审检查实际 RTL 和演示为准。

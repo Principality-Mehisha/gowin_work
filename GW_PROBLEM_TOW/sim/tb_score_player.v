@@ -32,7 +32,7 @@ module score_player_case #(
     reg [15:0] expected;
     initial forever begin
         @(posedge dut.sample_tick);
-        expected = dut.failed || dut.paused ? 0 : dut.pcm;
+        expected = dut.failed ? 0 : dut.pcm;
         frame = 0;
         for (bit_number = 0; bit_number < 32; bit_number = bit_number + 1) begin
             @(posedge bck);
@@ -46,7 +46,7 @@ module score_player_case #(
         if (dut.sequencer.elapsed_ms == 0) first_ons = first_ons + 1;
         if (dut.sequencer.elapsed_ms == 50) repeated = repeated + 1;
     end
-    task pause_key;
+    task instrument_key;
         begin
             @(negedge clk); key0 = 0;
             repeat (32) @(negedge clk); key0 = 1;
@@ -74,18 +74,11 @@ module score_player_case #(
             wait (dut.playing);
             if (CONTROLS) begin
                 wait (dut.sequencer.elapsed_ms == 10);
-                pause_key();
-                if (!dut.paused) $fatal(1, "Score did not pause");
+                instrument_key();
+                if (dut.instrument_mode !== 1'b1) $fatal(1, "Instrument did not switch");
                 wait (dut.synth.state == 0);
-                @(negedge clk);
-                saved_ms = dut.sequencer.elapsed_ms;
-                saved_voice_state = dut.synth.voice_ram[0];
-                repeat (5) @(posedge dut.sample_tick);
-                @(negedge clk);
-                if (dut.sequencer.elapsed_ms != saved_ms ||
-                    dut.synth.voice_ram[0] != saved_voice_state)
-                    $fatal(1, "Paused score advanced");
-                pause_key();
+                instrument_key();
+                if (dut.instrument_mode !== 1'b0) $fatal(1, "Instrument did not switch back");
             end
             wait (dut.finished);
             repeat (5) @(posedge dut.sample_tick);

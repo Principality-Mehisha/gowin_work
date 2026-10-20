@@ -14,12 +14,13 @@ module piano_synth #(
     parameter [23:0] SUSTAIN_LEVEL=24'd3145728,
     parameter integer RELEASE_SHIFT=14
 ) (
-    input wire clk, reset_n, sample_tick, stop_all,
+    input wire clk, reset_n, sample_tick, stop_all, instrument_change,
     input wire event_valid, event_on,
     input wire [6:0] event_note,
     input wire [7:0] event_dynamics,
     // Unsigned Q2.16 global pitch multiplier; 65536 is concert pitch.
     input wire [17:0] pitch_ratio,
+    input wire instrument_mode,
     output wire event_ready,
     output reg signed [31:0] mix_sample,
     output reg mix_valid,
@@ -129,6 +130,10 @@ module piano_synth #(
     wire [139:0] standard_profile = {
         32'd0,9'd256,11'd256,11'd22,11'd30,11'd42,11'd60,
         11'd90,11'd140,11'd220,11'd420};
+    // Shared DDS datapath; this profile provides a violin-like spectrum.
+    localparam [139:0] VIOLIN_PROFILE = {
+        32'd0, 9'd256, 11'd224, 11'd3, 11'd8, 11'd18, 11'd35,
+        11'd70, 11'd130, 11'd260, 11'd500};
     wire [2:0] next_env_state;
     wire [23:0] next_env, next_release_step;
     adsr_pipeline #(.ATTACK_STEP(ATTACK_STEP), .DECAY_STEP(DECAY_STEP),
@@ -259,7 +264,7 @@ module piano_synth #(
     wire signed [15:0] enveloped_sample = envelope_product >>> 16;
     wire signed [31:0] voice_sample = note_product >>> 16;
     // FETCH snapshots gates and consumes trigger flags atomically.
-    assign event_ready = ready_reg && !stop_all && reset_n;
+    assign event_ready = ready_reg && !stop_all && !instrument_change && reset_n;
     assign debug_voice=voice;
     assign debug_env_state=env_state_reg;
     assign debug_envelope=voice_env;
@@ -275,7 +280,8 @@ module piano_synth #(
             frequency_word<=frequency_rom[voice];
             partial_data<=partial_ram[voice];
             dynamics_data<=dynamics[voice];
-            profile<=BASS_VOICING ? voicing_rom[voice] : standard_profile;
+            profile<=instrument_mode ? VIOLIN_PROFILE :
+                     (BASS_VOICING ? voicing_rom[voice] : standard_profile);
             decay_data<=decay_rom[voice];
         end
         sine_value<=sine_rom[sine_address];
@@ -352,6 +358,13 @@ module piano_synth #(
             partial_valid<=0; partial_last<=0;
             sum_high_valid<=0; sum_finish<=0;
             ready_reg<=1;
+        end else if (instrument_change) begin
+            // Preserve held gates, clear old voice state, and retrigger them.
+            state<=IDLE; pending<=gates;
+            mix_accum<=0; mix_sample<=0; mix_valid<=0; active_count<=0;
+            active_voices<=0; valid_states<=0; voice_env<=0; env_state_reg<=0;
+            base_phase<=0; partial_valid<=0; partial_last<=0;
+            sum_high_valid<=0; sum_finish<=0; ready_reg<=1;
         end else begin
             mix_valid<=0;
             ready_reg<=!((state==IDLE && sample_tick) || (state==ADD && !voice_last));
@@ -403,7 +416,7 @@ module piano_synth #(
                     tone_loss<=partial_data[271:256]==0 ? 16'd0 :
                                partial_data[271:268]==0 ? 16'd1 :
                                {12'd0,partial_data[271:268]};
-                    bass_voice<=BASS_VOICING && voice<36;
+                    bass_voice<=BASS_VOICING && !instrument_mode && voice<36;
                     weights<=profile[87:0];
                     voice_select<=88'd1<<voice;
                     voice_last<=voice==87;
@@ -422,7 +435,7 @@ module piano_synth #(
                                     {192{1'b1}} : partial_data[527:336];
                     tone_level<=(trigger_reg || !voice_valid) ? 16'hffff :
                                 previous_tone-tone_loss;
-                    strike_level<=HAMMER_TRANSIENT ?
+                    strike_level<=HAMMER_TRANSIENT && !instrument_mode ?
                         ((trigger_reg || !voice_valid) ? 16'hffff :
                          (previous_strike>16'd128 ?
                           previous_strike-16'd128 : 16'd0)) : 16'd0;

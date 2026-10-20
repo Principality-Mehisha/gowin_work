@@ -9,7 +9,7 @@ z2
 cModel Technology
 Z0 dC:/Users/30415/Desktop/GW_PROBLEM_TOW/sim
 vadsr_pipeline
-Z1 !s110 1792505258
+Z1 !s110 1792506689
 !i10b 1
 !s100 OUFkY<J6H>8N]P9z_g_oW1
 IX@diQW^eoUkjZP;VI1O`V1
@@ -23,9 +23,9 @@ Z6 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z7 !s108 1792505258.000000
-Z8 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
-Z9 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
+Z7 !s108 1792506689.000000
+Z8 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
+Z9 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
 !i113 1
 Z10 o-work work_score
 Z11 tCvgOpt 0
@@ -71,6 +71,27 @@ R9
 !i113 1
 R10
 R11
+vdynamics_fixed
+R1
+!i10b 1
+!s100 ^Y?8DCd<b<bL:>JWnQAcG2
+IA5X@:QbPU[SLIVH4h][cY1
+R2
+R0
+Z12 w1792331623
+Z13 8../src/key_control.v
+Z14 F../src/key_control.v
+L0 29
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+R11
 vfat_file_reader
 R1
 !i10b 1
@@ -99,9 +120,9 @@ R1
 I_P__@?e>4:JhGamY?@Yk51
 R2
 R0
-Z12 w1792504478
-Z13 8tb_score_player.v
-Z14 Ftb_score_player.v
+Z15 w1792506678
+Z16 8tb_score_player.v
+Z17 Ftb_score_player.v
 L0 2
 R6
 r1
@@ -114,6 +135,48 @@ R9
 R10
 R11
 n@g@s@r
+vkey_audition
+R1
+!i10b 1
+!s100 Zg1EYDJkVJJDAhPVLO0WE3
+IJ@dBmIYKTchIMkCG3bS]J3
+R2
+R0
+R12
+R13
+R14
+L0 36
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+R11
+vkey_filter
+R1
+!i10b 1
+!s100 g82AE^NhR62he^T;c_iNL1
+IdPagAY6edM8OCg<>H[YjI1
+R2
+R0
+R12
+R13
+R14
+L0 1
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!i113 1
+R10
+R11
 voutput_limiter
 R1
 !i10b 1
@@ -136,13 +199,13 @@ R9
 R10
 R11
 vpiano_pcm_voice
-Z15 !s110 1792497578
+Z18 !s110 1792497578
 !i10b 1
 !s100 56XE=O2CfDkDJPjaH0z832
 I3]PP`9T_0]C<A0kN1^>330
 R2
 R0
-Z16 w1792317472
+Z19 w1792317472
 8../src/piano_pcm_voice.v
 F../src/piano_pcm_voice.v
 L0 3
@@ -150,20 +213,20 @@ R6
 r1
 !s85 0
 31
-Z17 !s108 1792497578.000000
-Z18 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|tb_piano_polyphony.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_polyphony.v|../src/piano_pcm_voice.v|../src/piano_sample_map.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
-Z19 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_sample_map.v|../src/piano_pcm_voice.v|../src/piano_polyphony.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_piano_polyphony.v|tb_score_full.v|tb_score_player.v|
+Z20 !s108 1792497578.000000
+Z21 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|tb_piano_polyphony.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_polyphony.v|../src/piano_pcm_voice.v|../src/piano_sample_map.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
+Z22 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_sample_map.v|../src/piano_pcm_voice.v|../src/piano_polyphony.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_piano_polyphony.v|tb_score_full.v|tb_score_player.v|
 !i113 1
 R10
 R11
 vpiano_polyphony
-R15
+R18
 !i10b 1
 !s100 W93N;iG=mfPaA`I;N^`_z1
 IFReegNI^kLUVS]hZjo?i_2
 R2
 R0
-R16
+R19
 8../src/piano_polyphony.v
 F../src/piano_polyphony.v
 L0 2
@@ -171,14 +234,14 @@ R6
 r1
 !s85 0
 31
-R17
-R18
-R19
+R20
+R21
+R22
 !i113 1
 R10
 R11
 vpiano_sample_map
-R15
+R18
 !i10b 1
 !s100 b4bnJ8OU>B]9K`?i789z;0
 I[oD>C@QCbZ`>U9<G[WeSX0
@@ -192,20 +255,20 @@ R6
 r1
 !s85 0
 31
-R17
-R18
-R19
+R20
+R21
+R22
 !i113 1
 R10
 R11
 vpiano_score_player
 R1
 !i10b 1
-!s100 25GEIz[@>L=TS=cBlQ;=<3
-IAdU4mZcddfWn7:`C^:Y]Z2
+!s100 OG>eAThl:Lz[I1dCn]KAU2
+Ijd6Q=1BAH6gMbB]Q:6N6V2
 R2
 R0
-w1792504408
+w1792506425
 8../src/piano_score_player.v
 F../src/piano_score_player.v
 L0 1
@@ -226,7 +289,7 @@ R1
 IE2WOOZ<eHReb7SJYVlTQB2
 R2
 R0
-R16
+R19
 8../src/piano_score_reader.v
 F../src/piano_score_reader.v
 L0 2
@@ -306,13 +369,13 @@ R11
 vscore_player_case
 R1
 !i10b 1
-!s100 21m_a2P<]d<XhOnTh?^Zo0
-IP98S4YGVN@0gzC9hci13b0
+!s100 UILnYU6]L9>OljUn9noEK0
+IdVC2FKLJf1YQ@JSkRkZ400
 R2
 R0
-R12
-R13
-R14
+R15
+R16
+R17
 L0 4
 R6
 r1
@@ -388,7 +451,7 @@ R9
 R10
 R11
 vtb_piano_polyphony
-R15
+R18
 !i10b 1
 !s100 cm=nMFI0gmTmB<O]o7CVn0
 I<4UViNI4e^3AZR^>X=0N@0
@@ -402,9 +465,9 @@ R6
 r1
 !s85 0
 31
-R17
-R18
-R19
+R20
+R21
+R22
 !i113 1
 R10
 R11
@@ -432,14 +495,14 @@ R11
 vtb_score_player
 R1
 !i10b 1
-!s100 RMoT7bdc02KEInlb:@8eA2
-I2cPTadgSAk[O9GDh;A<mU1
+!s100 d;T;Sbom5=B^YF=:H:k5`3
+I22;M7NSC?Gjflj1TmbKdT1
 R2
 R0
-R12
-R13
-R14
-L0 107
+R15
+R16
+R17
+L0 134
 R6
 r1
 !s85 0

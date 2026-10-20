@@ -28,6 +28,8 @@ module score_player_case #(
     );
     always #10 if (!passed) clk = ~clk;
     integer bit_number, nonzero = 0, first_ons = 0, repeated = 0;
+    integer manual_on_count = 0;
+    reg [6:0] manual_last_note = 0;
     reg [31:0] frame;
     reg [15:0] expected;
     initial forever begin
@@ -46,6 +48,11 @@ module score_player_case #(
         if (dut.sequencer.elapsed_ms == 0) first_ons = first_ons + 1;
         if (dut.sequencer.elapsed_ms == 50) repeated = repeated + 1;
     end
+    always @(posedge clk) if (dut.manual_mode && dut.synth_event_valid &&
+                              dut.synth_event_ready && dut.synth_event_on) begin
+        manual_last_note = dut.synth_event_note;
+        manual_on_count = manual_on_count + 1;
+    end
     task instrument_key;
         begin
             @(negedge clk); key0 = 0;
@@ -57,6 +64,13 @@ module score_player_case #(
         begin
             @(negedge clk); key1 = 0;
             repeat (32) @(negedge clk); key1 = 1;
+            repeat (32) @(negedge clk);
+        end
+    endtask
+    task mode_key;
+        begin
+            @(negedge clk); key2 = 0;
+            repeat (32) @(negedge clk); key2 = 1;
             repeat (32) @(negedge clk);
         end
     endtask
@@ -91,6 +105,19 @@ module score_player_case #(
                 $fatal(1, "Score chord/retrigger/EOF failure profile=%0d", PROFILE);
             if (CONTROLS) begin
                 first_ons = 0; repeated = 0;
+                mode_key();
+                if (!dut.manual_mode || dut.playing) $fatal(1, "KEY2 did not enter note audition mode");
+                replay_key();
+                wait (manual_on_count == 1);
+                repeat (3200) @(posedge clk);
+                if (manual_on_count != 1 || manual_last_note != 0)
+                    $fatal(1, "First audition key did not play A0");
+                replay_key();
+                wait (manual_on_count == 2);
+                if (manual_on_count != 2 || manual_last_note != 1)
+                    $fatal(1, "Second audition key did not play A#0");
+                mode_key();
+                if (dut.manual_mode) $fatal(1, "KEY2 did not return to score mode");
                 replay_key();
                 wait (dut.finished);
                 if (dut.failed || first_ons != 3 || repeated != 1) $fatal(1, "Score replay failed");

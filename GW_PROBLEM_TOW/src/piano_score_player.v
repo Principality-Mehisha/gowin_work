@@ -24,24 +24,31 @@ module piano_score_player #(
     reg [31:0] power_count = 0;
     always @(posedge sys_clk)
         if (power_count < POWER_ON_CYCLES) power_count <= power_count + 1'b1;
-    wire reset_request_n = KEY2 && power_count == POWER_ON_CYCLES;
+    wire reset_request_n = power_count == POWER_ON_CYCLES;
     reg [1:0] reset_sync;
     always @(posedge sys_clk or negedge reset_request_n)
         if (!reset_request_n) reset_sync <= 0;
         else reset_sync <= {reset_sync[0], 1'b1};
     wire rst_n = reset_sync[1];
-    wire instrument_press, replay_press;
+    wire instrument_press, replay_press, mode_press;
     button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) instrument_button (
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY0), .press(instrument_press)
     );
     button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) replay_button (
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY1), .press(replay_press)
     );
-    wire play_rst_n = rst_n && !replay_press;
+    button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) mode_button (
+        .clk(sys_clk), .rst_n(rst_n), .key_n(KEY2), .press(mode_press)
+    );
+    reg manual_mode;
+    always @(posedge sys_clk or negedge rst_n)
+        if (!rst_n) manual_mode <= 1'b0;
+        else if (mode_press) manual_mode <= !manual_mode;
+    wire play_rst_n = rst_n && !mode_press && !(replay_press && !manual_mode);
     reg [1:0] instrument_mode;
     reg instrument_change;
-    always @(posedge sys_clk or negedge play_rst_n)
-        if (!play_rst_n) begin
+    always @(posedge sys_clk or negedge rst_n)
+        if (!rst_n) begin
             instrument_mode <= 2'd0;
             instrument_change <= 1'b0;
         end else begin
@@ -92,12 +99,32 @@ module piano_score_player #(
     wire dds_event_valid, dds_event_on, dds_event_ready;
     wire [6:0] dds_event_note;
     wire [7:0] dds_event_dynamics;
+    wire synth_event_ready;
+    wire audition_event_valid, audition_event_on;
+    wire [6:0] audition_event_note;
+    wire [7:0] audition_event_dynamics;
+    wire synth_event_valid = manual_mode ? audition_event_valid : dds_event_valid;
+    wire synth_event_on = manual_mode ? audition_event_on : dds_event_on;
+    wire [6:0] synth_event_note = manual_mode ? audition_event_note : dds_event_note;
+    wire [7:0] synth_event_dynamics = manual_mode ? audition_event_dynamics : dds_event_dynamics;
     wire playing, finished, sequence_error;
     wire deadline_error;
     wire stream_error = sd_error_code != 0 || fat_error != 0 || score_error != 0;
     wire failed = stream_error || sequence_error || deadline_error;
+    wire synth_stop = manual_mode ? deadline_error : (failed || finished);
+    wire audio_silence = manual_mode ? deadline_error :
+                         (failed || finished || !playing);
+    wire mode_active = manual_mode || (playing && !finished);
+    key_audition #(.DEBOUNCE_CYCLES(DEBOUNCE_CYCLES)) audition (
+        .clk(sys_clk), .reset_n(play_rst_n && manual_mode),
+        .key_play_n(KEY1), .key_stop_n(1'b1),
+        .event_ready(manual_mode && synth_event_ready),
+        .event_valid(audition_event_valid), .event_on(audition_event_on),
+        .event_note(audition_event_note), .event_dynamics(audition_event_dynamics),
+        .stop_all()
+    );
     piano_score_sequencer #(.CLOCKS_PER_MS(CLOCKS_PER_MS)) sequencer (
-        .clk(sys_clk), .rst_n(play_rst_n), .paused(1'b0),
+        .clk(sys_clk), .rst_n(play_rst_n), .paused(manual_mode),
         .format_ok(format_ok), .stream_complete(complete), .stream_error(stream_error),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
         .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),
@@ -106,20 +133,22 @@ module piano_score_player #(
         .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers),
         .playing(playing), .finished(finished), .error(sequence_error), .elapsed_ms()
     );
+    assign dds_event_ready = !manual_mode && synth_event_ready;
     wire sample_tick;
     wire signed [15:0] pcm;
     wire pcm_valid, limiting, saturated;
     wire signed [31:0] mix_sample;
-    wire dds_sample_tick = sample_tick && !failed && !finished;
+    wire dds_sample_tick = sample_tick &&
+                           (manual_mode || (!failed && !finished));
     piano_synth #(
         .SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE), .VOICING_FILE(VOICING_FILE)
     ) synth (
         .clk(sys_clk), .reset_n(play_rst_n),
-        .sample_tick(dds_sample_tick), .stop_all(failed || finished),
+        .sample_tick(dds_sample_tick), .stop_all(synth_stop),
         .instrument_change(instrument_change), .instrument_mode(instrument_mode),
-        .event_valid(dds_event_valid), .event_on(dds_event_on),
-        .event_note(dds_event_note), .event_dynamics(dds_event_dynamics),
-        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(dds_event_ready),
+        .event_valid(synth_event_valid), .event_on(synth_event_on),
+        .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
+        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(synth_event_ready),
         .mix_sample(mix_sample), .mix_valid(), .pcm(pcm),
         .pcm_valid(pcm_valid), .limiting(limiting), .saturated(saturated),
         .deadline_error(deadline_error), .active_voices(),
@@ -128,10 +157,11 @@ module piano_score_player #(
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (
         .sys_clk(sys_clk), .sys_rst_n(rst_n),
-        .pcm_left(failed || finished || !playing ? 16'sd0 : pcm),
-        .pcm_right(failed || finished || !playing ? 16'sd0 : pcm),
+        .pcm_left(audio_silence ? 16'sd0 : pcm),
+        .pcm_right(audio_silence ? 16'sd0 : pcm),
         .sample_tick(sample_tick),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
-    assign LEDs = ~{failed, (playing && !finished), file_found, initialized};
+    assign LEDs = ~{(manual_mode ? deadline_error : failed), mode_active,
+                    file_found, initialized};
 endmodule

@@ -1,0 +1,31 @@
+# vsim -c -voptargs="+acc" -lib work_score tb_score_player -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_score_player/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l tb_score_player.log 
+# Start time: 20:24:01 on Oct 20,2026
+# Loading work_score.tb_score_player
+# Loading work_score.score_player_case
+# Loading work_score.piano_score_player
+# Loading work_score.GSR
+# Loading work_score.button_debounce
+# Loading work_score.sd_spi_reader
+# Loading work_score.sd_spi_byte
+# Loading work_score.fat_file_reader
+# Loading work_score.piano_score_reader
+# Loading work_score.piano_score_sequencer
+# Loading work_score.piano_synth
+# Loading work_score.adsr_pipeline
+# Loading work_score.output_limiter
+# Loading work_score.pt8211_score_tx
+# Loading work_score.sd_card_model
+# onfinish stop
+#  run -all
+# PASS: score failure case 1 rejected and silent
+# PASS: score failure case 2 rejected and silent
+# PASS: SPI divider 63, FAT profile 2, chord, repeated note, DAC audio, controls/EOF
+# PASS: SPI divider 63, FAT profile 0, chord, repeated note, DAC audio, controls/EOF
+# ** Note: $finish    : C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_player.v(121)
+#    Time: 297323390 ns  Iteration: 3  Instance: /tb_score_player
+# Break in Module tb_score_player at C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_player.v line 121
+# Stopped at C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_player.v line 121
+#  if {[examine -radix unsigned /tb_score_player/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 20:25:44 on Oct 20,2026, Elapsed time: 0:01:43
+# Errors: 0, Warnings: 0

@@ -22,9 +22,13 @@ for source in sources:
     if "$readmem" in source.read_text():
         readmem_sources.append(source.name)
 assert sorted(readmem_sources) == [
-    "piano_pcm_voice.v", "piano_polyphony.v", "piano_synth.v", "pll_init.v"
+    "piano_synth.v", "pll_init.v"
 ]
-assert (root / "src/piano_bank.hex").stat().st_size == 1_048_576
+for removed in (
+    "piano_bank.hex", "piano_pcm_voice.v", "piano_polyphony.v",
+    "piano_sample_map.v", "pt8211_tx.v",
+):
+    assert not (root / "src" / removed).exists(), removed
 score = (root / "sd_card/PIANO.BIN").read_bytes()
 assert score[:4] == b"P88S"
 assert len(score) == 16 + 8 * int.from_bytes(score[12:16], "little")

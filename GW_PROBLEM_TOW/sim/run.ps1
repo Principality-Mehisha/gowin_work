@@ -7,7 +7,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "vlib failed" }
     }
     $sources = @("src/adsr_step.v", "src/output_limiter.v", "src/piano_synth.v",
-        "src/key_control.v", "src/pt8211_tx.v", "sim/tb_synth.sv",
+        "src/key_control.v", "src/pt8211_score_tx.v", "sim/tb_synth.sv",
         "sim/tb_keys.sv", "sim/tb_dac.sv", "sim/tb_limiter.sv")
     & vlog -sv -work sim/work @sources
     if ($LASTEXITCODE -ne 0) { throw "vlog failed" }

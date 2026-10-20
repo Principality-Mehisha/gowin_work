@@ -1,0 +1,17 @@
+# vsim -c -voptargs="+acc" -lib work_score tb_score_full -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_score_full/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l tb_score_full.log 
+# Start time: 20:24:01 on Oct 20,2026
+# Loading work_score.tb_score_full
+# Loading work_score.fat_file_reader
+# Loading work_score.piano_score_reader
+# Loading work_score.piano_score_sequencer
+# onfinish stop
+#  run -all
+# PASS: complete Croatian Rhapsody, 3721 exact events through fragmented FAT32 and timed sequencer
+# ** Note: $finish    : C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_full.v(90)
+#    Time: 405539190 ns  Iteration: 1  Instance: /tb_score_full
+# Break in Module tb_score_full at C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_full.v line 90
+# Stopped at C:/Users/30415/Desktop/GW_PROBLEM_TOW/sim/tb_score_full.v line 90
+#  if {[examine -radix unsigned /tb_score_full/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 20:24:27 on Oct 20,2026, Elapsed time: 0:00:26
+# Errors: 0, Warnings: 0

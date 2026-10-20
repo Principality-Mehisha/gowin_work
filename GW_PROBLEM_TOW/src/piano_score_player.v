@@ -7,7 +7,12 @@ module piano_score_player #(
     parameter integer SD_READ_HALF_DIV = 63,
     parameter integer CLOCKS_PER_MS = 50000,
     parameter integer BCK_HALF_DIV = 48,
-    parameter ROM_FILE = "src/piano_bank.hex"
+    parameter SINE_FILE = "src/rom/sine256.hex",
+    parameter FREQ_FILE = "src/rom/frequency88.hex",
+    parameter VOICING_FILE = "src/rom/voicing88.hex",
+    // Frequency ROM is normalized for 48 kHz; compensate for this player's
+    // 50 MHz / BCK_HALF_DIV audio sample rate.
+    parameter [17:0] DDS_PITCH_RATIO = 18'd193274
 ) (
     input wire sys_clk, KEY0, KEY1, KEY2,
     output wire HP_BCK, HP_WS, HP_DIN, PA_EN,
@@ -76,28 +81,46 @@ module piano_score_player #(
     );
     wire [55:0] notes, velocities;
     wire [7:0] gates, triggers;
+    wire dds_event_valid, dds_event_on, dds_event_ready;
+    wire [6:0] dds_event_note;
+    wire [7:0] dds_event_dynamics;
     wire playing, finished, sequence_error;
+    wire deadline_error;
     wire stream_error = sd_error_code != 0 || fat_error != 0 || score_error != 0;
-    wire failed = stream_error || sequence_error;
+    wire failed = stream_error || sequence_error || deadline_error;
     piano_score_sequencer #(.CLOCKS_PER_MS(CLOCKS_PER_MS)) sequencer (
         .clk(sys_clk), .rst_n(play_rst_n), .paused(paused),
         .format_ok(format_ok), .stream_complete(complete), .stream_error(stream_error),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
+        .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),
+        .dispatch_on(dds_event_on), .dispatch_note(dds_event_note),
+        .dispatch_dynamics(dds_event_dynamics),
         .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers),
         .playing(playing), .finished(finished), .error(sequence_error), .elapsed_ms()
     );
     wire sample_tick;
     wire signed [15:0] pcm;
-    piano_polyphony #(.ROM_FILE(ROM_FILE)) synth (
-        .clk(sys_clk), .rst_n(play_rst_n), .sample_tick(sample_tick),
-        .audio_ready(1'b1), .paused(paused), .mute(failed || !playing),
-        .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers), .pcm(pcm)
+    wire pcm_valid, limiting, saturated;
+    wire signed [31:0] mix_sample;
+    wire dds_sample_tick = sample_tick && !paused && !failed && !finished;
+    piano_synth #(
+        .SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE), .VOICING_FILE(VOICING_FILE)
+    ) synth (
+        .clk(sys_clk), .reset_n(play_rst_n),
+        .sample_tick(dds_sample_tick), .stop_all(failed || finished),
+        .event_valid(dds_event_valid), .event_on(dds_event_on),
+        .event_note(dds_event_note), .event_dynamics(dds_event_dynamics),
+        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(dds_event_ready),
+        .mix_sample(mix_sample), .mix_valid(), .pcm(pcm),
+        .pcm_valid(pcm_valid), .limiting(limiting), .saturated(saturated),
+        .deadline_error(deadline_error), .active_voices(),
+        .debug_voice(), .debug_env_state(), .debug_envelope(), .debug_phase()
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (
         .sys_clk(sys_clk), .sys_rst_n(rst_n),
-        .pcm_left(failed || paused ? 16'sd0 : pcm),
-        .pcm_right(failed || paused ? 16'sd0 : pcm),
+        .pcm_left(failed || paused || finished || !playing ? 16'sd0 : pcm),
+        .pcm_right(failed || paused || finished || !playing ? 16'sd0 : pcm),
         .sample_tick(sample_tick),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );

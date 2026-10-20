@@ -9,7 +9,12 @@ module piano_score_sequencer #(
     input wire format_ok, stream_complete, stream_error,
     input wire [63:0] event_data,
     input wire event_valid,
+    input wire dispatch_ready,
     output wire event_ready,
+    output wire dispatch_valid,
+    output wire dispatch_on,
+    output wire [6:0] dispatch_note,
+    output wire [7:0] dispatch_dynamics,
     output reg [55:0] notes,
     output reg [55:0] velocities,
     output reg [7:0] gates,
@@ -30,7 +35,15 @@ module piano_score_sequencer #(
     wire active = playing && !paused && !error && !stream_error;
     assign event_ready = count < DEPTH && !error && !finished;
     wire push = event_valid && event_ready;
-    wire pop = active && count != 0 && !head_wait && head[31:0] <= elapsed_ms;
+    wire due = active && count != 0 && !head_wait && head[31:0] <= elapsed_ms;
+    wire terminal = slot == 8'hff;
+    // Keep a due note in the FIFO until the DDS accepts it. The terminal
+    // record is consumed locally and does not enter the synth event stream.
+    assign dispatch_valid = due && !terminal;
+    assign dispatch_on = velocity != 0;
+    assign dispatch_note = note[6:0];
+    assign dispatch_dynamics = {velocity[6:0], 1'b0};
+    wire pop = due && (terminal || dispatch_ready);
     always @(posedge clk) begin
         if (push) fifo[wr_ptr] <= event_data;
         head <= fifo[rd_ptr];

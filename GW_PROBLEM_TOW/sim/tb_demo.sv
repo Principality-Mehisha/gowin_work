@@ -19,8 +19,10 @@ module tb_demo;
         .limiting(limiting),.saturated(saturated),.deadline_error(deadline),
         .active_voices(active),.debug_voice(),.debug_env_state(),
         .debug_envelope(),.debug_phase());
-    pt8211_tx dac (
-        .clk(clk),.reset_n(reset_n),.mute(stop_all),.pcm(pcm),
+    pt8211_score_tx #(.BCK_HALF_DIV(50)) dac (
+        .sys_clk(clk),.sys_rst_n(reset_n),
+        .pcm_left(stop_all ? 16'sd0 : pcm),
+        .pcm_right(stop_all ? 16'sd0 : pcm),
         .sample_tick(tick),.HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN());
     always @(negedge clk) if(pcm_valid) begin
         if(deadline || saturated || ^pcm===1'bx) $fatal(1,"Bad output");

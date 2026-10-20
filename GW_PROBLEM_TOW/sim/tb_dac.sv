@@ -9,8 +9,9 @@ module tb_dac;
     reg [15:0] received=0,right_word=0;
     integer bitcount=0;
     reg started=0;
-    pt8211_tx #(.AMP_START_CYCLES(10)) dut (
-        .clk(clk),.reset_n(reset_n),.mute(mute),.pcm(pcm),.sample_tick(tick),
+    pt8211_score_tx #(.BCK_HALF_DIV(50),.AMP_START_CYCLES(10)) dut (
+        .sys_clk(clk),.sys_rst_n(reset_n),.pcm_left(mute ? 16'sd0 : pcm),
+        .pcm_right(mute ? 16'sd0 : pcm),.sample_tick(tick),
         .HP_BCK(bck),.HP_WS(ws),.HP_DIN(din),.PA_EN(pa));
     always @(negedge clk) if(reset_n) begin
         cycle=cycle+1;

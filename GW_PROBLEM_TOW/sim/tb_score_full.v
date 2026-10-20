@@ -6,6 +6,7 @@ module tb_score_full;
     reg [7:0] sd_data = 0;
     reg [8:0] sd_index = 0;
     wire sd_start, valid, ready, found, done, event_valid, event_ready, format_ok, complete;
+    wire dispatch_ready = 1'b1;
     wire [31:0] sd_lba, file_size, elapsed_ms;
     wire [7:0] data;
     wire [63:0] event_data;
@@ -30,6 +31,8 @@ module tb_score_full;
         .clk(clk), .rst_n(rst_n), .paused(1'b0), .format_ok(format_ok),
         .stream_complete(complete), .stream_error(fat_error != 0 || score_error != 0),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
+        .dispatch_ready(dispatch_ready), .dispatch_valid(), .dispatch_on(),
+        .dispatch_note(), .dispatch_dynamics(),
         .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers),
         .playing(playing), .finished(finished), .error(error), .elapsed_ms(elapsed_ms)
     );

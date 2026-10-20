@@ -14,7 +14,9 @@ module score_player_case #(
     piano_score_player #(
         .POWER_ON_CYCLES(8), .DEBOUNCE_CYCLES(8), .AUDIO_START_CYCLES(64),
         .SD_POWER_WAIT_CYCLES(16), .SD_INIT_HALF_DIV(3), .SD_READ_HALF_DIV(63),
-        .ROM_FILE("../src/piano_bank.hex")
+        .SINE_FILE("../src/rom/sine256.hex"),
+        .FREQ_FILE("../src/rom/frequency88.hex"),
+        .VOICING_FILE("../src/rom/voicing88.hex")
     ) dut (
         .sys_clk(clk), .KEY0(key0), .KEY1(key1), .KEY2(key2),
         .HP_BCK(bck), .HP_WS(ws), .HP_DIN(din), .PA_EN(amp),
@@ -58,7 +60,8 @@ module score_player_case #(
             repeat (32) @(negedge clk);
         end
     endtask
-    reg [31:0] saved_ms, saved_position;
+    reg [31:0] saved_ms;
+    reg [82:0] saved_voice_state;
     initial begin
         if (EXPECT_ERROR) begin
             wait (dut.failed);
@@ -73,19 +76,22 @@ module score_player_case #(
                 wait (dut.sequencer.elapsed_ms == 10);
                 pause_key();
                 if (!dut.paused) $fatal(1, "Score did not pause");
+                wait (dut.synth.state == 0);
+                @(negedge clk);
                 saved_ms = dut.sequencer.elapsed_ms;
-                saved_position = dut.synth.voices[0].voice.position;
+                saved_voice_state = dut.synth.voice_ram[0];
                 repeat (5) @(posedge dut.sample_tick);
                 @(negedge clk);
                 if (dut.sequencer.elapsed_ms != saved_ms ||
-                    dut.synth.voices[0].voice.position != saved_position || dut.pcm !== 0)
+                    dut.synth.voice_ram[0] != saved_voice_state)
                     $fatal(1, "Paused score advanced");
                 pause_key();
             end
             wait (dut.finished);
             repeat (5) @(posedge dut.sample_tick);
             if (dut.failed || dut.gates != 0 || dut.pcm !== 0 || nonzero < 500 ||
-                first_ons != 3 || repeated != 1 || amp !== 0)
+                first_ons != 3 || repeated != 1 || amp !== 0 ||
+                dut.deadline_error)
                 $fatal(1, "Score chord/retrigger/EOF failure profile=%0d", PROFILE);
             if (CONTROLS) begin
                 first_ons = 0; repeated = 0;

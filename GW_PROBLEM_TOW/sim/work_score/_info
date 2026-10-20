@@ -9,176 +9,176 @@ z2
 cModel Technology
 Z0 dC:/Users/30415/Desktop/GW_PROBLEM_TOW/sim
 vadsr_pipeline
-Z1 !s110 1792501292
+Z1 !s110 1792505258
 !i10b 1
 !s100 OUFkY<J6H>8N]P9z_g_oW1
-IG0<Xmh@g7mz5fkfOo`2=[3
+IX@diQW^eoUkjZP;VI1O`V1
 Z2 VDg1SIo80bB@j0V0VzS_@n1
-Z3 dC:/Users/30415/Desktop/GW_PROBLEM_TOW
-Z4 w1792339368
-Z5 8src/adsr_step.v
-Z6 Fsrc/adsr_step.v
+R0
+Z3 w1792339368
+Z4 8../src/adsr_step.v
+Z5 F../src/adsr_step.v
 L0 51
-Z7 OV;L;10.5b;63
+Z6 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z8 !s108 1792501292.000000
-Z9 !s107 sim\..\output\score_test\params.vh|sim/tb_score_player.v|sim/tb_score_full.v|sim/sd_card_model.v|src/pt8211_score_tx.v|src/button_debounce.v|src/fat_file_reader.v|src/sd_spi_reader.v|src/sd_spi_byte.v|src/piano_score_player.v|src/piano_score_sequencer.v|src/piano_score_reader.v|src/piano_synth.v|src/output_limiter.v|src/adsr_step.v|
-Z10 !s90 -work|sim/work_score|src/adsr_step.v|src/output_limiter.v|src/piano_synth.v|src/piano_score_reader.v|src/piano_score_sequencer.v|src/piano_score_player.v|src/sd_spi_byte.v|src/sd_spi_reader.v|src/fat_file_reader.v|src/button_debounce.v|src/pt8211_score_tx.v|sim/sd_card_model.v|sim/tb_score_full.v|sim/tb_score_player.v|
+Z7 !s108 1792505258.000000
+Z8 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
+Z9 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
 !i113 1
-Z11 o-work sim/work_score
-Z12 tCvgOpt 0
+Z10 o-work work_score
+Z11 tCvgOpt 0
 vadsr_step
 R1
 !i10b 1
 !s100 N8n:@0XTVH_W>L;ZT4M?60
-IjRVYXd`9=TA34Y9[eF<Z_0
+ITAEX`?7P4P^Ikj5N5GiM?3
 R2
+R0
 R3
 R4
 R5
-R6
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vbutton_debounce
 R1
 !i10b 1
 !s100 @5gU`Me4d@@L<0K1?N;:63
-ILS6PTSV]B<LM5ABIWEOT_3
+IkVM<8jQUf:>ICoZ8QIU1H0
 R2
-R3
+R0
 w1791807056
-8src/button_debounce.v
-Fsrc/button_debounce.v
+8../src/button_debounce.v
+F../src/button_debounce.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vfat_file_reader
 R1
 !i10b 1
 !s100 EO<mdBPbGH5FS_6@1N[3D0
-IL@a44L5U1Ha2_TPEgUF@A2
+InRU3SJ_7n4G7VX4ZI[2Ol3
 R2
-R3
+R0
 w1792248854
-8src/fat_file_reader.v
-Fsrc/fat_file_reader.v
+8../src/fat_file_reader.v
+F../src/fat_file_reader.v
 L0 3
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vGSR
 R1
 !i10b 1
 !s100 4eWhcbja4OaXk3R2_7kFG0
-I7m=l`MNSk[mZ>d<T2=?n<0
+I_P__@?e>4:JhGamY?@Yk51
 R2
-R3
-Z13 w1792500941
-Z14 8sim/tb_score_player.v
-Z15 Fsim/tb_score_player.v
+R0
+Z12 w1792504478
+Z13 8tb_score_player.v
+Z14 Ftb_score_player.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 n@g@s@r
 voutput_limiter
 R1
 !i10b 1
 !s100 MeIGhlngIRA6[6eKd47<M2
-IECTSRmYh4YE`On9Ii76[22
+If[g_zQA]HA3`IJ]2MR9>U1
 R2
-R3
+R0
 w1792337522
-8src/output_limiter.v
-Fsrc/output_limiter.v
+8../src/output_limiter.v
+F../src/output_limiter.v
 L0 3
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vpiano_pcm_voice
-Z16 !s110 1792497578
+Z15 !s110 1792497578
 !i10b 1
 !s100 56XE=O2CfDkDJPjaH0z832
 I3]PP`9T_0]C<A0kN1^>330
 R2
 R0
-Z17 w1792317472
+Z16 w1792317472
 8../src/piano_pcm_voice.v
 F../src/piano_pcm_voice.v
 L0 3
-R7
+R6
 r1
 !s85 0
 31
-Z18 !s108 1792497578.000000
-Z19 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|tb_piano_polyphony.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_polyphony.v|../src/piano_pcm_voice.v|../src/piano_sample_map.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
-Z20 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_sample_map.v|../src/piano_pcm_voice.v|../src/piano_polyphony.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_piano_polyphony.v|tb_score_full.v|tb_score_player.v|
+Z17 !s108 1792497578.000000
+Z18 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|tb_piano_polyphony.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/piano_polyphony.v|../src/piano_pcm_voice.v|../src/piano_sample_map.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
+Z19 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/piano_sample_map.v|../src/piano_pcm_voice.v|../src/piano_polyphony.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_piano_polyphony.v|tb_score_full.v|tb_score_player.v|
 !i113 1
-Z21 o-work work_score
-R12
+R10
+R11
 vpiano_polyphony
-R16
+R15
 !i10b 1
 !s100 W93N;iG=mfPaA`I;N^`_z1
 IFReegNI^kLUVS]hZjo?i_2
 R2
 R0
-R17
+R16
 8../src/piano_polyphony.v
 F../src/piano_polyphony.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R17
 R18
 R19
-R20
 !i113 1
-R21
-R12
+R10
+R11
 vpiano_sample_map
-R16
+R15
 !i10b 1
 !s100 b4bnJ8OU>B]9K`?i789z;0
 I[oD>C@QCbZ`>U9<G[WeSX0
@@ -188,207 +188,207 @@ w1792242307
 8../src/piano_sample_map.v
 F../src/piano_sample_map.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R17
 R18
 R19
-R20
 !i113 1
-R21
-R12
+R10
+R11
 vpiano_score_player
 R1
 !i10b 1
-!s100 S[W`5C<oNm]^h`XAZ^U^90
-INRiQ>0iDlUW]_z290DBi]3
+!s100 25GEIz[@>L=TS=cBlQ;=<3
+IAdU4mZcddfWn7:`C^:Y]Z2
 R2
-R3
-w1792500851
-8src/piano_score_player.v
-Fsrc/piano_score_player.v
+R0
+w1792504408
+8../src/piano_score_player.v
+F../src/piano_score_player.v
 L0 1
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vpiano_score_reader
 R1
 !i10b 1
 !s100 BS7=gXkEHBz]lB7e?Ddk00
-I`13AHW31>_We?nieDZk@<3
+IE2WOOZ<eHReb7SJYVlTQB2
 R2
-R3
-R17
-8src/piano_score_reader.v
-Fsrc/piano_score_reader.v
+R0
+R16
+8../src/piano_score_reader.v
+F../src/piano_score_reader.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vpiano_score_sequencer
 R1
 !i10b 1
 !s100 6QU4d7=YGSFkOg:mB68T20
-Io3MhB[hQDa7QY?LLEhAJ@2
+I^VUFOB2=SlcBRE90Oo_^G3
 R2
-R3
+R0
 w1792496192
-8src/piano_score_sequencer.v
-Fsrc/piano_score_sequencer.v
+8../src/piano_score_sequencer.v
+F../src/piano_score_sequencer.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vpiano_synth
 R1
 !i10b 1
-!s100 77JbAY:Egn96MHdYD2^8d2
-Iee<6M6@AlBC_7OY2iW_eC0
+!s100 WfQ0FPFnj02_DSIN`=:OA0
+Ibe>7OoPjdeTSMlVGaCTj:2
 R2
-R3
-w1792501266
-8src/piano_synth.v
-Fsrc/piano_synth.v
+R0
+w1792505218
+8../src/piano_synth.v
+F../src/piano_synth.v
 L0 3
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vpt8211_score_tx
 R1
 !i10b 1
 !s100 GlTZ6DY?W<O213_[]9LTa0
-IVgz[2PaFghhk0dDgBoD<71
+IeD_k[4=EnV6=`d`hIz0<E1
 R2
-R3
+R0
 w1792422204
-8src/pt8211_score_tx.v
-Fsrc/pt8211_score_tx.v
+8../src/pt8211_score_tx.v
+F../src/pt8211_score_tx.v
 L0 5
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vscore_player_case
 R1
 !i10b 1
-!s100 _e_1Kja_JhY`mZmdoh[lG3
-IX6E4EVSG@o=M:bAZ7?nOl2
+!s100 21m_a2P<]d<XhOnTh?^Zo0
+IP98S4YGVN@0gzC9hci13b0
 R2
-R3
+R0
+R12
 R13
 R14
-R15
 L0 4
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vsd_card_model
 R1
 !i10b 1
 !s100 oHEkCdga=cLkC0eNCO^X80
-I>]i[`hM;OBG7W<jHoeOT`1
+IfKll8W4U151=_a0F7eJbz1
 R2
-R3
+R0
 w1792251784
-8sim/sd_card_model.v
-Fsim/sd_card_model.v
+8sd_card_model.v
+Fsd_card_model.v
 L0 4
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vsd_spi_byte
 R1
 !i10b 1
 !s100 d^zGgTclPm?S5^nFMVT?Z2
-ImO3E?LD^[[6REhg5l;Pg_3
+I26<RWbe`nkIGL[4YbbDaH2
 R2
-R3
+R0
 w1792160308
-8src/sd_spi_byte.v
-Fsrc/sd_spi_byte.v
+8../src/sd_spi_byte.v
+F../src/sd_spi_byte.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vsd_spi_reader
 R1
 !i10b 1
 !s100 B:MSOMLC]a9ZWQBkIMLV<2
-IRDOK1iHZZW8:g80VRG1=A0
+I8`[d[BTLdn^ZF3lM>YAg73
 R2
-R3
+R0
 w1792251737
-8src/sd_spi_reader.v
-Fsrc/sd_spi_reader.v
+8../src/sd_spi_reader.v
+F../src/sd_spi_reader.v
 L0 4
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vtb_piano_polyphony
-R16
+R15
 !i10b 1
 !s100 cm=nMFI0gmTmB<O]o7CVn0
 I<4UViNI4e^3AZR^>X=0N@0
@@ -398,55 +398,55 @@ w1792317649
 8tb_piano_polyphony.v
 Ftb_piano_polyphony.v
 L0 2
-R7
+R6
 r1
 !s85 0
 31
+R17
 R18
 R19
-R20
 !i113 1
-R21
-R12
+R10
+R11
 vtb_score_full
 R1
 !i10b 1
 !s100 OzV8_bFz5O@HQlCn`SEi?0
-IlLdF5V_@Ue6ccf5Xn6>QH0
+IC@6j5m]h<lDBi@HaZZ9Sn1
 R2
-R3
+R0
 w1792496387
-8sim/tb_score_full.v
-Fsim/tb_score_full.v
+8tb_score_full.v
+Ftb_score_full.v
 L0 3
-R7
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12
 vtb_score_player
 R1
 !i10b 1
-!s100 ;ld5V?bDdf7Zmc:Rgb7Fn0
-I?YL4l24NIaZJUBXeeP4df3
+!s100 RMoT7bdc02KEInlb:@8eA2
+I2cPTadgSAk[O9GDh;A<mU1
 R2
-R3
+R0
+R12
 R13
 R14
-R15
-L0 104
-R7
+L0 107
+R6
 r1
 !s85 0
 31
+R7
 R8
 R9
-R10
 !i113 1
+R10
 R11
-R12

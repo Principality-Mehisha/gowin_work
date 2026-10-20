@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/work tb_synth -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_synth.log 
-# Start time: 21:01:35 on Oct 20,2026
+# Start time: 22:07:11 on Oct 20,2026
 # Loading sv_std.std
 # Loading sim/work.tb_synth
 # Loading sim/work.piano_synth
@@ -7,12 +7,12 @@
 # Loading sim/work.output_limiter
 # onfinish stop
 #  run -all
-# PASS tb_synth: 162 frames, 88 voices, ADSR, pitch, hard stop; max latency 2861 clocks
-# ** Note: $finish    : sim/tb_synth.sv(139)
-#    Time: 3378305910 ps  Iteration: 1  Instance: /tb_synth
-# Break in Module tb_synth at sim/tb_synth.sv line 139
-# Stopped at sim/tb_synth.sv line 139
+# PASS tb_synth: 164 frames, 88 voices, ADSR, pitch, hard stop; max latency 2861 clocks
+# ** Note: $finish    : sim/tb_synth.sv(153)
+#    Time: 3419982930 ps  Iteration: 1  Instance: /tb_synth
+# Break in Module tb_synth at sim/tb_synth.sv line 153
+# Stopped at sim/tb_synth.sv line 153
 #  if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 21:01:37 on Oct 20,2026, Elapsed time: 0:00:02
+# End time: 22:07:12 on Oct 20,2026, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0

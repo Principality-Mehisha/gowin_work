@@ -38,14 +38,17 @@ module piano_score_player #(
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY1), .press(replay_press)
     );
     wire play_rst_n = rst_n && !replay_press;
-    reg instrument_mode, instrument_change;
+    reg [1:0] instrument_mode;
+    reg instrument_change;
     always @(posedge sys_clk or negedge play_rst_n)
         if (!play_rst_n) begin
-            instrument_mode <= 1'b0;
+            instrument_mode <= 2'd0;
             instrument_change <= 1'b0;
         end else begin
             instrument_change <= instrument_press;
-            if (instrument_press) instrument_mode <= ~instrument_mode;
+            if (instrument_press)
+                instrument_mode <= instrument_mode==2'd2 ? 2'd0 :
+                                   instrument_mode+1'b1;
         end
     wire sd_ready, sd_start, sd_valid, sd_done, sd_error, initialized;
     wire [31:0] sd_lba;

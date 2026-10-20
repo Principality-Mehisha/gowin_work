@@ -75,10 +75,13 @@ module score_player_case #(
             if (CONTROLS) begin
                 wait (dut.sequencer.elapsed_ms == 10);
                 instrument_key();
-                if (dut.instrument_mode !== 1'b1) $fatal(1, "Instrument did not switch");
+                if (dut.instrument_mode !== 2'd1) $fatal(1, "Instrument did not switch to violin");
                 wait (dut.synth.state == 0);
                 instrument_key();
-                if (dut.instrument_mode !== 1'b0) $fatal(1, "Instrument did not switch back");
+                if (dut.instrument_mode !== 2'd2) $fatal(1, "Instrument did not switch to drums");
+                wait (dut.synth.state == 0);
+                instrument_key();
+                if (dut.instrument_mode !== 2'd0) $fatal(1, "Instrument did not cycle back to piano");
             end
             wait (dut.finished);
             repeat (5) @(posedge dut.sample_tick);

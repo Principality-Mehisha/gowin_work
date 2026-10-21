@@ -20,6 +20,12 @@ assert len((root / "src/rom/frequency88.hex").read_text().splitlines()) == 88
 assert len((root / "src/rom/voicing88.hex").read_text().splitlines()) == 88
 marimba_table = (root / "src/rom/marimba24.hex").read_text().splitlines()
 assert len(marimba_table) == 24 and all(len(row) == 64 for row in marimba_table)
+for row in marimba_table:
+    packed = int(row, 16)
+    assert all(
+        ((packed >> (mode * 64 + 32)) & 0xFFFFFFFF) < 0x80000000
+        for mode in range(4)
+    ), "Marimba mode exceeds Nyquist"
 readmem_sources = []
 for source in sources:
     if "$readmem" in source.read_text():

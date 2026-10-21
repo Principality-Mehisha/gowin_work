@@ -9,10 +9,9 @@ ROM.mkdir(exist_ok=True)
 SAMPLE_RATE = 50_000_000 / 3072
 NOTE_FIRST = 24
 NOTE_COUNT = 24
-MODE_RATIOS = (1.0, 3.99, 10.65, None)
-MODE_GAINS = (0.68, 0.17, 0.12, 0.08)
-MODE_DECAYS = (0.9996, 0.9994, 0.9994, 0.9990)
-FIXED_MODE_HZ = 2443.0
+MODE_RATIOS = (1.0, 4.0198, 10.7185, 18.0697)
+MODE_GAINS = (0.62, 0.20, 0.14, 0.008)
+MODE_DECAYS = (0.9998, 0.9994, 0.9988, 0.90)
 
 rows = []
 highest_mode = 0.0
@@ -20,10 +19,7 @@ for offset in range(NOTE_COUNT):
     note_index = NOTE_FIRST + offset
     midi_note = 21 + note_index
     fundamental = 440.0 * 2 ** ((midi_note - 69) / 12)
-    frequencies = [
-        fundamental * ratio if ratio is not None else FIXED_MODE_HZ
-        for ratio in MODE_RATIOS
-    ]
+    frequencies = [fundamental * ratio for ratio in MODE_RATIOS]
     highest_mode = max(highest_mode, *frequencies)
     if max(frequencies) >= SAMPLE_RATE / 2:
         raise ValueError(f"Note index {note_index} has a mode above Nyquist")

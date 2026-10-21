@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/work tb_synth -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_synth.log 
-# Start time: 22:38:53 on Oct 21,2026
+# Start time: 23:08:27 on Oct 21,2026
 # Loading sv_std.std
 # Loading sim/work.tb_synth
 # Loading sim/work.piano_synth
@@ -14,5 +14,5 @@
 # Stopped at sim/tb_synth.sv line 134
 #  if {[examine -radix unsigned /tb_synth/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 22:38:55 on Oct 21,2026, Elapsed time: 0:00:02
+# End time: 23:08:29 on Oct 21,2026, Elapsed time: 0:00:02
 # Errors: 0, Warnings: 0

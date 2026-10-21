@@ -9,6 +9,7 @@ module tb_keys;
     integer on_count=0, off_count=0, expected=0, i;
     key_audition #(.DEBOUNCE_CYCLES(4)) dut (
         .clk(clk),.reset_n(reset_n),.key_play_n(play_n),.key_stop_n(stop_n),
+        .note_first(7'd0),.note_last(7'd87),
         .event_ready(ready),.event_valid(valid),.event_on(on_value),
         .event_note(note),.event_dynamics(dynamics),.stop_all(stop_all));
     always @(posedge clk) if(reset_n && valid && ready && !stop_all) begin
@@ -31,11 +32,16 @@ module tb_keys;
             play_n=1; wait_key();
         end
         if(on_count!=89 || off_count!=89) $fatal(1,"Missing edge events");
+        ready=0; play_n=0; wait_key(); play_n=1; wait_key();
+        if (!valid || !on_value) $fatal(1,"Backpressured note-on was lost on key-up");
+        ready=1; wait_key();
+        if(on_count!=90 || off_count!=90)
+            $fatal(1,"Backpressured note-on/release order was lost");
         play_n=0; wait_key(); stop_n=0; wait_key();
         stop_n=1; wait_key();
         if(valid) $fatal(1,"Stop re-triggered a held key");
         play_n=1; wait_key();
-        if(off_count!=89) $fatal(1,"Stopped held key emitted stray note-off");
+        if(off_count!=90) $fatal(1,"Stopped held key emitted stray note-off");
         passed=1; $display("PASS tb_keys: debounce, 88-note wrap, hold/release, stop lockout");
         $finish;
     end

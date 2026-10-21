@@ -18,6 +18,7 @@
         <File path="src/key_control.v" type="file.verilog" enable="1"/>
         <File path="src/adsr_step.v" type="file.verilog" enable="1"/>
         <File path="src/piano_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/marimba_synth.v" type="file.verilog" enable="1"/>
         <File path="src/output_limiter.v" type="file.verilog" enable="1"/>
         <File path="src/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>
         <File path="src/GW_PROBLEM_TOW.sdc" type="file.sdc" enable="1"/>

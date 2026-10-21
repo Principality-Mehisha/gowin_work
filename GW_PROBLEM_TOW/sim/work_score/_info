@@ -28,42 +28,39 @@ R1
 R2
 n@_opt1
 R3
-vadsr_pipeline
-Z4 !s110 1792586127
-!i10b 1
-!s100 _?G2jZBnRd0R<RUK2QJ`50
-Z5 !s11b Dg1SIo80bB@j0V0VzS_@n1
-Ih<K^X:mWNVoaJje5?<Pi:0
 R0
-Z6 w1792461548
-Z7 8../src/adsr_step.v
-Z8 F../src/adsr_step.v
-!i122 1
-L0 51 62
-Z9 VDg1SIo80bB@j0V0VzS_@n1
-Z10 OL;L;2020.4;71
+vadsr_pipeline
+Z4 !s110 1792593718
+!i10b 1
+!s100 OUFkY<J6H>8N]P9z_g_oW1
+IX@diQW^eoUkjZP;VI1O`V1
+Z5 VDg1SIo80bB@j0V0VzS_@n1
+Z6 dC:/Users/30415/Desktop/gowin_work/GW_PROBLEM_TOW/sim
+Z7 w1792339368
+Z8 8../src/adsr_step.v
+Z9 F../src/adsr_step.v
+L0 51
+Z10 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z11 !s108 1792586127.000000
-Z12 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/dynamics_fixed.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
-Z13 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/dynamics_fixed.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
-!i113 0
-Z14 o-work work_score -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z11 !s108 1792593718.000000
+Z12 !s107 ../output/score_test/params.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/dynamics_fixed.v|../src/marimba_synth.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
+Z13 !s90 -work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/marimba_synth.v|../src/dynamics_fixed.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
+!i113 1
+Z14 o-work work_score
 R2
 vadsr_step
 R4
 !i10b 1
-!s100 Bg]aZWdU>HZeTS6f]_YCc3
+!s100 N8n:@0XTVH_W>L;ZT4M?60
+ITAEX`?7P4P^Ikj5N5GiM?3
 R5
-I1RPOHQXCIV^:HXnT=R0mn0
-R0
 R6
 R7
 R8
-!i122 1
-L0 2 46
 R9
+L0 2
 R10
 r1
 !s85 0
@@ -71,22 +68,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vbutton_debounce
 R4
 !i10b 1
-!s100 0RX:`1YW<mcLHdBk@AnKz0
+!s100 @5gU`Me4d@@L<0K1?N;:63
+IkVM<8jQUf:>ICoZ8QIU1H0
 R5
-I^Q1hJCU2`:^9>;4K22_i42
-R0
 R6
+w1791807056
 8../src/button_debounce.v
 F../src/button_debounce.v
-!i122 1
-L0 2 32
-R9
+L0 2
 R10
 r1
 !s85 0
@@ -94,22 +89,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vdynamics_fixed
 R4
 !i10b 1
-!s100 RcXK01CBOYFJQ4o5W6HnP2
+!s100 AI85XXP@1Vzc6T?OgObck3
+IfTo@01jZOfn_e1ka?Bn>P0
 R5
-I[D::93NZomTLbEJVkih9K0
-R0
-Z15 w1792510129
+R6
+Z15 w1792587815
 8../src/dynamics_fixed.v
 F../src/dynamics_fixed.v
-!i122 1
-L0 3 6
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -117,22 +110,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vfat_file_reader
 R4
 !i10b 1
-!s100 AP8]SeN?laS0I:Lkd`ZEK0
+!s100 EO<mdBPbGH5FS_6@1N[3D0
+InRU3SJ_7n4G7VX4ZI[2Ol3
 R5
-IGBa3z^Zhg<PZ:A^50`WYX1
-R0
 R6
+w1792248854
 8../src/fat_file_reader.v
 F../src/fat_file_reader.v
-!i122 1
-L0 3 511
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -140,22 +131,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vGSR
 R4
 !i10b 1
-!s100 73j1JZRgkHUeGj8>YLaz=3
+!s100 4eWhcbja4OaXk3R2_7kFG0
+I_P__@?e>4:JhGamY?@Yk51
 R5
-I=ePIfNB3Q8`4ikPWgRnCM0
-R0
-Z16 w1792512179
+R6
+Z16 w1792591234
 Z17 8tb_score_player.v
 Z18 Ftb_score_player.v
-!i122 1
-L0 2 2
-R9
+L0 2
 R10
 r1
 !s85 0
@@ -163,23 +152,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 n@g@s@r
 vkey_audition
 R4
 !i10b 1
-!s100 iPMVUX0]SUE8KRkDa=a1N1
+!s100 D=iIkdF2FUJ`4IgITfE]k1
+I@0a^LPI`5_YIao8ZGgDBQ3
 R5
-IG8dPPE^>LaK]^f8D@AdP[0
-R0
-R15
-Z19 8../src/key_control.v
-Z20 F../src/key_control.v
-!i122 1
-L0 30 48
-R9
+R6
+Z19 w1792591969
+Z20 8../src/key_control.v
+Z21 F../src/key_control.v
+L0 30
 R10
 r1
 !s85 0
@@ -187,22 +174,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vkey_filter
 R4
 !i10b 1
-!s100 VF0XiAo[g75:X8D9FCOQ[0
+!s100 0lO0zG8D6oSbaMM:5d[oO3
+I]jaRaM8_:9_V1D5RG6lYo0
 R5
-Iddd:L45oULHiI77CeBREm1
-R0
-R15
+R6
 R19
 R20
-!i122 1
-L0 2 26
-R9
+R21
+L0 2
 R10
 r1
 !s85 0
@@ -210,22 +195,41 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
+R14
+R2
+vmarimba_synth
+R4
+!i10b 1
+!s100 dLR8fVoRS;]dU[R:oWb6^0
+IzhR8NKQh_OYc2EG77S^VM1
+R5
+R6
+w1792593510
+8../src/marimba_synth.v
+F../src/marimba_synth.v
+L0 3
+R10
+r1
+!s85 0
+31
+R11
+R12
+R13
+!i113 1
 R14
 R2
 voutput_limiter
 R4
 !i10b 1
-!s100 6W64E8;zXEZAV@VD2`Skd1
+!s100 MeIGhlngIRA6[6eKd47<M2
+If[g_zQA]HA3`IJ]2MR9>U1
 R5
-IY_CVVeDhei^2kNKUk4XP<2
-R0
 R6
+w1792337522
 8../src/output_limiter.v
 F../src/output_limiter.v
-!i122 1
-L0 3 103
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -233,22 +237,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vpiano_score_player
 R4
 !i10b 1
-!s100 ^jZWL<=iRbDF`g^mlfF5F0
+!s100 W4RjkT69L43<`B;]_SRd62
+INYiKH1LQ=aVE9Mb^:TNa43
 R5
-Ib8JC?Sa^m]fmee=z53[`z2
-R0
-w1792586108
+R6
+w1792593438
 8../src/piano_score_player.v
 F../src/piano_score_player.v
-!i122 1
-L0 3 170
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -256,22 +258,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vpiano_score_reader
 R4
 !i10b 1
-!s100 gK_EejfBemGT84ocD45RX1
+!s100 ihU3IkJB35Fn41i?7DFPM3
+IU=hU`k@zOQG>I:U`IUMb83
 R5
-I2c6?c0aaIdec;^F`8FD6J3
-R0
-Z21 w1792509855
+R6
+R15
 8../src/piano_score_reader.v
 F../src/piano_score_reader.v
-!i122 1
-L0 3 88
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -279,22 +279,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vpiano_score_sequencer
 R4
 !i10b 1
-!s100 MQ<@^_]a@2Hi?IA]LU9[<2
+!s100 [KAAP]VFSOgIWNY7W7WQ:1
+IUG;8RFK0@>kY<9RK8CaLJ0
 R5
-IV:<Ckj7KcBjEOak12fmGo3
-R0
-R21
+R6
+R15
 8../src/piano_score_sequencer.v
 F../src/piano_score_sequencer.v
-!i122 1
-L0 3 90
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -302,22 +300,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vpiano_synth
 R4
 !i10b 1
-!s100 <DV1Lmn:FNTNz=eITJmdE3
+!s100 HzFVM5b[9`UeFN14EckDc2
+IAB0]VcZ500zkZlGTBlVAF2
 R5
-Ic2<m>m=6P8@fhY6Ko=Olk0
-R0
-w1792507426
+R6
+w1792588321
 8../src/piano_synth.v
 F../src/piano_synth.v
-!i122 1
-L0 3 601
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -325,22 +321,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vpt8211_score_tx
 R4
 !i10b 1
-!s100 d]Hiol=H^kcbR]mbYghh71
+!s100 GlTZ6DY?W<O213_[]9LTa0
+IeD_k[4=EnV6=`d`hIz0<E1
 R5
-IN<0om1JBS?ZAkBJd0j6[D0
-R0
 R6
+w1792422204
 8../src/pt8211_score_tx.v
 F../src/pt8211_score_tx.v
-!i122 1
-L0 5 72
-R9
+L0 5
 R10
 r1
 !s85 0
@@ -348,22 +342,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vscore_player_case
 R4
 !i10b 1
-!s100 RaiZe_]]8<i6X5PA9VMiG2
+!s100 k2:QE0D^Y^MR3;OcPbSZ63
+ICS;jNhfJJmb>3o3gKYOGB1
 R5
-I=YK09hYYFeKmf[:oDzg3G2
-R0
+R6
 R16
 R17
 R18
-!i122 1
-L0 4 146
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -371,22 +363,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vsd_card_model
 R4
 !i10b 1
-!s100 TmSH_jHaNj@onnY4MSi>`0
+!s100 oHEkCdga=cLkC0eNCO^X80
+IfKll8W4U151=_a0F7eJbz1
 R5
-IX3HKSE4;1lBVFVDS5a@bT1
-R0
 R6
+w1792251784
 8sd_card_model.v
 Fsd_card_model.v
-!i122 1
-L0 4 277
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -394,22 +384,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vsd_spi_byte
 R4
 !i10b 1
-!s100 Gn;@<_M:mQlUmiOEhAQ<`1
+!s100 d^zGgTclPm?S5^nFMVT?Z2
+I26<RWbe`nkIGL[4YbbDaH2
 R5
-IICBnI@T8Po_=iK6<en90Q0
-R0
 R6
+w1792160308
 8../src/sd_spi_byte.v
 F../src/sd_spi_byte.v
-!i122 1
-L0 2 66
-R9
+L0 2
 R10
 r1
 !s85 0
@@ -417,22 +405,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vsd_spi_reader
 R4
 !i10b 1
-!s100 >VoI<1f:^CHMUaU=MP?if2
+!s100 B:MSOMLC]a9ZWQBkIMLV<2
+I8`[d[BTLdn^ZF3lM>YAg73
 R5
-IgV:jeiCKF_hBJU3H6]:6e1
-R0
 R6
+w1792251737
 8../src/sd_spi_reader.v
 F../src/sd_spi_reader.v
-!i122 1
-L0 4 440
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -440,22 +426,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vtb_score_full
 R4
 !i10b 1
-!s100 L8ZFXjXNF`In7;7^F`DHo2
+!s100 OzV8_bFz5O@HQlCn`SEi?0
+IC@6j5m]h<lDBi@HaZZ9Sn1
 R5
-I:9b`aUZzE?n0SOaITaXC@3
-R0
-w1792502620
+R6
+w1792496387
 8tb_score_full.v
 Ftb_score_full.v
-!i122 1
-L0 3 92
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -463,22 +447,20 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2
 vtb_score_player
 R4
 !i10b 1
-!s100 GL2[;h09h<WV8XOh:56Q03
+!s100 Qc0T@i<7bl5lFdz;FZ1cW3
+Ic06daXY_A3D]J?J1j319h1
 R5
-Ima;d17A80@Y9LWnHl]RGh1
-R0
+R6
 R16
 R17
 R18
-!i122 1
-L0 150 15
-R9
+L0 152
 R10
 r1
 !s85 0
@@ -486,6 +468,6 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R2

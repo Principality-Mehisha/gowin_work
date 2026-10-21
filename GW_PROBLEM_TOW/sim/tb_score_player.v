@@ -18,7 +18,8 @@ module score_player_case #(
         .SD_POWER_WAIT_CYCLES(16), .SD_INIT_HALF_DIV(3), .SD_READ_HALF_DIV(63),
         .SINE_FILE("../src/rom/sine256.hex"),
         .FREQ_FILE("../src/rom/frequency88.hex"),
-        .VOICING_FILE("../src/rom/voicing88.hex")
+        .VOICING_FILE("../src/rom/voicing88.hex"),
+        .MARIMBA_MODE_FILE("../src/rom/marimba24.hex")
     ) dut (
         .sys_clk(clk), .KEY0(key0), .KEY1(key1), .KEY2(key2),
         .HP_BCK(bck), .HP_WS(ws), .HP_DIN(din), .PA_EN(amp),
@@ -55,17 +56,17 @@ module score_player_case #(
         manual_last_note = dut.synth_event_note;
         manual_on_count = manual_on_count + 1;
     end
-    task instrument_key;
-        begin
-            @(negedge clk); key0 = 0;
-            repeat (32) @(negedge clk); key0 = 1;
-            repeat (32) @(negedge clk);
-        end
-    endtask
     task replay_key;
         begin
             @(negedge clk); key1 = 0;
             repeat (32) @(negedge clk); key1 = 1;
+            repeat (32) @(negedge clk);
+        end
+    endtask
+    task sound_mode_key;
+        begin
+            @(negedge clk); key0 = 0;
+            repeat (32) @(negedge clk); key0 = 1;
             repeat (32) @(negedge clk);
         end
     endtask
@@ -91,21 +92,24 @@ module score_player_case #(
             replay_key();
             wait (manual_on_count == 2);
             if (manual_last_note != 1) $fatal(1, "Second audition key was not A#0");
-            instrument_key();
-            if (dut.instrument_mode !== 2'd1) $fatal(1, "KEY0 did not select violin");
-            instrument_key();
-            if (dut.instrument_mode !== 2'd2) $fatal(1, "KEY0 did not select drums");
-            instrument_key();
-            if (dut.instrument_mode !== 2'd0) $fatal(1, "KEY0 did not return to piano");
-            reset_key();
-            if (!dut.manual_mode || dut.initialized || dut.file_found ||
-                dut.synth.state != 0)
-                $fatal(1, "KEY2 did not reset the SD-disabled player");
+            sound_mode_key();
+            if (dut.marimba_mode !== 1'b1)
+                $fatal(1, "KEY0 did not select marimba");
+            if (manual_on_count != 2)
+                $fatal(1, "KEY0 generated an audition event");
             replay_key();
             wait (manual_on_count == 3);
+            if (manual_last_note != 24)
+                $fatal(1, "Marimba audition did not start at A2");
+            reset_key();
+            if (!dut.manual_mode || dut.initialized || dut.file_found ||
+                dut.synth.state != 0 || dut.marimba_mode !== 1'b0)
+                $fatal(1, "KEY2 did not reset the SD-disabled player");
+            replay_key();
+            wait (manual_on_count == 4);
             if (manual_last_note != 0)
                 $fatal(1, "KEY2 reset did not restart audition at A0");
-            $display("PASS: SD disabled, KEY1 note audition, KEY0 instrument cycle, KEY2 reset");
+            $display("PASS: SD disabled, KEY1 note audition, KEY2 reset");
         end else if (EXPECT_ERROR) begin
             wait (dut.failed);
             repeat (4) @(posedge dut.sample_tick);
@@ -117,14 +121,12 @@ module score_player_case #(
             wait (dut.playing);
             if (CONTROLS) begin
                 wait (dut.sequencer.elapsed_ms == 10);
-                instrument_key();
-                if (dut.instrument_mode !== 2'd1) $fatal(1, "Instrument did not switch to violin");
-                wait (dut.synth.state == 0);
-                instrument_key();
-                if (dut.instrument_mode !== 2'd2) $fatal(1, "Instrument did not switch to drums");
-                wait (dut.synth.state == 0);
-                instrument_key();
-                if (dut.instrument_mode !== 2'd0) $fatal(1, "Instrument did not cycle back to piano");
+                sound_mode_key();
+                if (dut.marimba_mode !== 1'b1)
+                    $fatal(1, "KEY0 did not select marimba during playback");
+                sound_mode_key();
+                if (dut.marimba_mode !== 1'b0)
+                    $fatal(1, "KEY0 did not return to piano during playback");
             end
             wait (dut.finished);
             repeat (5) @(posedge dut.sample_tick);

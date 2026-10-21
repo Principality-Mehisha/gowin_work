@@ -9,7 +9,6 @@ module tb_tone_realism;
     reg [31:0] output_count=0;
     piano_synth #(.PARTIAL_DECAY(1),.UNISON_BEAT(1),.HAMMER_NOISE(1)) dut (
         .clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
-        .instrument_change(1'b0), .instrument_mode(1'b0),
         .event_valid(valid),.event_on(on_value),.event_note(note),
         .event_dynamics(8'd192),.pitch_ratio(18'd65536),.event_ready(ready),
         .pcm(pcm),.pcm_valid(pcm_valid),.mix_sample(),.mix_valid(),

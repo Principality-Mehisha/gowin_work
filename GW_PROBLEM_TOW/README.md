@@ -24,7 +24,7 @@ SD 卡 -> SPI -> FAT16/FAT32 -> P88S 解码 -> 事件 FIFO/调度 ─┐
 
 根目录按用途划分：`src/` 与 `src/rom/` 是 RTL/综合输入；`tools/` 是 ROM、乐谱、构建和验证工具；`sim/` 是 testbench、运行脚本和有意保留的报告/WAV证据；`output/score_test/` 是自动生成的 FAT/乐谱测试夹具；`backup/` 存放明确标记的历史源码快照；`assets/`、`source/`、`sd_card/` 保存授权、MIDI 来源和示例乐谱；`impl/` 保存 Gowin 综合、时序报告和可下载位流，ModelSim work 库是可重建缓存。清理仿真缓存时运行 `powershell -ExecutionPolicy Bypass -File tools/clean_generated.ps1`；该脚本保留 `impl/`、WAV、报告、日志、ROM、乐谱、MIDI 和历史快照。
 
-## SD 播放与音色切换
+## SD 播放与音色
 
 工程自带 `sd_card/PIANO.BIN` 示例乐谱和 DDS 所需的正弦表、频率表、音色参数表。将 `SD_SCORE_ENABLE` 设为 1 才会启用 SD 乐谱读取；音高、谐波、ADSR、力度和复音状态均在 FPGA 内实时计算，不依赖整段录音或每键 PCM 波形。
 
@@ -36,9 +36,9 @@ powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter
 
 该脚本只在目标文件缺失或内容一致时直接写入；若卡上已有不同的 `PIANO.BIN`，必须额外指定 `-Replace`，旧文件会先备份到 `output/sd_backup`。目前检测到的 H: 卡根目录没有 `PIANO.BIN`，所以需要先运行该命令，播放器才有乐谱可读。
 
-默认配置禁用 SD 乐谱读取，启动后进入逐音试听。参数 `SD_SCORE_ENABLE=1` 可在工程配置中显式启用 SD 乐谱路径。KEY0 在钢琴、小提琴和架子鼓 DDS 音色之间循环；KEY1 每按一次依次触发 A0 至 C8，并释放前一个逐音；KEY2 是低有效复位，复位后音色回到钢琴、音符编号回到 A0。默认模式下 SD SPI 控制器保持复位，不会初始化或读取卡片。
+默认配置禁用 SD 乐谱读取，启动后进入逐音试听。参数 `SD_SCORE_ENABLE=1` 可在工程配置中显式启用 SD 乐谱路径。KEY0 在钢琴与马林巴之间切换；KEY1 每按一次触发当前音色的下一个音符，并释放前一个逐音；KEY2 是低有效复位，复位后恢复钢琴并从 A0 开始。默认模式下 SD SPI 控制器保持复位，不会初始化或读取卡片。
 
-三种音色共享 DDS 相位、正弦 ROM、音高表、分时谐波运算和 DAC。小提琴模式切换泛音谱，并关闭钢琴低音补偿与击弦瞬态；它是参数化的弓弦倾向合成音色，不是采样音色或完整物理弓弦模型。架子鼓模式将音符索引 0--23 映射为底鼓倾向、24--47 映射为军鼓倾向、48--87 映射为镲片倾向；每个 note-on 触发一次短衰减，鼓声不等待 note-off。
+钢琴使用 88 键 DDS 与 ADSR。马林巴是独立的四模态阻尼振荡器：`src/rom/marimba24.hex` 查出 A2–G#4 共 24 个音符的模态步进、起振权重和衰减系数，模态频率为基频、3.99 倍、10.65 倍及固定 2443 Hz；`sine256.hex` 提供正弦查表，FPGA 实时插值、叠加并衰减模态。note-on 设置四个模态的初始状态，力度控制激励幅度；note-off 不截断敲击尾音。没有读取敲击录音或使用钢琴的 ADSR/谐波配置。手动试听在马林巴模式循环 A2–G#4；SD 乐谱保持原音高，音符不在该范围时马林巴不发声。
 
 SD 接口使用 3.3 V SPI：MISO AA15、SCK V15、CS W15、MOSI Y16。其余 PT8211 和按键沿用原板卡引脚。SD 初始化和读取都使用约 397 kHz SPI 时钟。音频输出保持参考采样库的 16.276 kHz 采样率。
 
@@ -68,12 +68,12 @@ powershell -ExecutionPolicy Bypass -File sim/run_score.ps1
 
 | 按键 | 行为 |
 | --- | --- |
-| KEY2 | 低有效复位；复位后恢复钢琴音色并从 A0 开始 |
-| KEY1（默认模式） | 每次按下触发下一个音符，A0 到 C8 循环；新音触发时释放前一个音 |
+| KEY2 | 低有效复位；复位后从 A0 开始 |
+| KEY0 | 钢琴与马林巴之间切换 |
+| KEY1（默认模式） | 每次按下触发当前音色的下一个音符；钢琴 A0–C8，马林巴 A2–G#4 |
 | KEY1（启用 SD 乐谱时） | 从头重播 SD 卡乐谱 |
-| KEY0 | 钢琴→小提琴→架子鼓循环切换，并重新触发当前活动音符 |
 
-KEY0 不重置逐音编号；切换时保留当前 gate，并让活动音符从新音色重新起音。鼓模式将当前活动 note-on 作为一次性鼓击触发。KEY0/KEY1 使用双触发器同步与去抖；KEY2 作为异步低有效复位输入，并在系统时钟域同步释放。逐音模式沿用 `dynamics_fixed.v` 的 Q0.8 力度接口，后续可替换为压力传感器。
+钢琴新音触发时释放前一个音；马林巴按 one-shot 衰减，不受 note-off 截断。KEY0/KEY1 使用双触发器同步与去抖；KEY2 作为异步低有效复位输入，并在系统时钟域同步释放。逐音模式沿用 `dynamics_fixed.v` 的 Q0.8 力度接口，后续可替换为压力传感器。
 正在发送的一帧必须保持左右声道字一致，不能从半个字中间截断；因此模拟输出最迟在下一完整帧更新，约 20.83 us，另有 DAC 自身的更新延迟。
 
 ## 实时生成与存储边界
@@ -247,7 +247,7 @@ WS=0 右声道，WS=1 左声道；两个声道来自同一帧锁存的同一个 
 现场运行 `powershell -ExecutionPolicy Bypass -File sim/gui.ps1` 打开 ModelSim 波形界面；
 已有 `tb_synth` 仿真时可直接执行 `do sim/waves.do`。
 观察 `valid/ready/note_on/note`、A4 的 `phase_a4/envelope_a4/state_a4`、分时谐波计算和最终 PCM：
-松开时进入 R，R 期间相位继续变化；KEY0 音色切换会保留当前乐谱位置并重新触发当前活动声部。
+松开时钢琴声部进入 R，R 期间相位继续变化；马林巴的 note-off 不会截断正在衰减的模态尾音。
 波形脚本默认使用缩短 ADSR 的快速自测，完整默认时长可运行 `tb_demo`。
 这些测试提供实时生成的技术证据，最终赛题判定仍以评审检查实际 RTL 和演示为准。
 

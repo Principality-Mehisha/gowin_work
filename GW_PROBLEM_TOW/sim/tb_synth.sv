@@ -2,8 +2,7 @@
 module tb_synth;
     reg clk=0;
     always #3.255208333 clk=~clk;
-    reg reset_n=0, stop_all=0, instrument_change=0, tick=0, valid=0, note_on=0;
-    reg [1:0] instrument_mode=0;
+    reg reset_n=0, stop_all=0, tick=0, valid=0, note_on=0;
     reg [6:0] note=0;
     reg [7:0] dynamics=192;
     reg [17:0] pitch=65536;
@@ -18,14 +17,13 @@ module tb_synth;
     wire [2:0] state_a4 = a4[2:0];
     wire [23:0] release_a4 = a4[26:3];
     reg passed=0;
-    reg saw_drum_profile=0;
+    reg saw_a4_profile=0;
     integer n,h,fd,frames=0,nonzero=0,max_cycles=0;
     reg [31:0] previous_partial [0:87][0:7];
     reg [63:0] expected_step,expected_stiffness,expected_phase;
     piano_synth #(.ATTACK_STEP(24'd4194304), .DECAY_STEP(24'd1048576),
         .SUSTAIN_LEVEL(24'd4194304), .RELEASE_SHIFT(4)) dut (
         .clk(clk), .reset_n(reset_n), .sample_tick(tick), .stop_all(stop_all),
-        .instrument_change(instrument_change), .instrument_mode(instrument_mode),
         .event_valid(valid), .event_on(note_on), .event_note(note),
         .event_dynamics(dynamics), .pitch_ratio(pitch), .event_ready(ready),
         .mix_sample(mix), .mix_valid(mix_valid), .pcm(pcm), .pcm_valid(pcm_valid),
@@ -34,8 +32,8 @@ module tb_synth;
         .debug_envelope(), .debug_phase());
     always @(posedge clk)
         if (dut.state==dut.PREPARE && dut.voice==48 &&
-            instrument_mode==2'd2 && dut.profile===dut.drum_profile(48))
-            saw_drum_profile<=1;
+            dut.profile===dut.voicing_rom[48])
+            saw_a4_profile<=1;
     task event_send(input bit on_value, input integer note_value);
         begin
             @(negedge clk);
@@ -126,25 +124,8 @@ module tb_synth;
         if (nonzero<20) $fatal(1,"Audio remained silent");
         clear_all();
         event_send(1,48); frame();
-        @(negedge clk); instrument_mode=2'd1; instrument_change=1;
-        @(negedge clk); instrument_change=0;
-        frame();
-        if (dut.profile !== dut.VIOLIN_PROFILE || state_a4!=1)
-            $fatal(1,"Violin profile did not retrigger the held note");
-        @(negedge clk); instrument_mode=2'd0; instrument_change=1;
-        @(negedge clk); instrument_change=0;
-        frame();
-        if (dut.profile === dut.VIOLIN_PROFILE || state_a4!=1)
-            $fatal(1,"Piano profile did not return on instrument switch");
-        @(negedge clk); instrument_mode=2'd2; instrument_change=1;
-        @(negedge clk); instrument_change=0;
-        frame();
-        if (!saw_drum_profile || dut.gate_reg!==1'b0 ||
-            state_a4!=4 || envelope_a4!=24'hffffff)
-            $fatal(1,"Drum one-shot did not start with its decay envelope");
-        frame();
-        if (envelope_a4 !== 24'hffbfff)
-            $fatal(1,"Drum envelope did not decay independently of note-off");
+        if (!saw_a4_profile || state_a4!=1)
+            $fatal(1,"Piano voicing profile did not load for A4");
         repeat(18) frame();
         $fclose(fd);
         passed=1;

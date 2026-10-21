@@ -13,6 +13,7 @@ module piano_score_player #(
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter FREQ_FILE = "src/rom/frequency88.hex",
     parameter VOICING_FILE = "src/rom/voicing88.hex",
+    parameter MARIMBA_MODE_FILE = "src/rom/marimba24.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
     // 50 MHz / BCK_HALF_DIV audio sample rate.
     parameter [17:0] DDS_PITCH_RATIO = 18'd193274
@@ -34,28 +35,20 @@ module piano_score_player #(
         if (!reset_async_n) reset_sync <= 0;
         else reset_sync <= {reset_sync[0], 1'b1};
     wire rst_n = reset_sync[1];
-    wire instrument_press, replay_press;
-    button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) instrument_button (
-        .clk(sys_clk), .rst_n(rst_n), .key_n(KEY0), .press(instrument_press)
-    );
+    wire replay_press, marimba_press;
     button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) replay_button (
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY1), .press(replay_press)
+    );
+    button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) marimba_button (
+        .clk(sys_clk), .rst_n(rst_n), .key_n(KEY0), .press(marimba_press)
     );
     // KEY2 is the active-low board reset; KEY1 remains the audition trigger.
     wire manual_mode = !SD_SCORE_ENABLE;
     wire play_rst_n = rst_n && !(replay_press && SD_SCORE_ENABLE);
-    reg [1:0] instrument_mode;
-    reg instrument_change;
+    reg marimba_mode;
     always @(posedge sys_clk or negedge rst_n)
-        if (!rst_n) begin
-            instrument_mode <= 2'd0;
-            instrument_change <= 1'b0;
-        end else begin
-            instrument_change <= instrument_press;
-            if (instrument_press)
-                instrument_mode <= instrument_mode==2'd2 ? 2'd0 :
-                                   instrument_mode+1'b1;
-        end
+        if (!rst_n) marimba_mode <= 1'b0;
+        else if (marimba_press) marimba_mode <= !marimba_mode;
     wire sd_ready, sd_start, sd_valid, sd_done, sd_error, initialized;
     wire [31:0] sd_lba;
     wire [7:0] sd_data;
@@ -100,7 +93,8 @@ module piano_score_player #(
     wire dds_event_valid, dds_event_on, dds_event_ready;
     wire [6:0] dds_event_note;
     wire [7:0] dds_event_dynamics;
-    wire synth_event_ready;
+    wire piano_event_ready, marimba_event_ready;
+    wire synth_event_ready = piano_event_ready && marimba_event_ready;
     wire audition_event_valid, audition_event_on;
     wire [6:0] audition_event_note;
     wire [7:0] audition_event_dynamics;
@@ -110,7 +104,8 @@ module piano_score_player #(
     wire [6:0] synth_event_note = manual_mode ? audition_event_note : dds_event_note;
     wire [7:0] synth_event_dynamics = manual_mode ? audition_event_dynamics : dds_event_dynamics;
     wire playing, finished, sequence_error;
-    wire deadline_error;
+    wire piano_deadline_error, marimba_deadline_error;
+    wire deadline_error = piano_deadline_error || marimba_deadline_error;
     // Stop and mute on any failed storage, format, sequence or compute check.
     wire stream_error = SD_SCORE_ENABLE &&
                         (sd_error_code != 0 || fat_error != 0 || score_error != 0);
@@ -122,6 +117,8 @@ module piano_score_player #(
     key_audition #(.DEBOUNCE_CYCLES(DEBOUNCE_CYCLES)) audition (
         .clk(sys_clk), .reset_n(play_rst_n && manual_mode),
         .key_play_n(KEY1), .key_stop_n(1'b1),
+        .note_first(marimba_mode ? 7'd24 : 7'd0),
+        .note_last(marimba_mode ? 7'd47 : 7'd87),
         .event_ready(manual_mode && synth_event_ready),
         .event_valid(audition_event_valid), .event_on(audition_event_on),
         .event_note(audition_event_note), .event_dynamics(audition_event_dynamics),
@@ -140,24 +137,36 @@ module piano_score_player #(
     );
     assign dds_event_ready = !manual_mode && synth_event_ready;
     wire sample_tick;
-    wire signed [15:0] pcm;
-    wire pcm_valid, limiting, saturated;
-    wire signed [31:0] mix_sample;
-    wire dds_sample_tick = sample_tick &&
-                           (manual_mode || (!failed && !finished));
+    wire signed [15:0] piano_pcm, marimba_pcm;
+    wire piano_pcm_valid, piano_limiting, piano_saturated;
+    wire marimba_pcm_valid, marimba_limiting, marimba_saturated;
+    wire signed [31:0] piano_mix_sample, marimba_mix_sample;
+    wire signed [15:0] selected_pcm = marimba_mode ? marimba_pcm : piano_pcm;
+    wire signed [15:0] pcm = selected_pcm;
+    wire dds_sample_tick = sample_tick;
     piano_synth #(
         .SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE), .VOICING_FILE(VOICING_FILE)
     ) synth (
         .clk(sys_clk), .reset_n(play_rst_n),
         .sample_tick(dds_sample_tick), .stop_all(synth_stop),
-        .instrument_change(instrument_change), .instrument_mode(instrument_mode),
         .event_valid(synth_event_valid), .event_on(synth_event_on),
         .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
-        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(synth_event_ready),
-        .mix_sample(mix_sample), .mix_valid(), .pcm(pcm),
-        .pcm_valid(pcm_valid), .limiting(limiting), .saturated(saturated),
-        .deadline_error(deadline_error), .active_voices(),
+        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(piano_event_ready),
+        .mix_sample(piano_mix_sample), .mix_valid(), .pcm(piano_pcm),
+        .pcm_valid(piano_pcm_valid), .limiting(piano_limiting),
+        .saturated(piano_saturated),
+        .deadline_error(piano_deadline_error), .active_voices(),
         .debug_voice(), .debug_env_state(), .debug_envelope(), .debug_phase()
+    );
+    marimba_synth #(.SINE_FILE(SINE_FILE), .MODE_FILE(MARIMBA_MODE_FILE)) marimba (
+        .clk(sys_clk), .reset_n(play_rst_n),
+        .sample_tick(dds_sample_tick), .stop_all(synth_stop),
+        .event_valid(synth_event_valid), .event_on(synth_event_on),
+        .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
+        .event_ready(marimba_event_ready),
+        .mix_sample(marimba_mix_sample), .mix_valid(), .pcm(marimba_pcm),
+        .pcm_valid(marimba_pcm_valid), .limiting(marimba_limiting),
+        .saturated(marimba_saturated), .deadline_error(marimba_deadline_error)
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (

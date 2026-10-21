@@ -15,7 +15,6 @@ module tb_bass;
     piano_synth #(.PARTIAL_DECAY(0),.UNISON_BEAT(0),.HAMMER_NOISE(0))
     current_voice (
         .clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
-        .instrument_change(1'b0), .instrument_mode(1'b0),
         .event_valid(valid),.event_on(on_value),.event_note(note),
         .event_dynamics(8'd192),.pitch_ratio(18'd65536),.event_ready(ready_new),
         .pcm(new_pcm),.pcm_valid(new_valid),.saturated(saturated_new),
@@ -24,7 +23,6 @@ module tb_bass;
     piano_synth #(.BASS_VOICING(0),.HAMMER_TRANSIENT(0),
         .PARTIAL_DECAY(0),.UNISON_BEAT(0),.HAMMER_NOISE(0)) original_voice (
         .clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
-        .instrument_change(1'b0), .instrument_mode(1'b0),
         .event_valid(valid),.event_on(on_value),.event_note(note),
         .event_dynamics(8'd192),.pitch_ratio(18'd65536),.event_ready(ready_old),
         .pcm(old_pcm),.pcm_valid(old_valid),.saturated(saturated_old),

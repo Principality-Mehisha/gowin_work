@@ -18,11 +18,13 @@ assert not re.search(r"\b(always|initial|assign|function|task)\b", top)
 assert len((root / "src/rom/sine256.hex").read_text().splitlines()) == 256
 assert len((root / "src/rom/frequency88.hex").read_text().splitlines()) == 88
 assert len((root / "src/rom/voicing88.hex").read_text().splitlines()) == 88
+marimba_table = (root / "src/rom/marimba24.hex").read_text().splitlines()
+assert len(marimba_table) == 24 and all(len(row) == 64 for row in marimba_table)
 readmem_sources = []
 for source in sources:
     if "$readmem" in source.read_text():
         readmem_sources.append(source.name)
-assert readmem_sources == ["piano_synth.v"]
+assert readmem_sources == ["piano_synth.v", "marimba_synth.v"]
 for removed in (
     "piano_bank.hex", "piano_pcm_voice.v", "piano_polyphony.v",
     "piano_sample_map.v", "pt8211_tx.v",
@@ -51,6 +53,9 @@ assert "sine_rom [0:255]" in text
 assert "sine256.hex" in text and "frequency88.hex" in text
 assert not any(p.suffix.lower() in (".wav", ".mp3", ".pcm") for p in sources)
 assert "voicing88.hex" in text
+marimba = (root / "src/marimba_synth.v").read_text()
+assert marimba.count("$readmemh") == 2
+assert "marimba24.hex" in marimba and "sine256.hex" in marimba
 print("PASS structural checks: top, 50 MHz clock, dynamics hook, DDS tables")
 for source in sources:
     print(hashlib.sha256(source.read_bytes()).hexdigest(), source.relative_to(root))

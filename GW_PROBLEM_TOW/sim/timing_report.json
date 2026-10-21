@@ -1,11 +1,11 @@
 {
-  "Numbers of Paths Analyzed": 7868,
-  "Numbers of Endpoints Analyzed": 8624,
+  "Numbers of Paths Analyzed": 18802,
+  "Numbers of Endpoints Analyzed": 24283,
   "Numbers of Falling Endpoints": 0,
   "Numbers of Setup Violated Endpoints": 0,
   "Numbers of Hold Violated Endpoints": 0,
   "audio_clock": "sys_clk",
   "target_mhz": 50.0,
-  "fmax_mhz": 89.904,
+  "fmax_mhz": 79.276,
   "worst_paths": []
 }

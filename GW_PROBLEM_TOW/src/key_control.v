@@ -31,6 +31,7 @@ module key_audition #(
     parameter integer DEBOUNCE_CYCLES = 153600
 ) (
     input wire clk, reset_n, key_play_n, key_stop_n,
+    input wire [6:0] note_first, note_last,
     input wire event_ready,
     output reg event_valid, output reg event_on,
     output reg [6:0] event_note,
@@ -40,7 +41,12 @@ module key_audition #(
     wire play_held, play_press, play_release;
     wire stop_held, stop_press, stop_release;
     reg [6:0] next_note, held_note;
+    wire [6:0] selected_note =
+        (next_note < note_first || next_note > note_last) ?
+        note_first : next_note;
     reg blocked;
+    reg release_pending;
+    reg [6:0] pending_release_note;
     key_filter #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) play_filter (
         .clk(clk), .reset_n(reset_n), .key_n(key_play_n),
         .held(play_held), .pressed(play_press), .released(play_release));
@@ -54,23 +60,36 @@ module key_audition #(
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             next_note <= 0; held_note <= 0; blocked <= 0;
+            release_pending <= 0; pending_release_note <= 0;
             event_valid <= 0; event_on <= 0; event_note <= 0;
         end else if (stop_all) begin
             event_valid <= 0;
+            release_pending <= 0;
             blocked <= play_held;
         end else begin
             if (event_valid && event_ready) event_valid <= 0;
             if (play_release) begin
                 blocked <= 0;
-                event_valid <= ~blocked;
-                event_on <= 0;
-                event_note <= held_note;
+                if (event_valid && event_on && !event_ready) begin
+                    release_pending <= 1;
+                    pending_release_note <= held_note;
+                end else begin
+                    event_valid <= ~blocked;
+                    event_on <= 0;
+                    event_note <= held_note;
+                end
             end else if (play_press && !blocked) begin
                 event_valid <= 1;
                 event_on <= 1;
-                event_note <= next_note;
-                held_note <= next_note;
-                next_note <= (next_note == 87) ? 0 : next_note + 1'b1;
+                event_note <= selected_note;
+                held_note <= selected_note;
+                next_note <= (selected_note == note_last) ?
+                             note_first : selected_note + 1'b1;
+            end else if (!event_valid && release_pending) begin
+                event_valid <= 1;
+                event_on <= 0;
+                event_note <= pending_release_note;
+                release_pending <= 0;
             end
         end
     end

@@ -5,6 +5,7 @@ module score_player_case #(
     parameter IMAGE_FILE = "../output/score_test/fat16.hex",
     parameter integer PROFILE = 0,
     parameter integer CONTROLS = 0,
+    parameter integer SD_ENABLE = 1,
     parameter integer EXPECT_ERROR = 0
 ) (output reg passed = 0);
     reg clk = 0, key0 = 1, key1 = 1, key2 = 1;
@@ -12,6 +13,7 @@ module score_player_case #(
     wire cs, sck, mosi, miso, bck, ws, din, amp;
     wire [3:0] leds;
     piano_score_player #(
+        .SD_SCORE_ENABLE(SD_ENABLE),
         .POWER_ON_CYCLES(8), .DEBOUNCE_CYCLES(8), .AUDIO_START_CYCLES(64),
         .SD_POWER_WAIT_CYCLES(16), .SD_INIT_HALF_DIV(3), .SD_READ_HALF_DIV(63),
         .SINE_FILE("../src/rom/sine256.hex"),
@@ -67,17 +69,44 @@ module score_player_case #(
             repeat (32) @(negedge clk);
         end
     endtask
-    task mode_key;
+    task reset_key;
         begin
             @(negedge clk); key2 = 0;
-            repeat (32) @(negedge clk); key2 = 1;
-            repeat (32) @(negedge clk);
+            repeat (4) @(negedge clk); key2 = 1;
+            wait (dut.rst_n);
+            repeat (8) @(negedge clk);
         end
     endtask
     reg [31:0] saved_ms;
     reg [82:0] saved_voice_state;
     initial begin
-        if (EXPECT_ERROR) begin
+        if (!SD_ENABLE) begin
+            wait (dut.rst_n);
+            repeat (20) @(posedge clk);
+            if (!dut.manual_mode || dut.initialized || dut.file_found || cs !== 1'b1)
+                $fatal(1, "SD-disabled audition did not remain isolated from the card");
+            replay_key();
+            wait (manual_on_count == 1);
+            if (manual_last_note != 0) $fatal(1, "First audition key was not A0");
+            replay_key();
+            wait (manual_on_count == 2);
+            if (manual_last_note != 1) $fatal(1, "Second audition key was not A#0");
+            instrument_key();
+            if (dut.instrument_mode !== 2'd1) $fatal(1, "KEY0 did not select violin");
+            instrument_key();
+            if (dut.instrument_mode !== 2'd2) $fatal(1, "KEY0 did not select drums");
+            instrument_key();
+            if (dut.instrument_mode !== 2'd0) $fatal(1, "KEY0 did not return to piano");
+            reset_key();
+            if (!dut.manual_mode || dut.initialized || dut.file_found ||
+                dut.synth.state != 0)
+                $fatal(1, "KEY2 did not reset the SD-disabled player");
+            replay_key();
+            wait (manual_on_count == 3);
+            if (manual_last_note != 0)
+                $fatal(1, "KEY2 reset did not restart audition at A0");
+            $display("PASS: SD disabled, KEY1 note audition, KEY0 instrument cycle, KEY2 reset");
+        end else if (EXPECT_ERROR) begin
             wait (dut.failed);
             repeat (4) @(posedge dut.sample_tick);
             if (leds[3] !== 0 || dut.pcm !== 0) $fatal(1, "Score failure not silent");
@@ -105,19 +134,6 @@ module score_player_case #(
                 $fatal(1, "Score chord/retrigger/EOF failure profile=%0d", PROFILE);
             if (CONTROLS) begin
                 first_ons = 0; repeated = 0;
-                mode_key();
-                if (!dut.manual_mode || dut.playing) $fatal(1, "KEY2 did not enter note audition mode");
-                replay_key();
-                wait (manual_on_count == 1);
-                repeat (3200) @(posedge clk);
-                if (manual_on_count != 1 || manual_last_note != 0)
-                    $fatal(1, "First audition key did not play A0");
-                replay_key();
-                wait (manual_on_count == 2);
-                if (manual_on_count != 2 || manual_last_note != 1)
-                    $fatal(1, "Second audition key did not play A#0");
-                mode_key();
-                if (dut.manual_mode) $fatal(1, "KEY2 did not return to score mode");
                 replay_key();
                 wait (dut.finished);
                 if (dut.failed || first_ons != 3 || repeated != 1) $fatal(1, "Score replay failed");
@@ -141,6 +157,8 @@ module tb_score_player;
         cmissing (.passed(pmissing));
     score_player_case #(.IMAGE_FILE("../output/score_test/wrong_format.hex"), .EXPECT_ERROR(2))
         cformat (.passed(pformat));
-    initial begin wait (p16 && p32 && pmissing && pformat); passed = 1; $finish; end
+    wire pmanual;
+    score_player_case #(.SD_ENABLE(0)) cmanual (.passed(pmanual));
+    initial begin wait (p16 && p32 && pmissing && pformat && pmanual); passed = 1; $finish; end
     initial begin #600_000_000; $fatal(1, "Score player timeout"); end
 endmodule

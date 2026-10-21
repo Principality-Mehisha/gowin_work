@@ -1,4 +1,5 @@
-// P88S v1: 16-byte header followed by 8-byte little-endian note records.
+// P88S v1: validate the fixed header and ordered 8-byte records before publish.
+// event_valid/event_data remain stable until the consumer asserts event_ready.
 module piano_score_reader (
     input wire clk, rst_n,
     input wire [7:0] data,

@@ -1,3 +1,4 @@
+// Synchronize an active-low key and emit one-cycle press/release events.
 module key_filter #(
     parameter integer STABLE_CYCLES = 153600
 ) (
@@ -25,14 +26,7 @@ module key_filter #(
     end
 endmodule
 
-// Replace this module when the pressure sensor is introduced.
-module dynamics_fixed (
-    input wire [6:0] note,
-    output wire [7:0] dynamics
-);
-    assign dynamics = 8'd192; // Unsigned Q0.8, exactly 0.75.
-endmodule
-
+// Manual one-note audition path, independent from SD score playback.
 module key_audition #(
     parameter integer DEBOUNCE_CYCLES = 153600
 ) (

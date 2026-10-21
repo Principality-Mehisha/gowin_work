@@ -32,7 +32,7 @@ negative_paths = []
 for row in parser.rows:
     if len(row) == 2 and row[0].startswith("Numbers of"):
         stats[row[0]] = int(row[1])
-    if len(row) == 6 and row[1] in ("sys_clk", "audio_153m6"):
+    if len(row) == 6 and row[1] == "sys_clk":
         stats["audio_clock"] = row[1]
         stats["target_mhz"] = float(row[2].replace("(MHz)", ""))
         stats["fmax_mhz"] = float(row[3].replace("(MHz)", ""))

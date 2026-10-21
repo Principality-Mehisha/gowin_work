@@ -1,9 +1,14 @@
 impl/
+work/
 sim/work/
-sim/clock_work/
 sim/bass_work/
+sim/tone_work/
+sim/work_score/
 sim/*.vvp
 sim/*.wlf
 sim/*_pcm.txt
+work_score/
 transcript
 vsim.wlf
+__pycache__/
+*.py[cod]

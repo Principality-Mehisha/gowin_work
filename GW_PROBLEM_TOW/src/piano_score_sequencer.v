@@ -1,4 +1,5 @@
-// Event FIFO decouples SD sector latency from the millisecond score clock.
+// Event FIFO decouples bursty SD/FAT reads from the millisecond score clock.
+// Playback pre-fills before starting and stalls only at the event handshake.
 module piano_score_sequencer #(
     parameter integer CLOCKS_PER_MS = 50000,
     parameter integer FIFO_BITS = 8,

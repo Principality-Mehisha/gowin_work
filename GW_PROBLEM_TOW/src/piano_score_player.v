@@ -1,4 +1,7 @@
+// Integration layer for SD score playback, manual audition, synthesis and DAC.
+// All modules run directly from the board's 50 MHz sys_clk.
 module piano_score_player #(
+    parameter integer SD_SCORE_ENABLE = 0,
     parameter integer POWER_ON_CYCLES = 65536,
     parameter integer DEBOUNCE_CYCLES = 1000000,
     parameter integer AUDIO_START_CYCLES = 2500000,
@@ -25,26 +28,22 @@ module piano_score_player #(
     always @(posedge sys_clk)
         if (power_count < POWER_ON_CYCLES) power_count <= power_count + 1'b1;
     wire reset_request_n = power_count == POWER_ON_CYCLES;
+    wire reset_async_n = reset_request_n && KEY2;
     reg [1:0] reset_sync;
-    always @(posedge sys_clk or negedge reset_request_n)
-        if (!reset_request_n) reset_sync <= 0;
+    always @(posedge sys_clk or negedge reset_async_n)
+        if (!reset_async_n) reset_sync <= 0;
         else reset_sync <= {reset_sync[0], 1'b1};
     wire rst_n = reset_sync[1];
-    wire instrument_press, replay_press, mode_press;
+    wire instrument_press, replay_press;
     button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) instrument_button (
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY0), .press(instrument_press)
     );
     button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) replay_button (
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY1), .press(replay_press)
     );
-    button_debounce #(.STABLE_CYCLES(DEBOUNCE_CYCLES)) mode_button (
-        .clk(sys_clk), .rst_n(rst_n), .key_n(KEY2), .press(mode_press)
-    );
-    reg manual_mode;
-    always @(posedge sys_clk or negedge rst_n)
-        if (!rst_n) manual_mode <= 1'b0;
-        else if (mode_press) manual_mode <= !manual_mode;
-    wire play_rst_n = rst_n && !mode_press && !(replay_press && !manual_mode);
+    // KEY2 is the active-low board reset; KEY1 remains the audition trigger.
+    wire manual_mode = !SD_SCORE_ENABLE;
+    wire play_rst_n = rst_n && !(replay_press && SD_SCORE_ENABLE);
     reg [1:0] instrument_mode;
     reg instrument_change;
     always @(posedge sys_clk or negedge rst_n)
@@ -66,7 +65,8 @@ module piano_score_player #(
         .POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
         .INIT_HALF_DIV(SD_INIT_HALF_DIV), .READ_HALF_DIV(SD_READ_HALF_DIV)
     ) sd (
-        .clk(sys_clk), .rst_n(play_rst_n), .read_start(sd_start), .read_lba(sd_lba),
+        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
+        .read_start(sd_start), .read_lba(sd_lba),
         .read_ready(sd_ready), .busy(), .initialized(initialized), .high_capacity(),
         .data(sd_data), .data_index(sd_index), .data_valid(sd_valid), .data_ready(1'b1),
         .read_done(sd_done), .error_pulse(sd_error), .error_code(sd_error_code),
@@ -78,7 +78,7 @@ module piano_score_player #(
     wire [31:0] file_size;
     wire [3:0] fat_error, score_error;
     fat_file_reader #(.FILE_NAME("PIANO   BIN")) file_reader (
-        .clk(sys_clk), .rst_n(play_rst_n), .sd_ready(sd_ready),
+        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE), .sd_ready(sd_ready),
         .sd_start(sd_start), .sd_lba(sd_lba), .sd_data(sd_data), .sd_index(sd_index),
         .sd_valid(sd_valid), .sd_done(sd_done), .sd_error(sd_error),
         .data(file_data), .valid(file_valid), .ready(file_ready), .mounted(),
@@ -88,7 +88,8 @@ module piano_score_player #(
     wire [63:0] event_data;
     wire event_valid, event_ready, format_ok, complete;
     piano_score_reader decoder (
-        .clk(sys_clk), .rst_n(play_rst_n), .data(file_data), .valid(file_valid),
+        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
+        .data(file_data), .valid(file_valid),
         .ready(file_ready), .file_found(file_found), .file_size(file_size),
         .file_done(file_done), .event_data(event_data), .event_valid(event_valid),
         .event_ready(event_ready), .format_ok(format_ok), .complete(complete),
@@ -103,13 +104,16 @@ module piano_score_player #(
     wire audition_event_valid, audition_event_on;
     wire [6:0] audition_event_note;
     wire [7:0] audition_event_dynamics;
+    // Select exactly one event source; the audition source is gated by mode.
     wire synth_event_valid = manual_mode ? audition_event_valid : dds_event_valid;
     wire synth_event_on = manual_mode ? audition_event_on : dds_event_on;
     wire [6:0] synth_event_note = manual_mode ? audition_event_note : dds_event_note;
     wire [7:0] synth_event_dynamics = manual_mode ? audition_event_dynamics : dds_event_dynamics;
     wire playing, finished, sequence_error;
     wire deadline_error;
-    wire stream_error = sd_error_code != 0 || fat_error != 0 || score_error != 0;
+    // Stop and mute on any failed storage, format, sequence or compute check.
+    wire stream_error = SD_SCORE_ENABLE &&
+                        (sd_error_code != 0 || fat_error != 0 || score_error != 0);
     wire failed = stream_error || sequence_error || deadline_error;
     wire synth_stop = manual_mode ? deadline_error : (failed || finished);
     wire audio_silence = manual_mode ? deadline_error :
@@ -124,7 +128,8 @@ module piano_score_player #(
         .stop_all()
     );
     piano_score_sequencer #(.CLOCKS_PER_MS(CLOCKS_PER_MS)) sequencer (
-        .clk(sys_clk), .rst_n(play_rst_n), .paused(manual_mode),
+        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
+        .paused(manual_mode),
         .format_ok(format_ok), .stream_complete(complete), .stream_error(stream_error),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
         .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),

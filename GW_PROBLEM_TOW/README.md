@@ -1,13 +1,34 @@
 # Tang Mega 60K SD 乐谱钢琴播放器
 
 工程：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`。
-当前默认顶层从 SD 卡 FAT16/FAT32 分区读取根目录 `PIANO.BIN`，解析 88 音区的 P88S 乐谱，并把 note-on/note-off 事件送入 88 键 DDS 钢琴合成器，实时生成 PCM 样本后输出到 PT8211。旧的 PCM 采样链路已从工程源文件中移除。
+工程提供可选的 SD 卡 FAT16/FAT32 乐谱播放路径和默认逐音试听路径。默认 `SD_SCORE_ENABLE=0`，不访问 SD 卡；DDS 实时生成 PCM 样本并输出到 PT8211。旧的 PCM 采样链路已从工程源文件中移除。
+
+## 架构速览
+
+```text
+SD 卡 -> SPI -> FAT16/FAT32 -> P88S 解码 -> 事件 FIFO/调度 ─┐
+按键 -> 去抖/逐音试听/力度接口 ──────────────────────────┤
+                                                         v
+                                      88 键 DDS -> 包络/限幅 -> PT8211
+```
+
+| 层次 | 主要文件 | 职责 |
+| --- | --- | --- |
+| 板级入口 | `GW_PROBLEM_TOW.v`, `piano_score_player.v` | 引脚顶层、复位、模式控制与模块连接 |
+| 时钟与复位 | `piano_score_player.v` | 直接使用板载 50 MHz `sys_clk`，上电复位和 KEY2 异步复位、同步释放 |
+| SD 与乐谱 | `sd_spi_byte.v`, `sd_spi_reader.v`, `fat_file_reader.v`, `piano_score_reader.v`, `piano_score_sequencer.v` | SPI 扇区读取、FAT 文件定位、P88S 校验与定时调度 |
+| 演奏输入 | `button_debounce.v`, `key_control.v`, `dynamics_fixed.v` | 按键同步/去抖、逐音试听；`dynamics_fixed` 是后续压力输入的替换接口，需保留 |
+| 音频链 | `piano_synth.v`, `adsr_step.v`, `output_limiter.v`, `pt8211_score_tx.v` | DDS 复音合成、包络、峰值限制与 PT8211 串行输出 |
+
+`src/rom/` 中的 HEX 文件是合成输入；`sd_card/PIANO.BIN` 是示例乐谱。`sim/` 保存测试平台、运行脚本和可复查的仿真证据；`output/score_test/` 是乐谱/FAT 测试夹具。ModelSim 编译库、临时波形和 Python 缓存均为可再生成文件，不属于工程输入。
+
+根目录按用途划分：`src/` 与 `src/rom/` 是 RTL/综合输入；`tools/` 是 ROM、乐谱、构建和验证工具；`sim/` 是 testbench、运行脚本和有意保留的报告/WAV证据；`output/score_test/` 是自动生成的 FAT/乐谱测试夹具；`backup/` 存放明确标记的历史源码快照；`assets/`、`source/`、`sd_card/` 保存授权、MIDI 来源和示例乐谱；`impl/` 保存 Gowin 综合、时序报告和可下载位流，ModelSim work 库是可重建缓存。清理仿真缓存时运行 `powershell -ExecutionPolicy Bypass -File tools/clean_generated.ps1`；该脚本保留 `impl/`、WAV、报告、日志、ROM、乐谱、MIDI 和历史快照。
 
 ## SD 播放与音色切换
 
-工程自带 `sd_card/PIANO.BIN` 示例乐谱和 DDS 所需的正弦表、频率表、音色参数表。播放器只从 SD 卡读取乐谱；音高、谐波、ADSR、力度和复音状态均在 FPGA 内实时计算，不依赖整段录音或每键 PCM 波形。
+工程自带 `sd_card/PIANO.BIN` 示例乐谱和 DDS 所需的正弦表、频率表、音色参数表。将 `SD_SCORE_ENABLE` 设为 1 才会启用 SD 乐谱读取；音高、谐波、ADSR、力度和复音状态均在 FPGA 内实时计算，不依赖整段录音或每键 PCM 波形。
 
-将示例乐谱放到 SD 卡根目录并校验：
+启用 SD 乐谱模式后，可将示例乐谱放到 SD 卡根目录并校验：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter H
@@ -15,7 +36,7 @@ powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter
 
 该脚本只在目标文件缺失或内容一致时直接写入；若卡上已有不同的 `PIANO.BIN`，必须额外指定 `-Replace`，旧文件会先备份到 `output/sd_backup`。目前检测到的 H: 卡根目录没有 `PIANO.BIN`，所以需要先运行该命令，播放器才有乐谱可读。
 
-KEY0 在钢琴、小提琴和架子鼓 DDS 音色之间循环。KEY2 切换 SD 乐谱播放与逐音试听模式：逐音模式下，每次按 KEY1 触发下一个音符，音区按 A0 到 C8 循环；退出逐音模式会重新读取乐谱并从头播放。乐谱模式下 KEY1 仍从头重播。音色切换不重置乐谱时间，当前按住的音符会用新音色重新起音。LED0 表示 SD 初始化成功，LED1 表示找到乐谱，LED2 在逐音模式开启或乐谱播放时点亮，LED3 表示当前模式下的播放错误。文件缺失、格式错误或 SD 读错时，乐谱模式会停止并静音；逐音试听仍可独立使用。
+默认配置禁用 SD 乐谱读取，启动后进入逐音试听。参数 `SD_SCORE_ENABLE=1` 可在工程配置中显式启用 SD 乐谱路径。KEY0 在钢琴、小提琴和架子鼓 DDS 音色之间循环；KEY1 每按一次依次触发 A0 至 C8，并释放前一个逐音；KEY2 是低有效复位，复位后音色回到钢琴、音符编号回到 A0。默认模式下 SD SPI 控制器保持复位，不会初始化或读取卡片。
 
 三种音色共享 DDS 相位、正弦 ROM、音高表、分时谐波运算和 DAC。小提琴模式切换泛音谱，并关闭钢琴低音补偿与击弦瞬态；它是参数化的弓弦倾向合成音色，不是采样音色或完整物理弓弦模型。架子鼓模式将音符索引 0--23 映射为底鼓倾向、24--47 映射为军鼓倾向、48--87 映射为镲片倾向；每个 note-on 触发一次短衰减，鼓声不等待 note-off。
 
@@ -27,29 +48,32 @@ SD 接口使用 3.3 V SPI：MISO AA15、SCK V15、CS W15、MOSI Y16。其余 PT8
 
 SD 卡只保存乐谱事件，不保存钢琴 PCM 波形；音频波形由 DDS 在 FPGA 内实时生成。
 
-## 构建
+## 快速构建
 
 在工程根目录运行：
 
 ```powershell
 & "D:\Gowin\Gowin_V1.9.12.03_x64\IDE\bin\gw_sh.exe" tools/build.tcl
 powershell -ExecutionPolicy Bypass -File sim/run.ps1
+powershell -ExecutionPolicy Bypass -File sim/run_score.ps1
 ```
 
-SD 卡读写、FAT、P88S 解析及调度测试由 `sim/run_score.do` 覆盖。
+第二条仿真命令覆盖 SD 卡、FAT、P88S 解析和乐谱调度的端到端测试。
+
+完整回归命令为 `sim/run.ps1`、`sim/run_score.ps1`、`sim/demo.ps1`、`sim/bass.ps1` 和 `sim/tone_realism.ps1`。需要生成 ROM 表时运行 `python tools/generate_tables.py`。Gowin 版本、成功记录及板级验证限制见 `VERIFICATION.md`。
 
 ## 操作
 
-以下“实时生成与存储边界”章节同时适用于当前 SD 播放顶层：SD 只提供事件，音频波形由 DDS 实时合成。
+默认配置为逐音试听，不访问 SD 卡。将 `SD_SCORE_ENABLE` 设为 1 后可启用乐谱路径；SD 仍只提供事件，音频波形由 DDS 实时合成。
 
 | 按键 | 行为 |
 | --- | --- |
-| KEY2 | 切换 SD 乐谱播放 / 逐音试听模式；切回乐谱模式时从头读取 |
-| KEY1（乐谱模式） | 从头重播 SD 卡乐谱 |
-| KEY1（逐音模式） | 每次按下触发下一个音符，A0 到 C8，再循环到 A0；松开进入 Release |
+| KEY2 | 低有效复位；复位后恢复钢琴音色并从 A0 开始 |
+| KEY1（默认模式） | 每次按下触发下一个音符，A0 到 C8 循环；新音触发时释放前一个音 |
+| KEY1（启用 SD 乐谱时） | 从头重播 SD 卡乐谱 |
 | KEY0 | 钢琴→小提琴→架子鼓循环切换，并重新触发当前活动音符 |
 
-KEY0 不重置乐谱位置；切换时保留当前 gate，并让活动音符从新的音色重新起音。鼓模式将当前活动 note-on 作为一次性鼓击触发。KEY0/KEY1/KEY2 均使用双触发器同步与约 1 ms 稳定时间去抖。KEY2 切换模式时会清空当前音符状态并重新初始化乐谱读取；逐音模式下 SD 读取错误不会阻止按键试听。
+KEY0 不重置逐音编号；切换时保留当前 gate，并让活动音符从新音色重新起音。鼓模式将当前活动 note-on 作为一次性鼓击触发。KEY0/KEY1 使用双触发器同步与去抖；KEY2 作为异步低有效复位输入，并在系统时钟域同步释放。逐音模式沿用 `dynamics_fixed.v` 的 Q0.8 力度接口，后续可替换为压力传感器。
 正在发送的一帧必须保持左右声道字一致，不能从半个字中间截断；因此模拟输出最迟在下一完整帧更新，约 20.83 us，另有 DAC 自身的更新延迟。
 
 ## 实时生成与存储边界
@@ -63,7 +87,6 @@ KEY0 不重置乐谱位置；切换时保留当前 gate，并让活动音符从�
 | `src/rom/voicing88.hex` | 每键 8 个泛音权重、响度增益、衰减比例、弦刚度步进 | 88 项，每项 140 位 |
 
 ADSR 基础参数写在 RTL 中；每键的衰减步长 ROM 在综合时由这些常量计算。
-PLL 初始化模块中的 ROM 是厂商时钟校准配置，与音频无关。
 没有每键的 PCM，没有录音，没有整段乐曲 ROM，也没有预录音频解码器。
 `tools/generate_tables.py` 根据 `sin()`、十二平均律及人工设置的音色锚点生成上述函数、参数表。
 `voicing88.hex` 不存逐时刻幅度曲线，也不含从录音提取的参数轨迹。
@@ -105,8 +128,8 @@ A4 至 C8 的基础频谱权重、包络和增益沿用原版；所有音符均�
 `HAMMER_TRANSIENT` 保留约 10.7 ms 的确定性高阶分音起音增强。
 另外实现了逐分音衰减、慢速拍频和琴槌噪声的实验分支，可分别通过
 `PARTIAL_DECAY`、`UNISON_BEAT`、`HAMMER_NOISE` 参数启用。
-由于这些分支当前会使 153.6 MHz 布局时序失败，它们在默认 FPGA 配置中关闭；
-启用前必须先完成流水线重构并通过布局时序检查。它们不是完整琴槌—多弦物理模型。
+这些分支在默认 FPGA 配置中关闭；
+启用前必须重新检查流水线预算并通过 50 MHz 布局时序检查。它们不是完整琴槌—多弦物理模型。
 
 低音分音频率采用轻微弦刚度近似 `step_h = h*step_1 + (h^3-h)*stiffness_step`。
 标准基频保持原来的频率字，h=1 的修正严格为零；不对整个键盘做拉伸调律。
@@ -159,13 +182,13 @@ R 步长在松键时根据**当时**的包络电平计算，A/D/S 任意阶段�
 
 ## 时钟与位宽
 
-当前 SD 播放顶层直接使用板载 **50 MHz `sys_clk`**；工程中的 PLL 模块保留给独立时钟实验，当前 `GW_PROBLEM_TOW` 顶层不经过它们。
+工程全部模块直接使用板载 **50 MHz `sys_clk`**，没有额外的倍频时钟链。
 `pt8211_score_tx` 的 `BCK_HALF_DIV=48`，所以 BCK 为 `50 MHz/(2*48)=520.833 kHz`；
 每个立体声帧 32 个 BCK，当前硬件采样率约为 **16.276 kHz**，与原板卡播放器时序一致。
 
 当前硬件每帧有 `32*2*48=3072` 个系统时钟。全 88 声部均活跃时会处理 704 个谐波分量，高于奈奎斯特频率的分量权重为零。
 本次回归测得最坏情况下 PCM 在触发后 2861 周期内就绪，原版为 3121 周期；
-在当前 50 MHz 顶层下仍有约 211 个系统时钟的帧内余量。独立 `piano_synth` 回归使用 153.6 MHz 等效仿真时钟验证核心算法，不能把该仿真时钟误认为当前板级音频时钟。
+在当前 50 MHz 顶层下仍有约 211 个系统时钟的帧内余量。独立 `piano_synth` 回归验证核心算法，板级 50 MHz 时钟及 3072 周期帧节拍由播放器集成测试覆盖。
 `deadline_error` 是错过采样预算的粘滞标志，仿真必须检查它。
 逻辑上只有一张 256 点正弦函数表；当前 Gowin 综合器为实现双路读取，
 将同一内容映射为两个 pROM 读副本。它们不是不同音符或谐波的专用波表。
@@ -185,7 +208,8 @@ R 步长在松键时根据**当时**的包络电平计算，A/D/S 任意阶段�
 ## 模块与引脚
 
 `GW_PROBLEM_TOW.v` 仅有端口、连线和模块例化。
-`audio_clock.v` 管 PLL 与复位；`key_control.v` 保留独立按键试听与固定力度接口；
+`piano_score_player.v` 管 50 MHz 系统集成与复位；`key_control.v` 管独立按键试听；
+`dynamics_fixed.v` 提供后续替换为压力传感器的 Q0.8 力度接口；
 `adsr_step.v` 中的 `adsr_pipeline` 管包络；`piano_synth.v` 管 DDS/谐波/复音；
 `output_limiter.v` 管主增益与限制；`pt8211_score_tx.v` 管当前串行音频输出。
 
@@ -202,22 +226,11 @@ PT8211 使用 16 位 LSBJ、MSB 先发，不能换成带一位延迟的标准 I2
 WS=0 右声道，WS=1 左声道；两个声道来自同一帧锁存的同一个 PCM 字。
 复位后等待约 50 ms 再开启板载功放。
 
-## 构建与验证
-
-在工程根目录执行：
-
-```powershell
-python tools/generate_tables.py
-& D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe tools/build.tcl
-powershell -ExecutionPolicy Bypass -File sim/run.ps1
-powershell -ExecutionPolicy Bypass -File sim/clock.ps1
-powershell -ExecutionPolicy Bypass -File sim/demo.ps1
-powershell -ExecutionPolicy Bypass -File sim/bass.ps1
-```
+## 深入验证
 
 `sim/run.ps1` 在 ModelSim 中验证按键、88 音轮询、ADSR、尾音重叠、88 复音、变调、强制停止、增益限制和 PT8211 帧格式。
+`sim/run_score.ps1` 运行完整乐谱链路及 50 MHz 播放器集成测试。
 快速合成测试缩短了包络时间，便于观察状态转换；完整音频测试使用默认实际参数。
-`sim/clock.ps1` 编译 Gowin 官方原语模型并检验真实 RTL 时钟链，不使用人为编写的假 PLL。
 `sim/demo.ps1` 生成约 2.63 秒的 RTL 音频，并将前 24000 个样本与独立数学模型逐点核对，检查频谱、混叠与限幅，输出 `sim/audio_report.json`。
 该音频测试需要 NumPy，仅分析脚本依赖它；RTL 和 Gowin 构建不依赖 NumPy。
 
@@ -236,7 +249,6 @@ powershell -ExecutionPolicy Bypass -File sim/bass.ps1
 观察 `valid/ready/note_on/note`、A4 的 `phase_a4/envelope_a4/state_a4`、分时谐波计算和最终 PCM：
 松开时进入 R，R 期间相位继续变化；KEY0 音色切换会保留当前乐谱位置并重新触发当前活动声部。
 波形脚本默认使用缩短 ADSR 的快速自测，完整默认时长可运行 `tb_demo`。
-已保存一份可直接载入的 `sim/realtime_evidence.wlf`，与对应的 `sim/evidence.log` 一起用于复查。
 这些测试提供实时生成的技术证据，最终赛题判定仍以评审检查实际 RTL 和演示为准。
 
 构建结果与实际验证数据见 `VERIFICATION.md`。尚未完成板上试听，仿真不能替代下载后的电气和音质检查。

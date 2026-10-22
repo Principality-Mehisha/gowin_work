@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/work tb_ringtone -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_ringtone/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_ringtone.log 
-# Start time: 00:59:40 on Oct 23,2026
+# Start time: 02:25:08 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/work.tb_ringtone
 # Loading sim/work.ringtone_pcm_player
@@ -12,5 +12,5 @@
 # Stopped at sim/tb_ringtone.sv line 54
 #  if {[examine -radix unsigned /tb_ringtone/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 00:59:42 on Oct 23,2026, Elapsed time: 0:00:02
+# End time: 02:25:10 on Oct 23,2026, Elapsed time: 0:00:02
 # Errors: 0, Warnings: 0

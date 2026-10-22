@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/ringtone_work tb_sd_ringtone -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_sd_ringtone/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_sd_ringtone.log 
-# Start time: 01:25:46 on Oct 23,2026
+# Start time: 02:31:23 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/ringtone_work.tb_sd_ringtone
 # Loading sim/ringtone_work.sd_ringtone_case
@@ -19,6 +19,12 @@
 # Loading sim/ringtone_work.output_limiter
 # Loading sim/ringtone_work.pt8211_score_tx
 # Loading sim/ringtone_work.sd_card_model
+# Loading sim/ringtone_work.uart_score_control
+# Loading sim/ringtone_work.uart_rx
+# Loading sim/ringtone_work.tjc_status_tx
+# Loading sim/ringtone_work.uart_tx
+# Loading sim/ringtone_work.piano_synth
+# Loading sim/ringtone_work.adsr_pipeline
 # onfinish stop
 #  run -all
 # PASS SD ringtone error=10
@@ -28,11 +34,11 @@
 # PASS SD ringtone FAT profile=2: Android events, EOF, controls
 # PASS SD ringtone FAT profile=0: Android events, EOF, controls
 # PASS SD ringtone suite
-# ** Note: $finish    : sim/tb_sd_ringtone.sv(89)
+# ** Note: $finish    : sim/tb_sd_ringtone.sv(90)
 #    Time: 492753620 ns  Iteration: 2  Instance: /tb_sd_ringtone
-# Break in Module tb_sd_ringtone at sim/tb_sd_ringtone.sv line 89
-# Stopped at sim/tb_sd_ringtone.sv line 89
+# Break in Module tb_sd_ringtone at sim/tb_sd_ringtone.sv line 90
+# Stopped at sim/tb_sd_ringtone.sv line 90
 #  if {[examine -radix unsigned /tb_sd_ringtone/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 01:30:44 on Oct 23,2026, Elapsed time: 0:04:58
+# End time: 02:39:19 on Oct 23,2026, Elapsed time: 0:07:56
 # Errors: 0, Warnings: 0

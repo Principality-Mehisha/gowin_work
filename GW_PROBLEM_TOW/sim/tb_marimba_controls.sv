@@ -13,6 +13,7 @@ module tb_marimba_controls;
     piano_score_player #(.POWER_ON_CYCLES(8), .DEBOUNCE_CYCLES(8),
                          .AUDIO_START_CYCLES(64)) dut (
         .sys_clk(clk), .KEY0(1'b1), .KEY1(key1), .KEY2(key2),
+        .uart_rx(1'b1), .uart_tx(),
         .HP_BCK(), .HP_WS(), .HP_DIN(), .PA_EN(),
         .sd_cs_n(cs), .sd_sck(), .sd_mosi(), .sd_miso(1'b1), .LEDs()
     );

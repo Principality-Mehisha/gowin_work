@@ -52,7 +52,7 @@ assert "module dynamics_fixed" in (root / "src/dynamics_fixed.v").read_text()
 assert "assign dynamics = 8'd192" in (root / "src/dynamics_fixed.v").read_text()
 assert "parameter integer SD_SCORE_ENABLE = 0" in player
 assert "wire reset_async_n = reset_request_n && KEY2" in player
-assert "wire manual_mode = !SD_SCORE_ENABLE" in player
+assert "wire manual_mode = !ringtone_active" in player
 assert "dynamics_fixed.v" in {
     source.name for source in sources
 }
@@ -70,7 +70,11 @@ assert (root / "src/marimba_body_filter.v").exists()
 ringtone = (root / "src/ringtone_pcm_player.v").read_text()
 assert "ringtone_config.vh" in ringtone
 assert "ringtone_pcm_player" not in player
-assert "ANDROID BIN" in player and ".marimba_format(ringtone_active)" in player
+assert all(name in player for name in ("ANDROID BIN", "RINGTONEBIN", "PIANO   BIN"))
+assert ".marimba_format(selected_track!=3)" in player
+assert "uart_score_control" in player and ".uart_rx(uart_rx)" in top
+assert {"uart_rx.v", "uart_tx.v", "tjc_status_tx.v", "uart_score_control.v"}.issubset(
+    {source.name for source in sources})
 assert (root / "sd_card/ANDROID.BIN").read_bytes()[:4] == b"M42S"
 assert "ringtone_button" in player
 for bank in range(5):

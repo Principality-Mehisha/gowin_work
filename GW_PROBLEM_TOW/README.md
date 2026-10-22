@@ -1,5 +1,7 @@
 # Tang Mega 60K 实时马林巴与钢琴乐谱播放器
 
+**2026-10-23：已新增淘晶驰 TJC8048X270_011C 的 UART 双向控制，115200/8N1。** 串口屏可选择安卓马林巴 `ANDROID.BIN`、苹果马林巴 `RINGTONE.BIN`、钢琴 `PIANO.BIN`，停止播放和查询状态；三种播放均由 FPGA 实时合成。实体 KEY0/KEY1/KEY2 保持安卓铃声、42 音试听、复位。默认 UART 接线为 PMOD1/J8：11 脚 RX（Y21）、12 脚 TX（Y22）、3/4 脚 GND，屏幕另行供电。屏幕按钮代码、六个反馈控件和完整协议见 [UART_SCREEN.md](UART_SCREEN.md)，可复制脚本在 `screen/tjc_uart/`。位流仍覆盖原 `impl/pnr/GW_PROBLEM_TOW.fs`。下文不含 UART 的操作说明属于历史记录。
+
 **当前 KEY0 已切换为三星安卓主题铃声 Over the Horizon（2012/S3）的马林巴声部演奏版，读取 SD 根目录 `ANDROID.BIN`。** 文件 520 字节、63 条事件、31 次触发，约 24.375 秒。KEY1 仍为 C2–F5 的 42 音试听，KEY2 复位。原苹果 `RINGTONE.BIN` 和钢琴 `PIANO.BIN` 保留；当前位流仍覆盖 `impl/pnr/GW_PROBLEM_TOW.fs`。来源、改编范围及复现方法见 [ANDROID_RINGTONE.md](ANDROID_RINGTONE.md)。以下 KEY0 读取 `RINGTONE.BIN` 的说明属于上一版。
 
 **2026-10-23 当前操作：KEY0 从 SD 卡根目录读取 `RINGTONE.BIN` 的音符指令并实时合成铃声，再按一次停止；播完返回手动试听。KEY1 保持 C2–F5 的 42 音逐音试听，KEY2 复位。** SD 卡只保存时间、MIDI 音高、力度等事件，不保存此播放链所需的 PCM。当前铃声包含 51 次触发、103 条事件，文件 840 字节。为了原音高重现铃声，核心支持 C2–B5 共 48 音，新增高音由同一源 PCM 反演，KEY1 试听上限仍为 F5。旧 KEY0 PCM 播放器已从板级路径和 Gowin 综合文件列表移除，保留源码/测试供历史比较。

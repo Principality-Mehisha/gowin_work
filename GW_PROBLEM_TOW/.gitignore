@@ -1,9 +1,12 @@
 impl/
 output/marimba_tools/
+output/uart_control/
+backup/before_uart_control/*.fs
 work/
 sim/work/
 sim/controls_work/
 sim/ringtone_work/
+sim/uart_work/
 sim/bass_work/
 sim/tone_work/
 sim/work_score/

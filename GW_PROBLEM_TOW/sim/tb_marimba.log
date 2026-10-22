@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/work tb_marimba -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_marimba/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_marimba.log 
-# Start time: 00:59:39 on Oct 23,2026
+# Start time: 02:25:07 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/work.tb_marimba
 # Loading sim/work.marimba_synth
@@ -14,5 +14,5 @@
 # Stopped at sim/tb_marimba.sv line 100
 #  if {[examine -radix unsigned /tb_marimba/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 00:59:39 on Oct 23,2026, Elapsed time: 0:00:00
+# End time: 02:25:07 on Oct 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0

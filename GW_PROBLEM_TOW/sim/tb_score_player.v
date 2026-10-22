@@ -25,6 +25,7 @@ module score_player_case #(
 
     ) dut (
         .sys_clk(clk), .KEY0(key0), .KEY1(key1), .KEY2(key2),
+        .uart_rx(1'b1), .uart_tx(),
         .HP_BCK(bck), .HP_WS(ws), .HP_DIN(din), .PA_EN(amp),
         .sd_cs_n(cs), .sd_sck(sck), .sd_mosi(mosi), .sd_miso(miso), .LEDs(leds)
     );

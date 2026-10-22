@@ -30,7 +30,7 @@ n@_opt1
 R3
 R0
 vadsr_pipeline
-Z4 !s110 1792688384
+Z4 !s110 1792693827
 !i10b 1
 !s100 OUFkY<J6H>8N]P9z_g_oW1
 IP?C4Rn7g1V3K8[_e6^a:j3
@@ -44,9 +44,9 @@ Z10 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z11 !s108 1792688384.000000
-Z12 !s107 ../output/score_test/params.vh|../src/ringtone_config.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/dynamics_fixed.v|../src/ringtone_pcm_player.v|../src/marimba_body_filter.v|../src/marimba_synth.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
-Z13 !s90 +incdir+../src|-work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/marimba_synth.v|../src/marimba_body_filter.v|../src/ringtone_pcm_player.v|../src/dynamics_fixed.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
+Z11 !s108 1792693827.000000
+Z12 !s107 ../output/score_test/params.vh|../src/ringtone_config.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/dynamics_fixed.v|../src/ringtone_pcm_player.v|../src/marimba_body_filter.v|../src/marimba_synth.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|../src/uart_score_control.v|../src/tjc_status_tx.v|../src/uart_tx.v|../src/uart_rx.v|
+Z13 !s90 +incdir+../src|-work|work_score|../src/uart_rx.v|../src/uart_tx.v|../src/tjc_status_tx.v|../src/uart_score_control.v|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/marimba_synth.v|../src/marimba_body_filter.v|../src/ringtone_pcm_player.v|../src/dynamics_fixed.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
 !i113 1
 Z14 o-work work_score
 Z15 !s92 +incdir+../src -work work_score
@@ -146,7 +146,7 @@ R4
 I1W`e^WEXE=7eBWTXBAC3S0
 R5
 R6
-Z18 w1792687946
+Z18 w1792693501
 Z19 8tb_score_player.v
 Z20 Ftb_score_player.v
 L0 2
@@ -275,11 +275,11 @@ R2
 vpiano_score_player
 R4
 !i10b 1
-!s100 YWDOT:;KcVBXBKmCb_b_]2
-I2P@E<f_?9aknKEK=`J@m33
+!s100 QI;eW3ofYGJNYa2a=Pi8<1
+ImFR=k<MOGHKdI1lf>Tg020
 R5
 R6
-w1792688127
+Z25 w1792693444
 8../src/piano_score_player.v
 F../src/piano_score_player.v
 L0 3
@@ -407,8 +407,8 @@ R2
 vscore_player_case
 R4
 !i10b 1
-!s100 gGdaZo:Q8^ocS@da^ZAmJ0
-I=gT0ZH]UL>[I:jBch1Ea>3
+!s100 QCM[C<jL`BRfYTh2^;Na>2
+I0_AGH;TRTYY:e2j]a^ch93
 R5
 R6
 R18
@@ -495,11 +495,11 @@ R2
 vtb_score_full
 R4
 !i10b 1
-!s100 OzV8_bFz5O@HQlCn`SEi?0
-I6g1f2FG6<gL0ZC2FXVR;93
+!s100 >gKO3I8TP3]L0Zf:2gdnn2
+I@01^TE:O@@2k5fPTjmP8a2
 R5
 R6
-w1792496387
+w1792688542
 8tb_score_full.v
 Ftb_score_full.v
 L0 3
@@ -517,14 +517,102 @@ R2
 vtb_score_player
 R4
 !i10b 1
-!s100 fFm`CdJ<;ZdN@?KQ1YBfI3
-IQ>34eQQIg<=]abDLeF^of3
+!s100 QKYof=L]V;^;EU33`:6[`2
+IC4jdzFi]_edE?ncPFNP9B1
 R5
 R6
 R18
 R19
 R20
-L0 138
+L0 139
+R10
+r1
+!s85 0
+31
+R11
+R12
+R13
+!i113 1
+R14
+R15
+R2
+vtjc_status_tx
+R4
+!i10b 1
+!s100 5omzP>]aX_>OMLUb==eG32
+II_X6E9]jUJCBF[fJno[KZ2
+R5
+R6
+w1792693094
+8../src/tjc_status_tx.v
+F../src/tjc_status_tx.v
+L0 4
+R10
+r1
+!s85 0
+31
+R11
+R12
+R13
+!i113 1
+R14
+R15
+R2
+vuart_rx
+R4
+!i10b 1
+!s100 Yg1AhTVVXh87YWVfzdfcb3
+IVfZmhY2jn;7n^Q?]nWFYN1
+R5
+R6
+Z26 w1792693093
+8../src/uart_rx.v
+F../src/uart_rx.v
+L0 3
+R10
+r1
+!s85 0
+31
+R11
+R12
+R13
+!i113 1
+R14
+R15
+R2
+vuart_score_control
+R4
+!i10b 1
+!s100 06dDG[A7T7PQWl?LZaY>?1
+IY8R2C10BT3Ggki@]37e3K3
+R5
+R6
+R25
+8../src/uart_score_control.v
+F../src/uart_score_control.v
+L0 4
+R10
+r1
+!s85 0
+31
+R11
+R12
+R13
+!i113 1
+R14
+R15
+R2
+vuart_tx
+R4
+!i10b 1
+!s100 _ScCTf8zX:@fnV;4?o=Ug3
+I7R5YgSiG8:09cjR3lzV:c2
+R5
+R6
+R26
+8../src/uart_tx.v
+F../src/uart_tx.v
+L0 2
 R10
 r1
 !s85 0

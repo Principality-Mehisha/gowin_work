@@ -15,6 +15,7 @@ module sd_ringtone_case #(
  piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
   .SD_POWER_WAIT_CYCLES(16),.SD_INIT_HALF_DIV(3),.SD_READ_HALF_DIV(3),.CLOCKS_PER_MS(1000)) dut (
   .sys_clk(clk),.KEY0(k0),.KEY1(k1),.KEY2(k2),.HP_BCK(bck),.HP_WS(ws),.HP_DIN(din),.PA_EN(),
+  .uart_rx(1'b1),.uart_tx(),
   .sd_cs_n(cs),.sd_sck(sck),.sd_mosi(mosi),.sd_miso(miso),.LEDs());
  sd_card_model #(.IMAGE_FILE(IMAGE),.IMAGE_BYTES(600000)) card (
   .rst_n(dut.storage_rst_n),.cs_n(cs),.sck(sck),.mosi(mosi),.miso(miso),

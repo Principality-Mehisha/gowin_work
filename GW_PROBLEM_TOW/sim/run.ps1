@@ -7,6 +7,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "vlib failed" }
     }
     $sources = @("src/adsr_step.v", "src/output_limiter.v", "src/piano_synth.v",
+        "src/uart_rx.v", "src/uart_tx.v", "src/tjc_status_tx.v", "src/uart_score_control.v",
         "src/marimba_synth.v", "src/marimba_body_filter.v", "src/ringtone_pcm_player.v",
         "src/dynamics_fixed.v", "src/key_control.v",
         "src/pt8211_score_tx.v", "src/piano_score_player.v", "src/button_debounce.v",

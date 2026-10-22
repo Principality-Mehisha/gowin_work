@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/uart_work tb_uart_player -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_uart_player/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_uart_player.log 
-# Start time: 02:33:34 on Oct 23,2026
+# Start time: 04:00:38 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/uart_work.tb_uart_player
 # Loading sim/uart_work.uart_player_case
@@ -10,6 +10,7 @@
 # Loading sim/uart_work.sd_spi_byte
 # Loading sim/uart_work.fat_file_reader
 # Loading sim/uart_work.piano_score_reader
+# Loading sim/uart_work.uart_note_audition
 # Loading sim/uart_work.key_audition
 # Loading sim/uart_work.key_filter
 # Loading sim/uart_work.dynamics_fixed
@@ -37,5 +38,5 @@
 # Stopped at sim/tb_uart_player.sv line 99
 #  if {[examine -radix unsigned /tb_uart_player/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 02:33:46 on Oct 23,2026, Elapsed time: 0:00:12
+# End time: 04:00:48 on Oct 23,2026, Elapsed time: 0:00:10
 # Errors: 0, Warnings: 0

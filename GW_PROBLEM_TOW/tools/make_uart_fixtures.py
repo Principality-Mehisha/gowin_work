@@ -1,6 +1,8 @@
 """Short three-file FAT fixtures; source SD scores are never modified."""
 from pathlib import Path
 import struct
+import csv
+import re
 from fat_test_fixtures import build, save_hex
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +22,13 @@ def excerpt(name):
 
 def main():
     OUT.mkdir(exist_ok=True)
+    # Independent literal note names from the existing documented 88-key list.
+    with (ROOT/'screen/tjc_uart/piano_88_notes.csv').open(encoding='utf-8-sig',newline='') as f:
+        names=[row['Note'] for row in csv.DictReader(f)]
+    assert len(names)==88 and names[0]=='A0' and names[-1]=='C8'
+    assert all(re.fullmatch(r'[A-G]#?[0-8]',name) for name in names)
+    (OUT/'note_names.vh').write_text(''.join(
+        f'expected[{i}]="{name}";\n' for i,name in enumerate(names)),encoding='ascii')
     android = excerpt('ANDROID.BIN')
     apple = excerpt('RINGTONE.BIN')
     piano = excerpt('PIANO.BIN')

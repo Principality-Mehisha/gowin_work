@@ -7,6 +7,8 @@ module piano_score_player #(
     parameter integer UART_CLK_HZ = 50000000,
     parameter integer UART_BAUD = 115200,
     parameter integer UART_TIMEOUT_CYCLES = UART_CLK_HZ/50,
+    parameter integer NOTE_GATE_CYCLES = 25000000,
+    parameter integer NOTE_TAIL_CYCLES = 50000000,
     parameter integer POWER_ON_CYCLES = 65536,
     parameter integer DEBOUNCE_CYCLES = 1000000,
     parameter integer AUDIO_START_CYCLES = 2500000,
@@ -56,6 +58,9 @@ module piano_score_player #(
     reg legacy_autoplay;
     reg [7:0] selected_track, last_error;
     wire uart_play, uart_stop;
+    wire uart_note_previous, uart_note_next, uart_note_play;
+    wire note_busy, note_clear;
+    wire [6:0] selected_note;
     wire [7:0] uart_track;
     wire uart_overflow;
     wire playing, finished, sequence_error;
@@ -63,10 +68,12 @@ module piano_score_player #(
     wire [3:0] sd_error_code, fat_error, score_error;
     wire manual_mode = !ringtone_active;
     wire uart_start = uart_play && !(ringtone_active && selected_track==uart_track);
-    wire control_restart = ringtone_press || uart_start || uart_stop ||
+    wire control_restart = ringtone_press || uart_start || uart_stop || uart_note_play ||
+                           (note_busy && replay_press) ||
                            (replay_press && SD_SCORE_ENABLE && ringtone_active);
     wire play_rst_n = rst_n && !control_restart;
-    wire marimba_mode = ringtone_active ? (selected_track!=3) : (DEFAULT_MARIMBA!=0);
+    wire marimba_mode = ringtone_active ? (selected_track!=3) :
+                       (note_busy ? 1'b0 : (DEFAULT_MARIMBA!=0));
     reg ringtone_error;
     reg storage_restart;
     wire storage_enable = ringtone_active;
@@ -78,18 +85,22 @@ module piano_score_player #(
                               score_error!=0 ? {4'h3,score_error} :
                               sequence_error ? 8'h40 : 8'h50;
     wire [7:0] player_state = ringtone_error ? 8'd3 :
-                            (ringtone_active ? (playing ? 8'd2 : 8'd1) : 8'd0);
+                            (ringtone_active ? (playing ? 8'd2 : 8'd1) :
+                             (note_busy ? 8'd4 : 8'd0));
     generate if (UART_ENABLE != 0) begin: uart_control
         uart_score_control #(.CLK_HZ(UART_CLK_HZ),.BAUD(UART_BAUD),
                              .TIMEOUT_CYCLES(UART_TIMEOUT_CYCLES)) link (
             .clk(sys_clk),.rst_n(rst_n),.rx(uart_rx),.tx(uart_tx),
             .player_state(player_state),.player_track(selected_track),
+            .selected_note(selected_note),
             .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
+            .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;
         assign uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
+        assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
     end endgenerate
     always @(posedge sys_clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -100,6 +111,9 @@ module piano_score_player #(
         end else begin
             storage_restart <= ringtone_active && (finished || failed) && !legacy_autoplay;
             if (uart_stop) begin
+                legacy_autoplay<=0;
+                ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
+            end else if (uart_note_play) begin
                 legacy_autoplay<=0;
                 ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
             end else if (ringtone_press) begin
@@ -169,29 +183,40 @@ module piano_score_player #(
     wire audition_event_valid, audition_event_on;
     wire [6:0] audition_event_note;
     wire [7:0] audition_event_dynamics;
+    wire note_event_valid, note_event_on;
+    wire [6:0] note_event_note;
+    wire [7:0] note_event_dynamics;
+    uart_note_audition #(.GATE_CYCLES(NOTE_GATE_CYCLES),.TAIL_CYCLES(NOTE_TAIL_CYCLES)) uart_notes (
+        .clk(sys_clk),.rst_n(rst_n),.previous_request(uart_note_previous),
+        .next_request(uart_note_next),.play_request(uart_note_play),
+        .cancel(ringtone_press || uart_start || uart_stop || (replay_press && note_busy)),
+        .event_ready(manual_mode && note_busy && synth_event_ready),
+        .selected_note(selected_note),.event_valid(note_event_valid),.event_on(note_event_on),
+        .event_note(note_event_note),.event_dynamics(note_event_dynamics),
+        .busy(note_busy),.clear(note_clear));
     // Select exactly one event source; the audition source is gated by mode.
     wire synth_event_valid = !control_restart &&
-                            (manual_mode ? audition_event_valid : dds_event_valid);
-    wire synth_event_on = manual_mode ? audition_event_on : dds_event_on;
-    wire [6:0] synth_event_note = manual_mode ? audition_event_note : dds_event_note;
-    wire [7:0] synth_event_dynamics = manual_mode ? audition_event_dynamics : dds_event_dynamics;
+                            (manual_mode ? (note_busy ? note_event_valid : audition_event_valid) : dds_event_valid);
+    wire synth_event_on = manual_mode ? (note_busy ? note_event_on : audition_event_on) : dds_event_on;
+    wire [6:0] synth_event_note = manual_mode ? (note_busy ? note_event_note : audition_event_note) : dds_event_note;
+    wire [7:0] synth_event_dynamics = manual_mode ? (note_busy ? note_event_dynamics : audition_event_dynamics) : dds_event_dynamics;
     wire piano_deadline_error, marimba_deadline_error;
     wire deadline_error = marimba_mode ? marimba_deadline_error : piano_deadline_error;
     // Stop and mute on any failed storage, format, sequence or compute check.
     wire stream_error = storage_enable &&
                         (sd_error_code != 0 || fat_error != 0 || score_error != 0);
     assign failed = stream_error || sequence_error || deadline_error;
-    wire synth_stop = control_restart ||
+    wire synth_stop = control_restart || note_clear ||
                       (manual_mode ? deadline_error : (failed || finished));
     wire audio_silence = manual_mode ? deadline_error :
                          (failed || finished || !playing);
     wire mode_active = manual_mode || (playing && !finished);
     key_audition #(.DEBOUNCE_CYCLES(DEBOUNCE_CYCLES)) audition (
-        .clk(sys_clk), .reset_n(play_rst_n && manual_mode && !ringtone_active),
+        .clk(sys_clk), .reset_n(play_rst_n && manual_mode && !ringtone_active && !note_busy),
         .key_play_n(KEY1), .key_stop_n(1'b1),
         .note_first(marimba_mode ? 7'd36 : 7'd0),
         .note_last(marimba_mode ? 7'd77 : 7'd87),
-        .event_ready(manual_mode && synth_event_ready),
+        .event_ready(manual_mode && !note_busy && synth_event_ready),
         .event_valid(audition_event_valid), .event_on(audition_event_on),
         .event_note(audition_event_note), .event_dynamics(audition_event_dynamics),
         .stop_all()

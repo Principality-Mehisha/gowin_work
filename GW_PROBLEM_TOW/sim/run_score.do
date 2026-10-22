@@ -1,6 +1,6 @@
 onerror {quit -code 1 -f}
 if {![file isdirectory work_score]} {vlib work_score}
-vlog +incdir+../src -work work_score ../src/uart_rx.v ../src/uart_tx.v ../src/tjc_status_tx.v ../src/uart_score_control.v ../src/adsr_step.v ../src/output_limiter.v ../src/piano_synth.v ../src/marimba_synth.v ../src/marimba_body_filter.v ../src/ringtone_pcm_player.v ../src/dynamics_fixed.v ../src/key_control.v ../src/piano_score_reader.v ../src/piano_score_sequencer.v ../src/piano_score_player.v ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/button_debounce.v ../src/pt8211_score_tx.v sd_card_model.v tb_score_full.v tb_score_player.v
+vlog +incdir+../src -work work_score ../src/uart_note_audition.v ../src/uart_rx.v ../src/uart_tx.v ../src/tjc_status_tx.v ../src/uart_score_control.v ../src/adsr_step.v ../src/output_limiter.v ../src/piano_synth.v ../src/marimba_synth.v ../src/marimba_body_filter.v ../src/ringtone_pcm_player.v ../src/dynamics_fixed.v ../src/key_control.v ../src/piano_score_reader.v ../src/piano_score_sequencer.v ../src/piano_score_player.v ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/button_debounce.v ../src/pt8211_score_tx.v sd_card_model.v tb_score_full.v tb_score_player.v
 foreach bench {tb_score_full tb_score_player} {
     vsim -voptargs=+acc work_score.$bench
     onfinish stop

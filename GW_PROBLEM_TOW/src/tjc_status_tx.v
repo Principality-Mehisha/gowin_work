@@ -1,9 +1,9 @@
 // Native TJC commands, recmod=0. Each snapshot updates page0.n0..n5:
-// state, track, error, result, sequence, command. n5 is written last.
-// payload layout: {state,track,error,result,sequence,command}.
+// state, track, error, result, sequence, command; then every.tNote.txt.
+// payload layout: {selected_note[6:0],state,track,error,result,sequence,command}.
 module tjc_status_tx (
     input wire clk, rst_n,
-    input wire [47:0] snapshot,
+    input wire [54:0] snapshot,
     input wire valid,
     output wire ready,
     output reg [7:0] byte_data,
@@ -11,12 +11,16 @@ module tjc_status_tx (
     input wire byte_ready
 );
     reg busy;
-    reg [47:0] saved;
+    reg [54:0] saved;
     reg [2:0] field;
+    reg [1:0] fence;
     reg [4:0] pos;
     reg [7:0] value;
     reg [3:0] hundreds, tens, ones;
     reg [4:0] digits;
+    reg [7:0] semitones, pitch_class, octave, note_letter;
+    reg sharp;
+    reg [4:0] note_length;
     assign ready = !busy;
     assign byte_valid = busy;
     always @* begin
@@ -27,6 +31,22 @@ module tjc_status_tx (
         endcase
         hundreds=value/100; tens=(value%100)/10; ones=value%10;
         digits=(value>=100) ? 3 : ((value>=10) ? 2 : 1);
+        // Piano index 0=A0, 3=C1, 87=C8. Use ASCII '#' for sharp notes.
+        semitones={1'b0,saved[54:48]}+8'd9;
+        pitch_class=semitones%12;
+        octave=semitones/12;
+        sharp=(pitch_class==1 || pitch_class==3 || pitch_class==6 ||
+               pitch_class==8 || pitch_class==10);
+        case(pitch_class)
+            0,1: note_letter="C";
+            2,3: note_letter="D";
+            4: note_letter="E";
+            5,6: note_letter="F";
+            7,8: note_letter="G";
+            9,10: note_letter="A";
+            default: note_letter="B";
+        endcase
+        note_length=sharp ? 3 : 2;
         case(pos)
             0: byte_data="p"; 1: byte_data="a"; 2: byte_data="g";
             3: byte_data="e"; 4: byte_data="0"; 5: byte_data=".";
@@ -40,15 +60,34 @@ module tjc_status_tx (
                 else if (pos==15 && digits==3) byte_data="0"+ones;
             end
         endcase
+        if (field==6) begin
+            case(pos)
+                0: byte_data="e"; 1: byte_data="v"; 2: byte_data="e";
+                3: byte_data="r"; 4: byte_data="y"; 5: byte_data=".";
+                6: byte_data="t"; 7: byte_data="N"; 8: byte_data="o";
+                9: byte_data="t"; 10: byte_data="e"; 11: byte_data=".";
+                12: byte_data="t"; 13: byte_data="x"; 14: byte_data="t";
+                15: byte_data="="; 16: byte_data=8'h22;
+                17: byte_data=note_letter;
+                18: byte_data=sharp ? "#" : "0"+octave;
+                19: byte_data=sharp ? "0"+octave : 8'h22;
+                20: byte_data=sharp ? 8'h22 : 8'hff;
+                default: byte_data=8'hff;
+            endcase
+        end
+        // Discard any partial screen command left by an FPGA reset mid-TX.
+        if (fence!=0) byte_data=8'hff;
     end
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin busy<=0; saved<=0; field<=0; pos<=0; end
+        if (!rst_n) begin busy<=0; saved<=0; field<=0; pos<=0; fence<=0; end
         else if (!busy) begin
-            if (valid) begin saved<=snapshot; field<=0; pos<=0; busy<=1; end
+            if (valid) begin saved<=snapshot; field<=0; pos<=0; busy<=1; fence<=3; end
         end else if (byte_ready) begin
-            if (pos==15+digits) begin
+            if (fence!=0) fence<=fence-1'b1;
+            else if ((field==6 && pos==20+note_length) ||
+                     (field!=6 && pos==15+digits)) begin
                 pos<=0;
-                if (field==5) busy<=0;
+                if (field==6) busy<=0;
                 else field<=field+1'b1;
             end else pos<=pos+1'b1;
         end

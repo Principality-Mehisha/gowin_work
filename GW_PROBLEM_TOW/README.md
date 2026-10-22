@@ -1,5 +1,9 @@
 # Tang Mega 60K 实时马林巴与钢琴乐谱播放器
 
+**当前选中音符已通过 UART 自动回传至 `every.tNote` 文本控件。** 切换音调、上电/复位和查询状态都会更新 A0～C8 音名，升号使用 `#`。屏幕需在 every 页的后初始化事件发送一次查询以同步，代码见 [UART_THREE_KEYS.md](UART_THREE_KEYS.md)。三键指令保持不变。
+
+**新增三个固定命令用于 88 音单音试听：40 上一个、41 下一个、42 播放当前音（均为十六进制）。** FPGA 内保存 A0～C8 的选择值，切换时不发声，播放时使用已有钢琴实时合成器并自动释放；屏幕只需三个按钮。马林巴音域及原实体按键功能保持不变。可复制的三条 `printh` 指令见 [UART_THREE_KEYS.md](UART_THREE_KEYS.md)，本次保留用户当前 UART 管脚 RX=B17、TX=B18。
+
 **2026-10-23：已新增淘晶驰 TJC8048X270_011C 的 UART 双向控制，115200/8N1。** 串口屏可选择安卓马林巴 `ANDROID.BIN`、苹果马林巴 `RINGTONE.BIN`、钢琴 `PIANO.BIN`，停止播放和查询状态；三种播放均由 FPGA 实时合成。实体 KEY0/KEY1/KEY2 保持安卓铃声、42 音试听、复位。默认 UART 接线为 PMOD1/J8：11 脚 RX（Y21）、12 脚 TX（Y22）、3/4 脚 GND，屏幕另行供电。屏幕按钮代码、六个反馈控件和完整协议见 [UART_SCREEN.md](UART_SCREEN.md)，可复制脚本在 `screen/tjc_uart/`。位流仍覆盖原 `impl/pnr/GW_PROBLEM_TOW.fs`。下文不含 UART 的操作说明属于历史记录。
 
 **当前 KEY0 已切换为三星安卓主题铃声 Over the Horizon（2012/S3）的马林巴声部演奏版，读取 SD 根目录 `ANDROID.BIN`。** 文件 520 字节、63 条事件、31 次触发，约 24.375 秒。KEY1 仍为 C2–F5 的 42 音试听，KEY2 复位。原苹果 `RINGTONE.BIN` 和钢琴 `PIANO.BIN` 保留；当前位流仍覆盖 `impl/pnr/GW_PROBLEM_TOW.fs`。来源、改编范围及复现方法见 [ANDROID_RINGTONE.md](ANDROID_RINGTONE.md)。以下 KEY0 读取 `RINGTONE.BIN` 的说明属于上一版。

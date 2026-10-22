@@ -2,6 +2,8 @@ impl/
 output/marimba_tools/
 output/uart_control/
 backup/before_uart_control/*.fs
+backup/before_three_note_controls/*.fs
+backup/before_note_display/*.fs
 work/
 sim/work/
 sim/controls_work/

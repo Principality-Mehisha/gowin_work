@@ -15,3 +15,7 @@ if(n0.val==3)
 {
   t0.txt="ERROR"
 }
+if(n0.val==4)
+{
+  t0.txt="AUDITION"
+}

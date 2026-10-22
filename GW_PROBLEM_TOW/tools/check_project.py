@@ -75,6 +75,8 @@ assert ".marimba_format(selected_track!=3)" in player
 assert "uart_score_control" in player and ".uart_rx(uart_rx)" in top
 assert {"uart_rx.v", "uart_tx.v", "tjc_status_tx.v", "uart_score_control.v"}.issubset(
     {source.name for source in sources})
+assert "uart_note_audition.v" in {source.name for source in sources}
+assert "uart_note_audition" in player
 assert (root / "sd_card/ANDROID.BIN").read_bytes()[:4] == b"M42S"
 assert "ringtone_button" in player
 for bank in range(5):

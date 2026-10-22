@@ -4,8 +4,11 @@ module tb_uart_protocol;
  reg clk=0,rst_n=0,rx=1,passed=0;
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
+ wire note_previous,note_next,note_play;
+ integer previous_count=0,next_count=0,note_count=0;
  wire [7:0] track;
  reg [7:0] state=0,selected=0,error=0;
+ reg [6:0] note_selected=0;
  integer starts=0,stops=0,snapshots=0,reply_count=0;
  integer fields[0:5];
  integer results[0:255],commands[0:255],states[0:255],tracks[0:255];
@@ -14,16 +17,22 @@ module tb_uart_protocol;
  uart_score_control #(.TIMEOUT_CYCLES(12000)) dut (
   .clk(clk),.rst_n(rst_n),.rx(rx),.tx(tx),.player_state(state),
   .player_track(selected),.player_error(error),.play_request(play),
-  .stop_request(stop),.requested_track(track),.overflow(overflow));
+  .selected_note(note_selected),
+  .stop_request(stop),.requested_track(track),.overflow(overflow),
+  .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
  always @(posedge clk) if(rst_n) begin
   if(play) begin starts=starts+1; selected<=track; state<=1; end
   if(stop) begin stops=stops+1; selected<=0; state<=0; end
+  if(note_previous) begin previous_count=previous_count+1;note_selected<=(note_selected==0)?87:note_selected-1'b1;end
+  if(note_next) begin next_count=next_count+1;note_selected<=(note_selected==87)?0:note_selected+1'b1;end
+  if(note_play) note_count=note_count+1;
  end
  // Decode physical TX independently of the transmitter/formatter internals.
  reg [7:0] c;
  integer bit_index,ff=0,pos=0,number=0,field=0,i;
  reg [103:0] prefix;
+ reg [191:0] text_command=0;
  initial forever begin
   @(negedge tx);
   repeat(UART_TICKS/2) @(posedge clk);
@@ -36,10 +45,15 @@ module tb_uart_protocol;
   if(c==8'hff) begin
    ff=ff+1;
    if(ff==3) begin
-    if(pos<14 || prefix!={"page0.n",8'h30+field[7:0],".val="})
-     $fatal(1,"Native TJC prefix/value invalid field=%0d pos=%0d prefix=%h",field,pos,prefix);
-    fields[field]=number;
-    if(field==5) begin
+    if(pos==0) begin
+     // A leading FF fence discards a partial command after FPGA reset.
+    end else if(field==6) begin
+     if(text_command!="every.tNote.txt=\"A0\"" && text_command!="every.tNote.txt=\"C8\"")
+      $fatal(1,"Native note command invalid: %s",text_command);
+     if(fields[5]=='h40 && fields[4]==16 && text_command!="every.tNote.txt=\"C8\"")
+      $fatal(1,"Previous note reply did not contain C8");
+     if(fields[5]=='h41 && fields[4]==17 && text_command!="every.tNote.txt=\"A0\"")
+      $fatal(1,"Next note reply did not contain A0");
      if(fields[2]=='h60) overflow_reported=1;
      snapshots=snapshots+1;
      if(fields[5]!=8'h81) begin
@@ -47,12 +61,17 @@ module tb_uart_protocol;
       states[fields[4]]=fields[0];tracks[fields[4]]=fields[1];reply_count=reply_count+1;
      end
      field=0;
-    end else field=field+1;
-    ff=0;pos=0;number=0;prefix=0;
+    end else begin
+     if(pos<14 || prefix!={"page0.n",8'h30+field[7:0],".val="})
+      $fatal(1,"Native TJC prefix/value invalid field=%0d pos=%0d prefix=%h",field,pos,prefix);
+     fields[field]=number;field=field+1;
+    end
+    ff=0;pos=0;number=0;prefix=0;text_command=0;
    end
   end else begin
    if(ff!=0) $fatal(1,"Missing three FF terminators");
-   if(pos<13) prefix={prefix[95:0],c};
+   if(field==6) text_command={text_command[183:0],c};
+   else if(pos<13) prefix={prefix[95:0],c};
    else begin
     if(c<"0" || c>"9") $fatal(1,"Non-decimal native value");
     number=number*10+c-"0";
@@ -108,6 +127,12 @@ module tb_uart_protocol;
   send_frame('h5a,1,0,0,0);expect_reply('h5a,0,1);
   send_frame('h0d,1,0,0,0);expect_reply('h0d,0,1);
   if(overflow) $fatal(1,"Normal command burst overflowed feedback");
+  send_frame(16,'h40,0,0,0);expect_reply(16,0,'h40);
+  send_frame(17,'h41,0,0,0);expect_reply(17,0,'h41);
+  send_frame(18,'h42,0,0,0);expect_reply(18,0,'h42);
+  send_frame(19,'h42,1,0,0);expect_reply(19,1,'h42);
+  if(previous_count!=1 || next_count!=1 || note_count!=1)
+   $fatal(1,"Three-key command count/argument validation");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

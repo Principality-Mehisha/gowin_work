@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/uart_work tb_uart_protocol -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_uart_protocol/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_uart_protocol.log 
-# Start time: 02:33:10 on Oct 23,2026
+# Start time: 04:00:08 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/uart_work.tb_uart_protocol
 # Loading sim/uart_work.uart_score_control
@@ -9,11 +9,11 @@
 # onfinish stop
 #  run -all
 # PASS UART: 115200 8N1, checksum/version/tail, resync, timeout, break, arguments, native TX, queued replies
-# ** Note: $finish    : sim/tb_uart_protocol.sv(119)
-#    Time: 325620210 ns  Iteration: 2  Instance: /tb_uart_protocol
-# Break in Module tb_uart_protocol at sim/tb_uart_protocol.sv line 119
-# Stopped at sim/tb_uart_protocol.sv line 119
+# ** Note: $finish    : sim/tb_uart_protocol.sv(144)
+#    Time: 485265070 ns  Iteration: 2  Instance: /tb_uart_protocol
+# Break in Module tb_uart_protocol at sim/tb_uart_protocol.sv line 144
+# Stopped at sim/tb_uart_protocol.sv line 144
 #  if {[examine -radix unsigned /tb_uart_protocol/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 02:33:33 on Oct 23,2026, Elapsed time: 0:00:23
+# End time: 04:00:37 on Oct 23,2026, Elapsed time: 0:00:29
 # Errors: 0, Warnings: 0

@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/work tb_marimba_controls -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_marimba_controls/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_marimba_controls.log 
-# Start time: 02:25:11 on Oct 23,2026
+# Start time: 03:48:45 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/work.tb_marimba_controls
 # Loading sim/work.piano_score_player
@@ -9,6 +9,7 @@
 # Loading sim/work.sd_spi_byte
 # Loading sim/work.fat_file_reader
 # Loading sim/work.piano_score_reader
+# Loading sim/work.uart_note_audition
 # Loading sim/work.key_audition
 # Loading sim/work.key_filter
 # Loading sim/work.dynamics_fixed
@@ -32,5 +33,5 @@
 # Stopped at sim/tb_marimba_controls.sv line 55
 #  if {[examine -radix unsigned /tb_marimba_controls/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 02:25:11 on Oct 23,2026, Elapsed time: 0:00:00
+# End time: 03:48:45 on Oct 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0

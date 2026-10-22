@@ -51,6 +51,9 @@ the tuning, disabled modes and complete-chain level calibration method.
 
 # Experimental Apple Marimba Reference
 
+The current KEY0 selection has moved to the Android/Samsung event arrangement
+documented in `ANDROID_RINGTONE.md`; the Apple data below remains a reference.
+
 `assets/ringtone/apple_marimba_2007.mp3` is a listening reference obtained from
 the Awesome Ringtone collection:
 
@@ -58,6 +61,30 @@ https://raw.githubusercontent.com/w3teal/awesome-ringtone/main/Apple/2007%20-%20
 
 The collection states that its ringtone files are third-party copies and that
 copyright remains with the relevant brand or creator. This file is included
-only for an experimental comparison. The FPGA stores a separately converted
-IMA ADPCM representation and plays it only when KEY0 is pressed; it is not
-part of the real-time marimba synthesis model.
+only for an experimental comparison. Earlier versions stored an IMA ADPCM
+representation for KEY0 comparison. As of 2026-10-23 the board-level design
+instead reads RINGTONE.BIN note events from SD and performs real-time modal
+marimba synthesis. The old ADPCM source, ROM and independent diagnostic test
+remain historical references and are not instantiated by the board player.
+The spectral event transcription estimates timing, pitches, chords and
+velocity; it does not reproduce the original recording waveform.
+
+# Samsung Android Theme Arrangement
+
+`ringtone/android/samsung_over_the_horizon_s3.mid` was downloaded from the
+public phone-tone archive at:
+
+http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid
+
+Samsung's official history identifies Over the Horizon as the Galaxy theme
+and describes the 2012 Galaxy S III version:
+
+https://news.samsung.com/global/over-the-horizon-the-evolution-of-the-samsung-galaxy-brand-sound
+
+The MIDI comes from a feature-phone arrangement of the same theme. Only its
+GM Marimba part is used, with one simultaneous unison merged to its stronger
+velocity. Timing and note velocity are retained; other instruments, pan,
+channel volume and the small fixed pitchwheel offset are not reproduced.
+This project renders the part with its existing real-time modal marimba.
+The original ringtone and MIDI rights remain with their respective owners;
+availability in the public archive is not a claim of an official license.

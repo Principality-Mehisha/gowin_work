@@ -13,7 +13,6 @@
         <File path="src/piano_score_reader.v" type="file.verilog" enable="1"/>
         <File path="src/piano_score_sequencer.v" type="file.verilog" enable="1"/>
         <File path="src/piano_score_player.v" type="file.verilog" enable="1"/>
-        <File path="src/ringtone_pcm_player.v" type="file.verilog" enable="1"/>
         <File path="src/pt8211_score_tx.v" type="file.verilog" enable="1"/>
         <File path="src/dynamics_fixed.v" type="file.verilog" enable="1"/>
         <File path="src/key_control.v" type="file.verilog" enable="1"/>

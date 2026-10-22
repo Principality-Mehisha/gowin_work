@@ -1,5 +1,11 @@
 # Tang Mega 60K 实时马林巴与钢琴乐谱播放器
 
+**当前 KEY0 已切换为三星安卓主题铃声 Over the Horizon（2012/S3）的马林巴声部演奏版，读取 SD 根目录 `ANDROID.BIN`。** 文件 520 字节、63 条事件、31 次触发，约 24.375 秒。KEY1 仍为 C2–F5 的 42 音试听，KEY2 复位。原苹果 `RINGTONE.BIN` 和钢琴 `PIANO.BIN` 保留；当前位流仍覆盖 `impl/pnr/GW_PROBLEM_TOW.fs`。来源、改编范围及复现方法见 [ANDROID_RINGTONE.md](ANDROID_RINGTONE.md)。以下 KEY0 读取 `RINGTONE.BIN` 的说明属于上一版。
+
+**2026-10-23 当前操作：KEY0 从 SD 卡根目录读取 `RINGTONE.BIN` 的音符指令并实时合成铃声，再按一次停止；播完返回手动试听。KEY1 保持 C2–F5 的 42 音逐音试听，KEY2 复位。** SD 卡只保存时间、MIDI 音高、力度等事件，不保存此播放链所需的 PCM。当前铃声包含 51 次触发、103 条事件，文件 840 字节。为了原音高重现铃声，核心支持 C2–B5 共 48 音，新增高音由同一源 PCM 反演，KEY1 试听上限仍为 F5。旧 KEY0 PCM 播放器已从板级路径和 Gowin 综合文件列表移除，保留源码/测试供历史比较。
+
+当前参数 ROM 为 `src/rom/marimba48.hex` 和 `marimba_attack48.hex`。H: 卡已写入并校验 `RINGTONE.BIN`，原 `PIANO.BIN` 保留；写卡记录见 `sd_card/RINGTONE_SD_WRITE.json`。下载文件仍直接覆盖 `impl/pnr/GW_PROBLEM_TOW.fs`。详细格式、操作及验证见 [SD_RINGTONE.md](SD_RINGTONE.md)，试听为 `sim/ringtone_sd_realtime.wav`。以下旧版说明保留作历史记录，遇到 KEY0 行为和 ROM 文件名差异，以本段及新文档为准。
+
 当前音域已扩展为 **C2–F5，共 42 音（MIDI 36–77）**，新增 C2–A♯2 共 11 音，使用项目内 Iowa 原始 PCM 逐音拟合。KEY1 从 C2 开始逐音试听，F5 后回到 C2；KEY2 复位后回到 C2。新增 C2–B2 保持 +3 dB 补偿平台，再沿用 B2–C4 的平滑回落曲线；原 B2–F5 的参数和逐样本音频不变。
 
 当前综合输入为 `src/rom/marimba42.hex` 与 `marimba_attack42.hex`；`marimba31.hex` 等旧文件只用于历史比较。最新试听为 `sim/marimba_C2_B2_realtime.wav`（低音区）、`sim/marimba_C2_C3_realtime.wav`（跨原边界）和 `sim/marimba_C2_F5_realtime.wav`（完整 42 音）。当前音频校验报告为 `sim/marimba42_report.json`，扩展说明见 [MARIMBA_LOW_EXTENSION.md](MARIMBA_LOW_EXTENSION.md)。下文 31 音记录为扩展前历史。

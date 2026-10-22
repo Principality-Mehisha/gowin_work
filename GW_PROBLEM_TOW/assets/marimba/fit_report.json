@@ -46,7 +46,13 @@
     74,
     75,
     76,
-    77
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83
   ],
   "tuning": "equal temperament A4=440 Hz; measured source modal ratios retained",
   "decay_method": "fit log amplitude per second, exp(-1/(output_rate*tau)), Q15",
@@ -135,7 +141,13 @@
         "74": 7.374,
         "75": 10.252,
         "76": 13.163,
-        "77": 16.023
+        "77": 16.023,
+        "78": 19.089,
+        "79": 21.926,
+        "80": 24.68,
+        "81": 27.451,
+        "82": 30.448,
+        "83": 33.389
       }
     },
     {
@@ -205,7 +217,13 @@
         "74": 6.329,
         "75": 9.301,
         "76": 12.404,
-        "77": 15.288
+        "77": 15.288,
+        "78": 18.092,
+        "79": 20.897,
+        "80": 23.775,
+        "81": 26.667,
+        "82": 29.614,
+        "83": 32.744
       }
     },
     {
@@ -275,7 +293,13 @@
         "74": 8.648,
         "75": 13.603,
         "76": 18.016,
-        "77": 23.678
+        "77": 23.678,
+        "78": 27.986,
+        "79": 32.05,
+        "80": 35.918,
+        "81": 39.572,
+        "82": 43.308,
+        "83": 47.127
       }
     }
   ],
@@ -2799,6 +2823,366 @@
         "peak_pcm": 4506,
         "rms_0_100ms": 1476.1387414983506
       }
+    },
+    {
+      "midi": 78,
+      "source_fundamental": 745.6424438321601,
+      "source_detuning_cents": 13.176552466072323,
+      "onset_seconds": 18.092,
+      "modes": [
+        {
+          "frequency": 739.9888454232688,
+          "source_frequency": 745.6424438321601,
+          "ratio": 1.0,
+          "gain": 0.20008616601969056,
+          "tau_seconds": 0.09667795049686254,
+          "decay": 0.9993646898709583,
+          "fit_points": 116,
+          "disabled": null
+        },
+        {
+          "frequency": 2851.9165899873733,
+          "source_frequency": 2873.7055550443006,
+          "ratio": 3.8539994320537305,
+          "gain": 0.0035355271935939205,
+          "tau_seconds": 0.015183712830630866,
+          "decay": 0.995961734688365,
+          "fit_points": 26,
+          "disabled": null
+        },
+        {
+          "frequency": 7967.946653218227,
+          "source_frequency": 8028.8226661465005,
+          "ratio": 10.767657786328675,
+          "gain": 0.0,
+          "tau_seconds": 0.09188913552822672,
+          "decay": 0.0,
+          "fit_points": 6,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency": 13689.793640330472,
+          "source_frequency": 13794.385210894961,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.030543253981992674,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 3.161142551196281,
+        "weighted_rms": 1000.1600191132701,
+        "error_db": 0.001389797163754872,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4857,
+        "rms_0_100ms": 1485.3754691652996
+      }
+    },
+    {
+      "midi": 79,
+      "source_fundamental": 790.4201804129748,
+      "source_detuning_cents": 14.1395089358176,
+      "onset_seconds": 20.897,
+      "modes": [
+        {
+          "frequency": 783.9908719634986,
+          "source_frequency": 790.4201804129748,
+          "ratio": 1.0,
+          "gain": 0.12182810847145688,
+          "tau_seconds": 0.08687608130459634,
+          "decay": 0.9992930357979143,
+          "fit_points": 101,
+          "disabled": null
+        },
+        {
+          "frequency": 2937.0900319444486,
+          "source_frequency": 2961.176355439465,
+          "ratio": 3.746331924233418,
+          "gain": 0.00539080895692616,
+          "tau_seconds": 0.014869879394639135,
+          "decay": 0.9958766817935395,
+          "fit_points": 27,
+          "disabled": null
+        },
+        {
+          "frequency": 7350.495983127263,
+          "source_frequency": 7410.775519053239,
+          "ratio": 9.375741792398689,
+          "gain": 0.0,
+          "tau_seconds": 1.543544017889199,
+          "decay": 0.0,
+          "fit_points": 51,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency": 14503.831131324721,
+          "source_frequency": 14622.773337640034,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.019082837614257456,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 5.405185806367514,
+        "weighted_rms": 1001.965581608012,
+        "error_db": 0.0170560678611247,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4819,
+        "rms_0_100ms": 1488.7296802343974
+      }
+    },
+    {
+      "midi": 80,
+      "source_fundamental": 837.2040650181192,
+      "source_detuning_cents": 13.690951385540757,
+      "onset_seconds": 23.775,
+      "modes": [
+        {
+          "frequency": 830.6093951598903,
+          "source_frequency": 837.2040650181192,
+          "ratio": 1.0,
+          "gain": 0.25810093485444957,
+          "tau_seconds": 0.08944536558206005,
+          "decay": 0.9993133361033244,
+          "fit_points": 129,
+          "disabled": null
+        },
+        {
+          "frequency": 3414.9295118488776,
+          "source_frequency": 3442.0425361548823,
+          "ratio": 4.111354304138965,
+          "gain": 0.0,
+          "tau_seconds": 0.3067200086759074,
+          "decay": 0.0,
+          "fit_points": 17,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency": 8683.91955180584,
+          "source_frequency": 8752.86601792251,
+          "ratio": 10.4548775903675,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        },
+        {
+          "frequency": 15366.27381045797,
+          "source_frequency": 15488.275202835204,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.03871514022816743,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 2.5183945977047832,
+        "weighted_rms": 996.7573845567126,
+        "error_db": -0.028210762965703243,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4870,
+        "rms_0_100ms": 1466.0001233948146
+      }
+    },
+    {
+      "midi": 81,
+      "source_fundamental": 887.0201878150867,
+      "source_detuning_cents": 13.756098775131852,
+      "onset_seconds": 26.667,
+      "modes": [
+        {
+          "frequency": 880.0,
+          "source_frequency": 887.0201878150867,
+          "ratio": 1.0,
+          "gain": 0.08814044579216203,
+          "tau_seconds": 0.06985368384517235,
+          "decay": 0.9991208339391867,
+          "fit_points": 100,
+          "disabled": null
+        },
+        {
+          "frequency": 3794.5452601280285,
+          "source_frequency": 3824.816192399558,
+          "ratio": 4.311983250145487,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "no reliable decaying component"
+        },
+        {
+          "frequency": 9380.284039192344,
+          "source_frequency": 9455.115125230968,
+          "ratio": 10.65941368090039,
+          "gain": 0.0,
+          "tau_seconds": 0.39654343527819663,
+          "decay": 0.0,
+          "fit_points": 12,
+          "disabled": "above output Nyquist"
+        },
+        {
+          "frequency": 16279.999999999998,
+          "source_frequency": 16409.873474579104,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.013221066868824304,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 8.135244197884102,
+        "weighted_rms": 1002.2507343819755,
+        "error_db": 0.019527662889652922,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4152,
+        "rms_0_100ms": 1487.225574999859
+      }
+    },
+    {
+      "midi": 82,
+      "source_fundamental": 940.4870701145294,
+      "source_detuning_cents": 15.085503028705675,
+      "onset_seconds": 29.614,
+      "modes": [
+        {
+          "frequency": 932.3275230361799,
+          "source_frequency": 940.4870701145294,
+          "ratio": 1.0,
+          "gain": 0.22798270214549185,
+          "tau_seconds": 0.07798132375815074,
+          "decay": 0.9992124293395844,
+          "fit_points": 122,
+          "disabled": null
+        },
+        {
+          "frequency": 3991.350438472495,
+          "source_frequency": 4026.2819523495596,
+          "ratio": 4.281060399755685,
+          "gain": 0.0008361271689113398,
+          "tau_seconds": 0.005193385068385686,
+          "decay": 0.9882392703001641,
+          "fit_points": 7,
+          "disabled": null
+        },
+        {
+          "frequency": 10309.83265387757,
+          "source_frequency": 10400.06228116055,
+          "ratio": 11.058166147774966,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        },
+        {
+          "frequency": 17248.05917616933,
+          "source_frequency": 17399.010797118794,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.03432282439716048,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 2.9645329827689784,
+        "weighted_rms": 1001.019178460925,
+        "error_db": 0.008847963571633343,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4039,
+        "rms_0_100ms": 1456.4914112202073
+      }
+    },
+    {
+      "midi": 83,
+      "source_fundamental": 996.3114844773739,
+      "source_detuning_cents": 14.911995815236136,
+      "onset_seconds": 32.744,
+      "modes": [
+        {
+          "frequency": 987.7666025122483,
+          "source_frequency": 996.3114844773739,
+          "ratio": 1.0,
+          "gain": 0.076904152887853,
+          "tau_seconds": 0.058338290300499626,
+          "decay": 0.9989473867381378,
+          "fit_points": 71,
+          "disabled": null
+        },
+        {
+          "frequency": 3818.0778046497594,
+          "source_frequency": 3851.1068867137014,
+          "ratio": 3.865364343093808,
+          "gain": 0.0,
+          "tau_seconds": 0.47814693343886777,
+          "decay": 0.0,
+          "fit_points": 19,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency": 9307.529789997534,
+          "source_frequency": 9388.046526684258,
+          "ratio": 9.422802680638435,
+          "gain": 0.0,
+          "tau_seconds": null,
+          "decay": 0.0,
+          "fit_points": 0,
+          "disabled": "above output Nyquist"
+        },
+        {
+          "frequency": 18273.682146476596,
+          "source_frequency": 18431.76246283142,
+          "ratio": 18.5,
+          "gain": 0.0,
+          "tau_seconds": 0.003048906730462166,
+          "decay": 0.0,
+          "fit_points": 5,
+          "disabled": "above output Nyquist"
+        }
+      ],
+      "attack": 0.01153562293317795,
+      "attack_seconds": 0.018,
+      "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+      "calibration": {
+        "gain_scale": 9.864659760593277,
+        "weighted_rms": 1002.8040596284112,
+        "error_db": 0.024321668680275712,
+        "target_weighted_rms": 1000.0,
+        "bass_boost_db": 0.0,
+        "peak_pcm": 4588,
+        "rms_0_100ms": 1467.820917448803
+      }
     }
   ],
   "measured_by_dynamics": {
@@ -4942,6 +5326,312 @@
           }
         ],
         "attack": 0.006194594855309915,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "78": {
+        "midi": 78,
+        "source_fundamental": 745.7294306443807,
+        "source_detuning_cents": 13.378506832899582,
+        "onset_seconds": 19.089,
+        "modes": [
+          {
+            "frequency": 739.9888454232688,
+            "source_frequency": 745.7294306443807,
+            "ratio": 1.0,
+            "gain": 0.017891833967977253,
+            "tau_seconds": 0.09593844446548082,
+            "decay": 0.9993597943855922,
+            "fit_points": 115,
+            "disabled": null
+          },
+          {
+            "frequency": 2857.1940477935696,
+            "source_frequency": 2879.35920072264,
+            "ratio": 3.8611312392949295,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 6976.926523942886,
+            "source_frequency": 7031.051179388498,
+            "ratio": 9.428421208095548,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 13689.793640330472,
+            "source_frequency": 13795.994466921044,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.002683775095196588,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "79": {
+        "midi": 79,
+        "source_fundamental": 790.5212692583148,
+        "source_detuning_cents": 14.360906700179026,
+        "onset_seconds": 21.926,
+        "modes": [
+          {
+            "frequency": 783.9908719634985,
+            "source_frequency": 790.5212692583148,
+            "ratio": 1.0,
+            "gain": 0.020947740349988822,
+            "tau_seconds": 0.08879874804509803,
+            "decay": 0.9993083376620181,
+            "fit_points": 96,
+            "disabled": null
+          },
+          {
+            "frequency": 2936.417196122169,
+            "source_frequency": 2960.8766274749632,
+            "ratio": 3.745473705284269,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 7808.641123449199,
+            "source_frequency": 7873.684647158921,
+            "ratio": 9.960117397658626,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 14503.831131324721,
+            "source_frequency": 14624.643481278823,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.003142161052498323,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "80": {
+        "midi": 80,
+        "source_fundamental": 837.3318076308252,
+        "source_detuning_cents": 13.955087095828894,
+        "onset_seconds": 24.68,
+        "modes": [
+          {
+            "frequency": 830.6093951598903,
+            "source_frequency": 837.3318076308252,
+            "ratio": 1.0,
+            "gain": 0.030247333550329963,
+            "tau_seconds": 0.08959499613297843,
+            "decay": 0.9993144824918112,
+            "fit_points": 128,
+            "disabled": null
+          },
+          {
+            "frequency": 3095.8855883204214,
+            "source_frequency": 3120.941673658231,
+            "ratio": 3.727246051345796,
+            "gain": 0.0,
+            "tau_seconds": 1.8514147614325096,
+            "decay": 0.0,
+            "fit_points": 123,
+            "disabled": "below -52 dB relative to fundamental"
+          },
+          {
+            "frequency": 8173.242616926088,
+            "source_frequency": 8239.39152929834,
+            "ratio": 9.84005558395202,
+            "gain": 0.0,
+            "tau_seconds": 2.7161619121662035,
+            "decay": 0.0,
+            "fit_points": 354,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 15366.27381045797,
+            "source_frequency": 15490.638441170266,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.004537100032549494,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "81": {
+        "midi": 81,
+        "source_fundamental": 887.2419168577653,
+        "source_detuning_cents": 14.188802454413173,
+        "onset_seconds": 27.451,
+        "modes": [
+          {
+            "frequency": 880.0000000000001,
+            "source_frequency": 887.2419168577653,
+            "ratio": 1.0,
+            "gain": 0.011682620509439415,
+            "tau_seconds": 0.07194968085657522,
+            "decay": 0.9991464343691204,
+            "fit_points": 105,
+            "disabled": null
+          },
+          {
+            "frequency": 3637.32159586274,
+            "source_frequency": 3667.2547556152313,
+            "ratio": 4.133319995298568,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 8107.541855170914,
+            "source_frequency": 8174.262473393641,
+            "ratio": 9.213115744512402,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 16279.999999999998,
+            "source_frequency": 16413.975461868657,
+            "ratio": 18.499999999999996,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.0017523930764159123,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "82": {
+        "midi": 82,
+        "source_fundamental": 940.623461185525,
+        "source_detuning_cents": 15.33655139889016,
+        "onset_seconds": 30.448,
+        "modes": [
+          {
+            "frequency": 932.3275230361799,
+            "source_frequency": 940.623461185525,
+            "ratio": 1.0,
+            "gain": 0.021140933983984946,
+            "tau_seconds": 0.07788222083569787,
+            "decay": 0.9992114275734444,
+            "fit_points": 123,
+            "disabled": null
+          },
+          {
+            "frequency": 3913.4808128760887,
+            "source_frequency": 3948.3033339001827,
+            "ratio": 4.197538650507288,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 8397.830120022856,
+            "source_frequency": 8472.554803723644,
+            "ratio": 9.007381968811588,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 17248.05917616933,
+            "source_frequency": 17401.534031932213,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.0031711400975977418,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
+      },
+      "83": {
+        "midi": 83,
+        "source_fundamental": 996.3883121030557,
+        "source_detuning_cents": 15.045489682986332,
+        "onset_seconds": 33.389,
+        "modes": [
+          {
+            "frequency": 987.7666025122483,
+            "source_frequency": 996.3883121030557,
+            "ratio": 1.0,
+            "gain": 0.0071178859772688865,
+            "tau_seconds": 0.05573719863312473,
+            "decay": 0.9988982914319198,
+            "fit_points": 58,
+            "disabled": null
+          },
+          {
+            "frequency": 3708.0754517174264,
+            "source_frequency": 3740.4413462558714,
+            "ratio": 3.753999621253085,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 9495.359345341247,
+            "source_frequency": 9578.239481729413,
+            "ratio": 9.612958487552735,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 18273.682146476593,
+            "source_frequency": 18433.18377390653,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.001067682896590333,
         "attack_seconds": 0.018,
         "source_file": "assets\\marimba\\source\\pp\\Marimba.yarn.pp.C5B5.aif"
       }
@@ -7466,6 +8156,366 @@
           "peak_pcm": 4506,
           "rms_0_100ms": 1476.1387414983506
         }
+      },
+      "78": {
+        "midi": 78,
+        "source_fundamental": 745.6424438321601,
+        "source_detuning_cents": 13.176552466072323,
+        "onset_seconds": 18.092,
+        "modes": [
+          {
+            "frequency": 739.9888454232688,
+            "source_frequency": 745.6424438321601,
+            "ratio": 1.0,
+            "gain": 0.20008616601969056,
+            "tau_seconds": 0.09667795049686254,
+            "decay": 0.9993646898709583,
+            "fit_points": 116,
+            "disabled": null
+          },
+          {
+            "frequency": 2851.9165899873733,
+            "source_frequency": 2873.7055550443006,
+            "ratio": 3.8539994320537305,
+            "gain": 0.0035355271935939205,
+            "tau_seconds": 0.015183712830630866,
+            "decay": 0.995961734688365,
+            "fit_points": 26,
+            "disabled": null
+          },
+          {
+            "frequency": 7967.946653218227,
+            "source_frequency": 8028.8226661465005,
+            "ratio": 10.767657786328675,
+            "gain": 0.0,
+            "tau_seconds": 0.09188913552822672,
+            "decay": 0.0,
+            "fit_points": 6,
+            "disabled": "below -52 dB relative to fundamental"
+          },
+          {
+            "frequency": 13689.793640330472,
+            "source_frequency": 13794.385210894961,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.030543253981992674,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 3.161142551196281,
+          "weighted_rms": 1000.1600191132701,
+          "error_db": 0.001389797163754872,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4857,
+          "rms_0_100ms": 1485.3754691652996
+        }
+      },
+      "79": {
+        "midi": 79,
+        "source_fundamental": 790.4201804129748,
+        "source_detuning_cents": 14.1395089358176,
+        "onset_seconds": 20.897,
+        "modes": [
+          {
+            "frequency": 783.9908719634986,
+            "source_frequency": 790.4201804129748,
+            "ratio": 1.0,
+            "gain": 0.12182810847145688,
+            "tau_seconds": 0.08687608130459634,
+            "decay": 0.9992930357979143,
+            "fit_points": 101,
+            "disabled": null
+          },
+          {
+            "frequency": 2937.0900319444486,
+            "source_frequency": 2961.176355439465,
+            "ratio": 3.746331924233418,
+            "gain": 0.00539080895692616,
+            "tau_seconds": 0.014869879394639135,
+            "decay": 0.9958766817935395,
+            "fit_points": 27,
+            "disabled": null
+          },
+          {
+            "frequency": 7350.495983127263,
+            "source_frequency": 7410.775519053239,
+            "ratio": 9.375741792398689,
+            "gain": 0.0,
+            "tau_seconds": 1.543544017889199,
+            "decay": 0.0,
+            "fit_points": 51,
+            "disabled": "below -52 dB relative to fundamental"
+          },
+          {
+            "frequency": 14503.831131324721,
+            "source_frequency": 14622.773337640034,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.019082837614257456,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 5.405185806367514,
+          "weighted_rms": 1001.965581608012,
+          "error_db": 0.0170560678611247,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4819,
+          "rms_0_100ms": 1488.7296802343974
+        }
+      },
+      "80": {
+        "midi": 80,
+        "source_fundamental": 837.2040650181192,
+        "source_detuning_cents": 13.690951385540757,
+        "onset_seconds": 23.775,
+        "modes": [
+          {
+            "frequency": 830.6093951598903,
+            "source_frequency": 837.2040650181192,
+            "ratio": 1.0,
+            "gain": 0.25810093485444957,
+            "tau_seconds": 0.08944536558206005,
+            "decay": 0.9993133361033244,
+            "fit_points": 129,
+            "disabled": null
+          },
+          {
+            "frequency": 3414.9295118488776,
+            "source_frequency": 3442.0425361548823,
+            "ratio": 4.111354304138965,
+            "gain": 0.0,
+            "tau_seconds": 0.3067200086759074,
+            "decay": 0.0,
+            "fit_points": 17,
+            "disabled": "below -52 dB relative to fundamental"
+          },
+          {
+            "frequency": 8683.91955180584,
+            "source_frequency": 8752.86601792251,
+            "ratio": 10.4548775903675,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 15366.27381045797,
+            "source_frequency": 15488.275202835204,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.03871514022816743,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 2.5183945977047832,
+          "weighted_rms": 996.7573845567126,
+          "error_db": -0.028210762965703243,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4870,
+          "rms_0_100ms": 1466.0001233948146
+        }
+      },
+      "81": {
+        "midi": 81,
+        "source_fundamental": 887.0201878150867,
+        "source_detuning_cents": 13.756098775131852,
+        "onset_seconds": 26.667,
+        "modes": [
+          {
+            "frequency": 880.0,
+            "source_frequency": 887.0201878150867,
+            "ratio": 1.0,
+            "gain": 0.08814044579216203,
+            "tau_seconds": 0.06985368384517235,
+            "decay": 0.9991208339391867,
+            "fit_points": 100,
+            "disabled": null
+          },
+          {
+            "frequency": 3794.5452601280285,
+            "source_frequency": 3824.816192399558,
+            "ratio": 4.311983250145487,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 9380.284039192344,
+            "source_frequency": 9455.115125230968,
+            "ratio": 10.65941368090039,
+            "gain": 0.0,
+            "tau_seconds": 0.39654343527819663,
+            "decay": 0.0,
+            "fit_points": 12,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 16279.999999999998,
+            "source_frequency": 16409.873474579104,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.013221066868824304,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 8.135244197884102,
+          "weighted_rms": 1002.2507343819755,
+          "error_db": 0.019527662889652922,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4152,
+          "rms_0_100ms": 1487.225574999859
+        }
+      },
+      "82": {
+        "midi": 82,
+        "source_fundamental": 940.4870701145294,
+        "source_detuning_cents": 15.085503028705675,
+        "onset_seconds": 29.614,
+        "modes": [
+          {
+            "frequency": 932.3275230361799,
+            "source_frequency": 940.4870701145294,
+            "ratio": 1.0,
+            "gain": 0.22798270214549185,
+            "tau_seconds": 0.07798132375815074,
+            "decay": 0.9992124293395844,
+            "fit_points": 122,
+            "disabled": null
+          },
+          {
+            "frequency": 3991.350438472495,
+            "source_frequency": 4026.2819523495596,
+            "ratio": 4.281060399755685,
+            "gain": 0.0008361271689113398,
+            "tau_seconds": 0.005193385068385686,
+            "decay": 0.9882392703001641,
+            "fit_points": 7,
+            "disabled": null
+          },
+          {
+            "frequency": 10309.83265387757,
+            "source_frequency": 10400.06228116055,
+            "ratio": 11.058166147774966,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 17248.05917616933,
+            "source_frequency": 17399.010797118794,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.03432282439716048,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 2.9645329827689784,
+          "weighted_rms": 1001.019178460925,
+          "error_db": 0.008847963571633343,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4039,
+          "rms_0_100ms": 1456.4914112202073
+        }
+      },
+      "83": {
+        "midi": 83,
+        "source_fundamental": 996.3114844773739,
+        "source_detuning_cents": 14.911995815236136,
+        "onset_seconds": 32.744,
+        "modes": [
+          {
+            "frequency": 987.7666025122483,
+            "source_frequency": 996.3114844773739,
+            "ratio": 1.0,
+            "gain": 0.076904152887853,
+            "tau_seconds": 0.058338290300499626,
+            "decay": 0.9989473867381378,
+            "fit_points": 71,
+            "disabled": null
+          },
+          {
+            "frequency": 3818.0778046497594,
+            "source_frequency": 3851.1068867137014,
+            "ratio": 3.865364343093808,
+            "gain": 0.0,
+            "tau_seconds": 0.47814693343886777,
+            "decay": 0.0,
+            "fit_points": 19,
+            "disabled": "below -52 dB relative to fundamental"
+          },
+          {
+            "frequency": 9307.529789997534,
+            "source_frequency": 9388.046526684258,
+            "ratio": 9.422802680638435,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 18273.682146476596,
+            "source_frequency": 18431.76246283142,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": 0.003048906730462166,
+            "decay": 0.0,
+            "fit_points": 5,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.01153562293317795,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\mf\\Marimba.yarn.mf.C5B5.aif",
+        "calibration": {
+          "gain_scale": 9.864659760593277,
+          "weighted_rms": 1002.8040596284112,
+          "error_db": 0.024321668680275712,
+          "target_weighted_rms": 1000.0,
+          "bass_boost_db": 0.0,
+          "peak_pcm": 4588,
+          "rms_0_100ms": 1467.820917448803
+        }
       }
     },
     "ff": {
@@ -9610,8 +10660,314 @@
         "attack": 0.046020821124855255,
         "attack_seconds": 0.018,
         "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "78": {
+        "midi": 78,
+        "source_fundamental": 745.6703321768366,
+        "source_detuning_cents": 13.241302467089302,
+        "onset_seconds": 27.986,
+        "modes": [
+          {
+            "frequency": 739.9888454232688,
+            "source_frequency": 745.6703321768366,
+            "ratio": 1.0,
+            "gain": 0.37936231404200194,
+            "tau_seconds": 0.09784636311807879,
+            "decay": 0.9993722739171972,
+            "fit_points": 124,
+            "disabled": null
+          },
+          {
+            "frequency": 2833.426406137933,
+            "source_frequency": 2855.1808889159456,
+            "ratio": 3.8290123204725224,
+            "gain": 0.10364167075000892,
+            "tau_seconds": 0.014068057951019215,
+            "decay": 0.9956421824097618,
+            "fit_points": 24,
+            "disabled": null
+          },
+          {
+            "frequency": 7617.540781008551,
+            "source_frequency": 7676.026739695276,
+            "ratio": 10.294129199544038,
+            "gain": 0.001868859415717478,
+            "tau_seconds": 0.005302971740484117,
+            "decay": 0.988480902219904,
+            "fit_points": 9,
+            "disabled": null
+          },
+          {
+            "frequency": 13689.793640330472,
+            "source_frequency": 13794.901145271477,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.07273092663115925,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "79": {
+        "midi": 79,
+        "source_fundamental": 790.4241030922709,
+        "source_detuning_cents": 14.148100643466131,
+        "onset_seconds": 32.05,
+        "modes": [
+          {
+            "frequency": 783.9908719634985,
+            "source_frequency": 790.4241030922709,
+            "ratio": 1.0,
+            "gain": 0.2137555830600691,
+            "tau_seconds": 0.08809130995845285,
+            "decay": 0.9993027850409345,
+            "fit_points": 113,
+            "disabled": null
+          },
+          {
+            "frequency": 2929.9736751074647,
+            "source_frequency": 2954.016299233913,
+            "ratio": 3.7372548327882567,
+            "gain": 0.027277872916469777,
+            "tau_seconds": 0.013390054696897705,
+            "decay": 0.995422030856093,
+            "fit_points": 24,
+            "disabled": null
+          },
+          {
+            "frequency": 7911.635858419098,
+            "source_frequency": 7976.5567444957705,
+            "ratio": 10.091489762635211,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 14503.831131324723,
+            "source_frequency": 14622.845907207013,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.036155018396480824,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "80": {
+        "midi": 80,
+        "source_fundamental": 837.2226476029597,
+        "source_detuning_cents": 13.729377437101283,
+        "onset_seconds": 35.918,
+        "modes": [
+          {
+            "frequency": 830.6093951598903,
+            "source_frequency": 837.2226476029597,
+            "ratio": 1.0,
+            "gain": 0.46127693599586955,
+            "tau_seconds": 0.08907345669420878,
+            "decay": 0.9993104700605034,
+            "fit_points": 131,
+            "disabled": null
+          },
+          {
+            "frequency": 3516.496919619139,
+            "source_frequency": 3544.495015932799,
+            "ratio": 4.233634895187072,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 7712.3206169865825,
+            "source_frequency": 7773.725560705288,
+            "ratio": 9.285135301776812,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "no reliable decaying component"
+          },
+          {
+            "frequency": 15366.27381045797,
+            "source_frequency": 15488.618980654754,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": 0.004341472105917105,
+            "decay": 0.0,
+            "fit_points": 7,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.06919154039938043,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "81": {
+        "midi": 81,
+        "source_fundamental": 887.6356012522006,
+        "source_detuning_cents": 14.956810198559406,
+        "onset_seconds": 39.572,
+        "modes": [
+          {
+            "frequency": 880.0000000000001,
+            "source_frequency": 887.6356012522006,
+            "ratio": 1.0,
+            "gain": 0.11768555005948689,
+            "tau_seconds": 0.0744742920689343,
+            "decay": 0.9991753575389004,
+            "fit_points": 80,
+            "disabled": null
+          },
+          {
+            "frequency": 3390.2108001821957,
+            "source_frequency": 3419.627047717531,
+            "ratio": 3.8525122729343133,
+            "gain": 0.013115073151998117,
+            "tau_seconds": 0.01074382695924347,
+            "decay": 0.9942976875712534,
+            "fit_points": 14,
+            "disabled": null
+          },
+          {
+            "frequency": 8613.470698973768,
+            "source_frequency": 8688.208230399765,
+            "ratio": 9.788034885197463,
+            "gain": 0.0,
+            "tau_seconds": 0.0037565735838600224,
+            "decay": 0.0,
+            "fit_points": 6,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 16280.000000000002,
+            "source_frequency": 16421.25862316571,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": 0.003137346143739753,
+            "decay": 0.0,
+            "fit_points": 6,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.01962009348172275,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "82": {
+        "midi": 82,
+        "source_fundamental": 940.5473772616557,
+        "source_detuning_cents": 15.19651193307585,
+        "onset_seconds": 43.308,
+        "modes": [
+          {
+            "frequency": 932.3275230361799,
+            "source_frequency": 940.5473772616557,
+            "ratio": 1.0,
+            "gain": 0.5767612001329898,
+            "tau_seconds": 0.07737223625184285,
+            "decay": 0.9992062319096332,
+            "fit_points": 126,
+            "disabled": null
+          },
+          {
+            "frequency": 3457.9037103426117,
+            "source_frequency": 3488.3902761925456,
+            "ratio": 3.7088937362717163,
+            "gain": 0.009811966772348356,
+            "tau_seconds": 0.007637511944875651,
+            "decay": 0.9919877658324348,
+            "fit_points": 12,
+            "disabled": null
+          },
+          {
+            "frequency": 8902.285149482717,
+            "source_frequency": 8980.772037828634,
+            "ratio": 9.548452587232324,
+            "gain": 0.0,
+            "tau_seconds": 0.0033202430684351985,
+            "decay": 0.0,
+            "fit_points": 5,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 17248.05917616933,
+            "source_frequency": 17400.12647934063,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.08798597503580072,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
+      },
+      "83": {
+        "midi": 83,
+        "source_fundamental": 996.9058397217447,
+        "source_detuning_cents": 15.944465335043107,
+        "onset_seconds": 47.127,
+        "modes": [
+          {
+            "frequency": 987.7666025122483,
+            "source_frequency": 996.9058397217447,
+            "ratio": 1.0,
+            "gain": 0.3481709298370561,
+            "tau_seconds": 0.06454533530042832,
+            "decay": 0.999048563820178,
+            "fit_points": 99,
+            "disabled": null
+          },
+          {
+            "frequency": 3976.9124768781794,
+            "source_frequency": 4013.7085645320385,
+            "ratio": 4.026166167962604,
+            "gain": 0.007643361219688675,
+            "tau_seconds": 0.004393939783636206,
+            "decay": 0.9861144112983541,
+            "fit_points": 8,
+            "disabled": null
+          },
+          {
+            "frequency": 9391.371396100147,
+            "source_frequency": 9478.264363217218,
+            "ratio": 9.507682657233488,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          },
+          {
+            "frequency": 18273.682146476593,
+            "source_frequency": 18442.758034852275,
+            "ratio": 18.5,
+            "gain": 0.0,
+            "tau_seconds": null,
+            "decay": 0.0,
+            "fit_points": 0,
+            "disabled": "above output Nyquist"
+          }
+        ],
+        "attack": 0.053372143658511714,
+        "attack_seconds": 0.018,
+        "source_file": "assets\\marimba\\source\\ff\\Marimba.yarn.ff.C5B5.aif"
       }
     }
   },
-  "mode_rom_sha256": "5e89ca3065e7a49cf1669985e79449d8e8be9252fdb97c1edb979f9571756f64"
+  "mode_rom_sha256": "99abe79fa53998d75bd0f63980512c8287400f74656c0ada3c3868514352dea8"
 }

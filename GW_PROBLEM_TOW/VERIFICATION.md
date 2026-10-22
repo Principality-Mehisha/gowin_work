@@ -1,5 +1,31 @@
 # 验证记录
 
+## 最新：KEY0 切换安卓三星马林巴铃声（2026-10-23）
+
+选择 Over the Horizon（2012/S3），从公开 GT-E1270 同曲 MIDI 的 GM Marimba 通道提取时间和力度；原 32 次 note-on 中一处同刻同音高叠层合并，输出 31 次 note-on、31 次 note-off、1 条结束记录，`ANDROID.BIN` 共 520 字节，时长 24.375 秒。没有改动马林巴参数 ROM，也没有改变 KEY1 的 42 音试听范围。
+
+H: FAT32 卡已写入 `ANDROID.BIN`、刷盘并读回 SHA256，哈希为 `c655f0c909c5d34d6d61bdc6907184be4beaa0d4d29c88dc10d28b4354741768`。原 `RINGTONE.BIN` 和 `PIANO.BIN` 哈希与写入前一致；记录见 `sd_card/ANDROID_SD_WRITE.json`。旧版备份在 `backup/before_android_ringtone/`。
+
+`tb_sd_ringtone` 对安卓事件通过 FAT16/FAT32 的顺序/力度/EOF、加载与播放停止、重播、复位、KEY1 隔离及缺文件、错格式、越界 MIDI、CRC 错误测试。测试平台从生成的 `params.vh` 读取事件数，不再固定为苹果铃声的计数。
+
+2026-10-23 01:28:29 完成 Gowin 综合、布局布线、位流生成和自动时序检查；Fmax 50.076 MHz，Setup/Hold 违规 0/0。原 `impl/pnr/GW_PROBLEM_TOW.fs` 已直接覆盖，KEY0 文件名为 FAT 字段 `ANDROID BIN`。本次未上板烧录或试听。
+
+完整 396729 帧实际 RTL 输出与独立复音整数模型逐点一致，时长约 24.37503 秒，PCM 峰值 5896，无计算超期或饱和。当前试听与逐点核对报告分别为 `sim/android_ringtone_sd_realtime.wav`、`sim/android_ringtone_sd_audio_report.json`。来源和转换边界见 [ANDROID_RINGTONE.md](ANDROID_RINGTONE.md)。以下为历史记录。
+
+## 最新：KEY0 的 SD 事件铃声（2026-10-23）
+
+KEY0 改为从 SD 卡读取 `RINGTONE.BIN`（M42S 事件格式）并用马林巴实时合成。文件 840 字节、103 条事件，其中 note-on 51 条；约 9.355 秒含末尾尾音时间。H: FAT32 可移动卡已完成写入、刷盘和 SHA256 读回校验，原 `PIANO.BIN` 哈希不变，记录见 `sd_card/RINGTONE_SD_WRITE.json`。
+
+当前核心支持 C2–B5 的 48 音，以容纳铃声 G5/B5；KEY1 仍为 C2–F5 的 42 音循环。原 42 音的模态/起音 ROM 与扩展前逐项相同。板级不再实例化 PCM/ADPCM 铃声播放器，旧源码仅供独立历史测试。
+
+`tb_sd_ringtone` 通过 FAT16/FAT32 下的完整 51 音及和弦事件顺序、力度和调度检查，加载/播放停止、重播、EOF、复位、KEY1 隔离，以及缺文件、错魔数、越界 MIDI 和 CRC16 失败处理。集成测试加速了乐谱毫秒计时；完整音频测试按实际 16.276 kHz 采样节拍调度事件。
+
+`tb_ringtone_synth` 导出 152263 个实际 RTL 采样，`tools/check_ringtone_synth.py` 与独立复音整数模型逐点一致，PCM 峰值 8111。证据为 `sim/tb_sd_ringtone.log`、`sim/tb_ringtone_synth.log`、`sim/ringtone_sd_audio_report.json`，试听为 `sim/ringtone_sd_realtime.wav`。`sim/run.ps1` 七个测试通过；48 音同时触发首帧 2496 时钟，低于 3072 时钟预算；42 音手动遍历、回绕和 KEY2 复位仍通过。
+
+原钢琴 SD 回归也通过：完整长曲的 3721 个事件经过碎片化 FAT32 和调度器逐条核对，FAT16/FAT32 的钢琴播放、重复音、EOF、重播和 CRC 错误处理均通过。为新增可选输入补齐了测试平台的常量连线，兼容模式仍按原 P88S 格式运行。
+
+Gowin 最终构建于 2026-10-23 01:02:06 完成：Fmax 56.776 MHz，Setup/Hold 违规 0/0，Logic 14939/59904、寄存器 18133/60780、BSRAM 21/118。原 `impl/pnr/GW_PROBLEM_TOW.fs` 已直接覆盖。保留时钟管脚 PR1014 一般布线警告。本次已写 SD 卡，未烧录 FPGA 或进行板上实测。完整操作说明见 [SD_RINGTONE.md](SD_RINGTONE.md)。
+
 ## 最新：C2–F5 的 42 音低音扩展（2026-10-22）
 
 由项目原有 Iowa yarn mallet C2B2 的 pp/mf/ff PCM 逐音定位并拟合，新增 MIDI 36–46 共 11 音。ROM 使用连贯 mf 参数；C2–B2 的补偿保持 +3 dB，B2–C4 延续原平滑曲线。原 B2–F5 的 ROM 参数不变，噪声种子改为按 MIDI 音高计算，避免扩展后索引偏移改变已有音色。

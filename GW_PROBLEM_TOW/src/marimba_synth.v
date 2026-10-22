@@ -1,10 +1,10 @@
-// PCM-fitted 42-note modal marimba with velocity-sensitive modes, a short
+// PCM-fitted 48-note modal marimba with velocity-sensitive modes, a short
 // mallet transient and a separate body/tube resonator.
-// MIDI notes 36..77 map to the fitted C2..F5 range.
+// MIDI notes 36..83 map to the fitted C2..B5 range.
 module marimba_synth #(
     parameter SINE_FILE = "src/rom/sine256.hex",
-    parameter MODE_FILE = "src/rom/marimba42.hex",
-    parameter ATTACK_FILE = "src/rom/marimba_attack42.hex"
+    parameter MODE_FILE = "src/rom/marimba48.hex",
+    parameter ATTACK_FILE = "src/rom/marimba_attack48.hex"
 ) (
     input wire clk, reset_n, sample_tick, stop_all,
     input wire event_valid, event_on,
@@ -18,7 +18,7 @@ module marimba_synth #(
     output reg deadline_error
 );
     localparam NOTE_FIRST = 7'd36;
-    localparam NOTE_COUNT = 42;
+    localparam NOTE_COUNT = 48;
     localparam IDLE=0, NOTE_START=1, MODE_LOAD=2, SINE_READ=3,
                INTERP_MUL=4, INTERP_USE=5, AMP_MUL=6, AMP_USE=7,
                DYN_MUL=8, DYN_USE=9, DECAY_MUL=10, DECAY_USE=11,

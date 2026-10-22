@@ -15,6 +15,7 @@ module tb_score_full;
     wire [55:0] notes, velocities;
     wire [7:0] gates, triggers;
     fat_file_reader #(.FILE_NAME("PIANO   BIN")) fat (
+        .requested_file_name(88'd0),
         .clk(clk), .rst_n(rst_n), .sd_ready(sd_ready), .sd_start(sd_start),
         .sd_lba(sd_lba), .sd_data(sd_data), .sd_index(sd_index), .sd_valid(sd_valid),
         .sd_done(sd_done), .sd_error(1'b0), .data(data), .valid(valid), .ready(ready),
@@ -22,6 +23,7 @@ module tb_score_full;
         .error_code(fat_error)
     );
     piano_score_reader decoder (
+        .marimba_format(1'b0),
         .clk(clk), .rst_n(rst_n), .data(data), .valid(valid), .ready(ready),
         .file_found(found), .file_size(file_size), .file_done(done),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),

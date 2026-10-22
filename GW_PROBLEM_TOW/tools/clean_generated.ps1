@@ -4,6 +4,7 @@ $relativeTargets = @(
     "work",
     "sim/work",
     "sim/controls_work",
+    "sim/ringtone_work",
     "sim/work_score",
     "sim/bass_work",
     "sim/tone_work",

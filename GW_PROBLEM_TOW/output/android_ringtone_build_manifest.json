@@ -1,0 +1,38 @@
+{
+  "bitstream": "C:\\Users\\30415\\Desktop\\gowin_work\\GW_PROBLEM_TOW\\impl\\pnr\\GW_PROBLEM_TOW.fs",
+  "sha256": "21b9f544ca3058c15cbc2b7b2106f82d6560f4e80e3dd41d0a60dddd6f3fcbbb",
+  "bytes": 18468491,
+  "active_score": "ANDROID.BIN",
+  "score": {
+    "destination": "H:\\ANDROID.BIN",
+    "sha256": "C655F0C909C5D34D6D61BDC6907184BE4BEAA0D4D29C88DC10D28B4354741768",
+    "bytes": 520,
+    "piano_sha256_unchanged": "81F10BA6DCD06F2AF75F02D276C1F1E057DED1BFC5C80793E9B7790E93A0F663",
+    "verified_at": "2026-10-23 01:26:09"
+  },
+  "timing": {
+    "Numbers of Paths Analyzed": 40311,
+    "Numbers of Endpoints Analyzed": 55062,
+    "Numbers of Falling Endpoints": 0,
+    "Numbers of Setup Violated Endpoints": 0,
+    "Numbers of Hold Violated Endpoints": 0,
+    "audio_clock": "sys_clk",
+    "target_mhz": 50.0,
+    "fmax_mhz": 50.076,
+    "worst_paths": []
+  },
+  "arrangement": "Extract GM program 12 Marimba channel; preserve MIDI note timing/velocity; render with existing modal marimba",
+  "audio": {
+    "title": "Samsung Over the Horizon 2012 - marimba part",
+    "score_file": "sd_card/ANDROID.BIN",
+    "source": "Full-score marimba_synth RTL, exact independent polyphonic integer model comparison",
+    "matched_samples": 396729,
+    "note_on_count": 31,
+    "score_sha256": "c655f0c909c5d34d6d61bdc6907184be4beaa0d4d29c88dc10d28b4354741768",
+    "peak_pcm": 5896,
+    "existing_42_note_rom_unchanged": true,
+    "exact_sample_rate": 16276.041666666666,
+    "duration_seconds": 24.37502976,
+    "preview": "sim\\android_ringtone_sd_realtime.wav"
+  }
+}

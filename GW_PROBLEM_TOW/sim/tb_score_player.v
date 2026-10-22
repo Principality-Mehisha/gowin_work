@@ -20,11 +20,9 @@ module score_player_case #(
         .SINE_FILE("../src/rom/sine256.hex"),
         .FREQ_FILE("../src/rom/frequency88.hex"),
         .VOICING_FILE("../src/rom/voicing88.hex"),
-        .MARIMBA_MODE_FILE("../src/rom/marimba42.hex"),
-        .MARIMBA_ATTACK_FILE("../src/rom/marimba_attack42.hex"),
-        .RINGTONE_ROM_PREFIX("../src/rom/ringtone_bank"),
-        .RINGTONE_HEADER_FILE("../src/rom/ringtone_headers.hex"),
-        .RINGTONE_STEP_FILE("../src/rom/ima_steps.hex")
+        .MARIMBA_MODE_FILE("../src/rom/marimba48.hex"),
+        .MARIMBA_ATTACK_FILE("../src/rom/marimba_attack48.hex")
+
     ) dut (
         .sys_clk(clk), .KEY0(key0), .KEY1(key1), .KEY2(key2),
         .HP_BCK(bck), .HP_WS(ws), .HP_DIN(din), .PA_EN(amp),
@@ -98,40 +96,15 @@ module score_player_case #(
             replay_key();
             wait (manual_on_count == 2);
             if (manual_last_note != 37) $fatal(1, "Second audition key was not Cs2");
-            sound_mode_key();
-            if (!dut.ringtone_active || !dut.marimba_mode)
-                $fatal(1, "KEY0 did not start the recorded reference");
-            if (manual_on_count != 2)
-                $fatal(1, "KEY0 generated an audition event");
-            // The published ringtone includes about 95 ms of leading silence.
-            wait (dut.ringtone_left != 0 || dut.ringtone_right != 0);
-            replay_key();
-            if (manual_on_count != 2)
-                $fatal(1, "KEY1 interfered with recorded reference playback");
-            sound_mode_key();
-            if (dut.ringtone_active)
-                $fatal(1, "Second KEY0 press did not stop PCM");
-            repeat(3) @(posedge dut.sample_tick);
-            if (dut.pcm !== 0 || dut.pcm_right !== 0)
-                $fatal(1, "Stopping PCM left residual synth or recorded audio");
-            replay_key();
-            wait (manual_on_count == 3);
-            if (manual_last_note != 36)
-                $fatal(1, "Marimba audition did not start at C2");
             reset_key();
             if (!dut.manual_mode || dut.initialized || dut.file_found ||
                 dut.marimba_mode !== 1'b1 || dut.ringtone_active)
                 $fatal(1, "KEY2 did not reset the SD-disabled player");
             replay_key();
-            wait (manual_on_count == 4);
+            wait (manual_on_count == 3);
             if (manual_last_note != 36)
                 $fatal(1, "KEY2 reset did not restart marimba audition at C2");
-            sound_mode_key();
-            if (!dut.ringtone_active) $fatal(1, "PCM restart failed");
-            reset_key();
-            if (dut.ringtone_active || !dut.marimba_mode)
-                $fatal(1, "KEY2 did not reset PCM playback");
-            $display("PASS: default marimba, KEY0 stereo PCM start/stop, KEY1 isolation, KEY2 reset");
+            $display("PASS: default C2/Cs2 audition, KEY2 reset");
         end else if (EXPECT_ERROR) begin
             wait (dut.failed);
             repeat (4) @(posedge dut.sample_tick);
@@ -141,16 +114,6 @@ module score_player_case #(
             $display("PASS: score failure case %0d rejected and silent", EXPECT_ERROR);
         end else begin
             wait (dut.playing);
-            if (CONTROLS) begin
-                wait (dut.sequencer.elapsed_ms == 10);
-                sound_mode_key();
-                if (!dut.ringtone_active)
-                    $fatal(1, "KEY0 did not start PCM during score playback");
-                repeat(3) @(posedge dut.sample_tick);
-                sound_mode_key();
-                if (dut.ringtone_active || dut.marimba_mode)
-                    $fatal(1, "KEY0 did not stop PCM during score playback");
-            end
             wait (dut.finished);
             repeat (5) @(posedge dut.sample_tick);
             if (dut.failed || dut.gates != 0 || dut.pcm !== 0 || nonzero < 500 ||

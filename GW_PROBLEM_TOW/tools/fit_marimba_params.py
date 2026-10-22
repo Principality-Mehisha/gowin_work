@@ -18,7 +18,7 @@ from marimba_reference import OUT_FS, decode_modes, render_note
 
 SOURCE = ROOT / "assets/marimba/source"
 ROM = ROOT / "src/rom"
-NOTE_FIRST, NOTE_LAST = 36, 77
+NOTE_FIRST, NOTE_LAST = 36, 83
 ANALYSIS_FS = 24000
 CALIBRATION_DYNAMICS = 192
 LOUDNESS_TARGET = 1000.0
@@ -326,8 +326,8 @@ def main():
         mode_lines.append(f"{mode_word:064x}\n")
         attack_lines.append(f"{attack_word:08x}\n")
         print(f"MIDI {row['midi']}: RMS={measured:.2f}, peak={max(abs(audio))}", flush=True)
-    (ROM / "marimba42.hex").write_text("".join(mode_lines), encoding="ascii")
-    (ROM / "marimba_attack42.hex").write_text("".join(attack_lines), encoding="ascii")
+    (ROM / "marimba48.hex").write_text("".join(mode_lines), encoding="ascii")
+    (ROM / "marimba_attack48.hex").write_text("".join(attack_lines), encoding="ascii")
     report = {
         "version": 4, "source": "University of Iowa MIS yarn mallet AIFF",
         "sample_rate": 96000, "analysis_sample_rate": ANALYSIS_FS,
@@ -352,10 +352,10 @@ def main():
         "sources": sources, "rows": rows,
         "measured_by_dynamics": rows_by_dynamics,
     }
-    report["mode_rom_sha256"] = hashlib.sha256((ROM / "marimba42.hex").read_bytes()).hexdigest()
+    report["mode_rom_sha256"] = hashlib.sha256((ROM / "marimba48.hex").read_bytes()).hexdigest()
     (ROOT / "assets/marimba/fit_report.json").write_text(
         json.dumps(report, indent=2), encoding="ascii")
-    print("PASS: regenerated 42 measured, tuned, loudness-calibrated notes")
+    print("PASS: regenerated 48 measured, tuned, loudness-calibrated notes")
 
 
 if __name__ == "__main__":

@@ -2,9 +2,11 @@
 // A sector is exposed only after the SD host has validated its CRC.
 module fat_file_reader #(
     parameter [87:0] FILE_NAME = "MUSIC   WAV",
+    parameter integer DYNAMIC_FILE_NAME = 0,
     // Zero selects automatic MBR/superfloppy discovery.
     parameter [31:0] VOLUME_START_LBA = 0
 ) (
+    input wire [87:0] requested_file_name,
     input wire clk,
     input wire rst_n,
     input wire sd_ready,
@@ -386,7 +388,7 @@ module fat_file_reader #(
                             fail(4);
                         end else begin
                             if (entry_index < 11
-                                && memory_data != ((FILE_NAME >> ((10-entry_index)*8)) & 8'hff))
+                                && memory_data != (((DYNAMIC_FILE_NAME ? requested_file_name : FILE_NAME) >> ((10-entry_index)*8)) & 8'hff))
                                 name_matches <= 0;
                             case (entry_index)
                                 11: attributes <= memory_data;

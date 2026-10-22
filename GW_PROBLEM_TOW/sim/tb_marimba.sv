@@ -55,14 +55,14 @@ module tb_marimba;
     initial begin
         repeat(4) @(negedge clk);
         reset_n=1;
-        for (note=0; note<42; note=note+1)
+        for (note=0; note<48; note=note+1)
             for (mode=0; mode<4; mode=mode+1)
                 if (dut.mode_rom[note][mode*64+32 +: 32] >= 32'h80000000)
                     $fatal(1,"Mode above Nyquist: note=%0d mode=%0d",note,mode);
 
         send_event(1,35);
         if (dut.pending != 0) $fatal(1,"Out-of-range note was accepted");
-        send_event(1,78);
+        send_event(1,84);
         if (dut.pending != 0) $fatal(1,"High out-of-range note was accepted");
         send_event(1,36);
         render_frame();
@@ -86,15 +86,15 @@ module tb_marimba;
         if (dut.level_ram[0] <= level_after_one)
             $fatal(1,"Repeated strike did not retrigger the modal envelope");
 
-        for (note=37; note<=77; note=note+1)
+        for (note=37; note<=83; note=note+1)
             send_event(1,note);
         render_frame();
-        for (note=0; note<42; note=note+1)
+        for (note=0; note<48; note=note+1)
             if (!dut.active_modes[note*4])
                 $fatal(1,"Missing fitted fundamental for note slot %0d",note);
-        if (cycles >= 3072) $fatal(1,"42-note render exceeded the frame budget");
+        if (cycles >= 3072) $fatal(1,"48-note render exceeded the frame budget");
 
-        $display("PASS tb_marimba: 42 notes, 4 modes, transient, body filter, %0d clocks",
+        $display("PASS tb_marimba: 48 notes, 4 modes, transient, body filter, %0d clocks",
                  cycles);
         passed=1;
         $finish;

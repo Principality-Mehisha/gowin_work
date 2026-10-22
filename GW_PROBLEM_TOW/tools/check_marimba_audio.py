@@ -4,10 +4,11 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from fit_marimba_params import NOTE_FIRST, NOTE_LAST, loudness_metric
+from fit_marimba_params import NOTE_FIRST, loudness_metric
 import numpy as np
 from marimba_reference import OUT_FS, decode_modes, render_note
 ROOT = Path(__file__).resolve().parents[1]
+NOTE_LAST = 77  # KEY1 audition remains C2-F5.
 
 def measured_pitch(samples, expected):
     part = samples[round(.025 * OUT_FS):round(.45 * OUT_FS)]
@@ -21,19 +22,19 @@ def measured_pitch(samples, expected):
 
 def main():
     fit = json.loads((ROOT/'assets/marimba/fit_report.json').read_text())
-    rom_path = ROOT/'src/rom/marimba42.hex'
+    rom_path = ROOT/'src/rom/marimba48.hex'
     rom_hash = hashlib.sha256(rom_path.read_bytes()).hexdigest()
     assert rom_hash == fit['mode_rom_sha256'], 'ROM/report mismatch'
     words = [int(x,16) for x in rom_path.read_text().split()]
-    attacks = [int(x,16) for x in (ROOT/'src/rom/marimba_attack42.hex').read_text().split()]
+    attacks = [int(x,16) for x in (ROOT/'src/rom/marimba_attack48.hex').read_text().split()]
     sine = [int(x,16) for x in (ROOT/'src/rom/sine256.hex').read_text().split()]
     sine = [x-65536 if x>=32768 else x for x in sine]
     baseline = ROOT/'sim/marimba_before_low_extension'
     old_words = [int(x,16) for x in (baseline/'marimba31.hex').read_text().split()]
     old_attacks = [int(x,16) for x in (baseline/'marimba_attack31.hex').read_text().split()]
     notes = list(range(NOTE_FIRST, NOTE_LAST+1))
-    assert fit['notes'] == notes
-    assert len(words) == len(attacks) == len(notes) == 42
+    assert fit['notes'][:42] == notes
+    assert len(words) == len(attacks) == 48 and len(notes) == 42
     rtl = np.loadtxt(ROOT/'sim/marimba_scale_pcm.txt', dtype=np.int32)
     assert rtl.shape == (len(notes)*16276,3)
     results=[]

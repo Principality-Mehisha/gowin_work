@@ -1,0 +1,11 @@
+{
+  "source": "Full-score marimba_synth RTL, exact independent polyphonic integer model comparison",
+  "matched_samples": 152263,
+  "note_on_count": 51,
+  "score_sha256": "2a18279a8ab6fe9610124d292317c208bd78d909d7eb0cc88c40f5f845410164",
+  "peak_pcm": 8111,
+  "existing_42_note_rom_unchanged": true,
+  "exact_sample_rate": 16276.041666666666,
+  "duration_seconds": 9.35503872,
+  "preview": "sim\\ringtone_sd_realtime.wav"
+}

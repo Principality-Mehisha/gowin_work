@@ -14,11 +14,8 @@ module piano_score_player #(
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter FREQ_FILE = "src/rom/frequency88.hex",
     parameter VOICING_FILE = "src/rom/voicing88.hex",
-    parameter MARIMBA_MODE_FILE = "src/rom/marimba42.hex",
-    parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack42.hex",
-    parameter RINGTONE_ROM_PREFIX = "src/rom/ringtone_bank",
-    parameter RINGTONE_HEADER_FILE = "src/rom/ringtone_headers.hex",
-    parameter RINGTONE_STEP_FILE = "src/rom/ima_steps.hex",
+    parameter MARIMBA_MODE_FILE = "src/rom/marimba48.hex",
+    parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack48.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
     // 50 MHz / BCK_HALF_DIV audio sample rate.
     parameter [17:0] DDS_PITCH_RATIO = 18'd193274
@@ -48,10 +45,30 @@ module piano_score_player #(
         .clk(sys_clk), .rst_n(rst_n), .key_n(KEY0), .press(ringtone_press)
     );
     // KEY2 is the active-low board reset; KEY1 remains the audition trigger.
-    wire manual_mode = !SD_SCORE_ENABLE;
-    wire play_rst_n = rst_n && !(replay_press && SD_SCORE_ENABLE);
-    wire marimba_mode = manual_mode && (DEFAULT_MARIMBA != 0);
-    wire ringtone_active;
+    reg ringtone_active;
+    wire playing, finished, sequence_error;
+    wire failed;
+    wire manual_mode = !SD_SCORE_ENABLE && !ringtone_active;
+    wire play_rst_n = rst_n && !ringtone_press && !(replay_press && SD_SCORE_ENABLE && !ringtone_active);
+    wire marimba_mode = ringtone_active || (manual_mode && (DEFAULT_MARIMBA != 0));
+    reg ringtone_error;
+    reg storage_restart;
+    wire storage_enable = SD_SCORE_ENABLE || ringtone_active;
+    wire storage_rst_n = play_rst_n && storage_enable && !storage_restart;
+    always @(posedge sys_clk or negedge rst_n) begin
+        if (!rst_n) begin
+            ringtone_active <= 0; ringtone_error <= 0; storage_restart <= 0;
+        end else begin
+            storage_restart <= ringtone_active && (finished || failed);
+            if (ringtone_press) begin
+                ringtone_active <= !ringtone_active;
+                ringtone_error <= 0;
+            end else if (ringtone_active && (finished || failed)) begin
+                ringtone_active <= 0;
+                if (failed) ringtone_error <= 1;
+            end
+        end
+    end
     wire sd_ready, sd_start, sd_valid, sd_done, sd_error, initialized;
     wire [31:0] sd_lba;
     wire [7:0] sd_data;
@@ -61,7 +78,7 @@ module piano_score_player #(
         .POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
         .INIT_HALF_DIV(SD_INIT_HALF_DIV), .READ_HALF_DIV(SD_READ_HALF_DIV)
     ) sd (
-        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
+        .clk(sys_clk), .rst_n(storage_rst_n),
         .read_start(sd_start), .read_lba(sd_lba),
         .read_ready(sd_ready), .busy(), .initialized(initialized), .high_capacity(),
         .data(sd_data), .data_index(sd_index), .data_valid(sd_valid), .data_ready(1'b1),
@@ -73,8 +90,9 @@ module piano_score_player #(
     wire file_valid, file_ready, file_found, file_done;
     wire [31:0] file_size;
     wire [3:0] fat_error, score_error;
-    fat_file_reader #(.FILE_NAME("PIANO   BIN")) file_reader (
-        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE), .sd_ready(sd_ready),
+    fat_file_reader #(.DYNAMIC_FILE_NAME(1)) file_reader (
+        .requested_file_name(ringtone_active ? "ANDROID BIN" : "PIANO   BIN"),
+        .clk(sys_clk), .rst_n(storage_rst_n), .sd_ready(sd_ready),
         .sd_start(sd_start), .sd_lba(sd_lba), .sd_data(sd_data), .sd_index(sd_index),
         .sd_valid(sd_valid), .sd_done(sd_done), .sd_error(sd_error),
         .data(file_data), .valid(file_valid), .ready(file_ready), .mounted(),
@@ -83,8 +101,9 @@ module piano_score_player #(
     );
     wire [63:0] event_data;
     wire event_valid, event_ready, format_ok, complete;
-    piano_score_reader decoder (
-        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
+    piano_score_reader #(.DYNAMIC_FORMAT(1)) decoder (
+        .marimba_format(ringtone_active),
+        .clk(sys_clk), .rst_n(storage_rst_n),
         .data(file_data), .valid(file_valid),
         .ready(file_ready), .file_found(file_found), .file_size(file_size),
         .file_done(file_done), .event_data(event_data), .event_valid(event_valid),
@@ -97,25 +116,24 @@ module piano_score_player #(
     wire [6:0] dds_event_note;
     wire [7:0] dds_event_dynamics;
     wire piano_event_ready, marimba_event_ready;
-    wire synth_event_ready = !ringtone_active && !ringtone_press &&
+    wire synth_event_ready = !ringtone_press &&
                             (marimba_mode ? marimba_event_ready : piano_event_ready);
     wire audition_event_valid, audition_event_on;
     wire [6:0] audition_event_note;
     wire [7:0] audition_event_dynamics;
     // Select exactly one event source; the audition source is gated by mode.
-    wire synth_event_valid = !ringtone_active && !ringtone_press &&
+    wire synth_event_valid = !ringtone_press &&
                             (manual_mode ? audition_event_valid : dds_event_valid);
     wire synth_event_on = manual_mode ? audition_event_on : dds_event_on;
     wire [6:0] synth_event_note = manual_mode ? audition_event_note : dds_event_note;
     wire [7:0] synth_event_dynamics = manual_mode ? audition_event_dynamics : dds_event_dynamics;
-    wire playing, finished, sequence_error;
     wire piano_deadline_error, marimba_deadline_error;
     wire deadline_error = marimba_mode ? marimba_deadline_error : piano_deadline_error;
     // Stop and mute on any failed storage, format, sequence or compute check.
-    wire stream_error = SD_SCORE_ENABLE &&
+    wire stream_error = storage_enable &&
                         (sd_error_code != 0 || fat_error != 0 || score_error != 0);
-    wire failed = stream_error || sequence_error || deadline_error;
-    wire synth_stop = ringtone_active || ringtone_press ||
+    assign failed = stream_error || sequence_error || deadline_error;
+    wire synth_stop = ringtone_press ||
                       (manual_mode ? deadline_error : (failed || finished));
     wire audio_silence = manual_mode ? deadline_error :
                          (failed || finished || !playing);
@@ -131,8 +149,8 @@ module piano_score_player #(
         .stop_all()
     );
     piano_score_sequencer #(.CLOCKS_PER_MS(CLOCKS_PER_MS)) sequencer (
-        .clk(sys_clk), .rst_n(play_rst_n && SD_SCORE_ENABLE),
-        .paused(manual_mode || ringtone_active || ringtone_press),
+        .clk(sys_clk), .rst_n(storage_rst_n),
+        .paused(manual_mode || ringtone_press),
         .format_ok(format_ok), .stream_complete(complete), .stream_error(stream_error),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
         .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),
@@ -148,21 +166,10 @@ module piano_score_player #(
     wire marimba_pcm_valid, marimba_limiting, marimba_saturated;
     wire signed [31:0] piano_mix_sample, marimba_mix_sample;
     wire signed [15:0] selected_pcm = marimba_mode ? marimba_pcm : piano_pcm;
-    wire signed [15:0] ringtone_left, ringtone_right;
-    wire signed [15:0] pcm = ringtone_active ? ringtone_left :
-                            (audio_silence ? 16'sd0 : selected_pcm);
-    wire signed [15:0] pcm_right = ringtone_active ? ringtone_right :
-                                  (audio_silence ? 16'sd0 : selected_pcm);
+    wire signed [15:0] pcm = audio_silence ? 16'sd0 : selected_pcm;
+    wire signed [15:0] pcm_right = pcm;
     wire dds_sample_tick = sample_tick;
-    ringtone_pcm_player #(
-        .ROM_PREFIX(RINGTONE_ROM_PREFIX), .HEADER_FILE(RINGTONE_HEADER_FILE),
-        .STEP_FILE(RINGTONE_STEP_FILE)
-    ) ringtone (
-        .clk(sys_clk), .reset_n(rst_n), .sample_tick(sample_tick),
-        .toggle(ringtone_press), .active(ringtone_active),
-        .pcm_left(ringtone_left), .pcm_right(ringtone_right), .pcm_valid()
-    );
-    generate if (DEFAULT_MARIMBA == 0) begin: piano_path
+    generate if (DEFAULT_MARIMBA == 0 || SD_SCORE_ENABLE != 0) begin: piano_path
     piano_synth #(
         .SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE), .VOICING_FILE(VOICING_FILE)
     ) synth (
@@ -207,6 +214,6 @@ module piano_score_player #(
         .sample_tick(sample_tick),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
-    assign LEDs = ~{(manual_mode ? deadline_error : failed), (mode_active || ringtone_active),
+    assign LEDs = ~{(ringtone_error || (manual_mode ? deadline_error : failed)), (mode_active || ringtone_active),
                     file_found, initialized};
 endmodule

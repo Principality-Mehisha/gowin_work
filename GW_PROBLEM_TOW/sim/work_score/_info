@@ -28,43 +28,40 @@ R1
 R2
 n@_opt1
 R3
-vadsr_pipeline
-Z4 !s110 1792667140
-!i10b 1
-!s100 _?G2jZBnRd0R<RUK2QJ`50
-Z5 !s11b Dg1SIo80bB@j0V0VzS_@n1
-IBHFgF]?6U2cH3<67BSazm1
 R0
-Z6 w1792461548
-Z7 8../src/adsr_step.v
-Z8 F../src/adsr_step.v
-!i122 7
-L0 51 62
-Z9 VDg1SIo80bB@j0V0VzS_@n1
-Z10 OL;L;2020.4;71
+vadsr_pipeline
+Z4 !s110 1792688384
+!i10b 1
+!s100 OUFkY<J6H>8N]P9z_g_oW1
+IP?C4Rn7g1V3K8[_e6^a:j3
+Z5 VDg1SIo80bB@j0V0VzS_@n1
+Z6 dC:/Users/30415/Desktop/gowin_work/GW_PROBLEM_TOW/sim
+Z7 w1792339368
+Z8 8../src/adsr_step.v
+Z9 F../src/adsr_step.v
+L0 51
+Z10 OV;L;10.5b;63
 r1
 !s85 0
 31
-Z11 !s108 1792667140.000000
+Z11 !s108 1792688384.000000
 Z12 !s107 ../output/score_test/params.vh|../src/ringtone_config.vh|tb_score_player.v|tb_score_full.v|sd_card_model.v|../src/pt8211_score_tx.v|../src/button_debounce.v|../src/fat_file_reader.v|../src/sd_spi_reader.v|../src/sd_spi_byte.v|../src/piano_score_player.v|../src/piano_score_sequencer.v|../src/piano_score_reader.v|../src/key_control.v|../src/dynamics_fixed.v|../src/ringtone_pcm_player.v|../src/marimba_body_filter.v|../src/marimba_synth.v|../src/piano_synth.v|../src/output_limiter.v|../src/adsr_step.v|
 Z13 !s90 +incdir+../src|-work|work_score|../src/adsr_step.v|../src/output_limiter.v|../src/piano_synth.v|../src/marimba_synth.v|../src/marimba_body_filter.v|../src/ringtone_pcm_player.v|../src/dynamics_fixed.v|../src/key_control.v|../src/piano_score_reader.v|../src/piano_score_sequencer.v|../src/piano_score_player.v|../src/sd_spi_byte.v|../src/sd_spi_reader.v|../src/fat_file_reader.v|../src/button_debounce.v|../src/pt8211_score_tx.v|sd_card_model.v|tb_score_full.v|tb_score_player.v|
-!i113 0
-Z14 o-work work_score -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
-Z15 !s92 +incdir+../src -work work_score -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+!i113 1
+Z14 o-work work_score
+Z15 !s92 +incdir+../src -work work_score
 R2
 vadsr_step
 R4
 !i10b 1
-!s100 Bg]aZWdU>HZeTS6f]_YCc3
+!s100 N8n:@0XTVH_W>L;ZT4M?60
+I3[kl;=8?BTL1m>3<UNe7L1
 R5
-I8>HmDi[Tnc7E=`dL9VbRG3
-R0
 R6
 R7
 R8
-!i122 7
-L0 2 46
 R9
+L0 2
 R10
 r1
 !s85 0
@@ -72,23 +69,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vbutton_debounce
 R4
 !i10b 1
-!s100 0RX:`1YW<mcLHdBk@AnKz0
+!s100 @5gU`Me4d@@L<0K1?N;:63
+IXk8=GJohi3cRZU:1?Bm;00
 R5
-I6IKeC]C6XgjlA2G1j5V@k2
-R0
 R6
+w1791807056
 8../src/button_debounce.v
 F../src/button_debounce.v
-!i122 7
-L0 2 32
-R9
+L0 2
 R10
 r1
 !s85 0
@@ -96,23 +91,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vdynamics_fixed
 R4
 !i10b 1
-!s100 RcXK01CBOYFJQ4o5W6HnP2
+!s100 AI85XXP@1Vzc6T?OgObck3
+IMRLV=Nh`Ji_=N6RR]KIb]2
 R5
-IME>k_Y0Kh3W3R[E[bVKTJ1
-R0
-w1792510129
+R6
+Z16 w1792587815
 8../src/dynamics_fixed.v
 F../src/dynamics_fixed.v
-!i122 7
-L0 3 6
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -120,23 +113,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vfat_file_reader
 R4
 !i10b 1
-!s100 AP8]SeN?laS0I:Lkd`ZEK0
+!s100 TcIbV7E5z^H]B`IgdjEif2
+I1DO3h_o@W_kXO_T[QaODW0
 R5
-I8N1TBC=Q?YeLFOW_PTBck0
-R0
 R6
+Z17 w1792687889
 8../src/fat_file_reader.v
 F../src/fat_file_reader.v
-!i122 7
-L0 3 511
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -144,23 +135,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vGSR
 R4
 !i10b 1
-!s100 73j1JZRgkHUeGj8>YLaz=3
+!s100 4eWhcbja4OaXk3R2_7kFG0
+I1W`e^WEXE=7eBWTXBAC3S0
 R5
-I;7SXmC8maX<P6PJG>8QAX0
-R0
-Z16 w1792666892
-Z17 8tb_score_player.v
-Z18 Ftb_score_player.v
-!i122 7
-L0 2 2
-R9
+R6
+Z18 w1792687946
+Z19 8tb_score_player.v
+Z20 Ftb_score_player.v
+L0 2
 R10
 r1
 !s85 0
@@ -168,7 +157,7 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
@@ -176,16 +165,14 @@ n@g@s@r
 vkey_audition
 R4
 !i10b 1
-!s100 8M^51nX_RiYOC6[ofa:jL3
+!s100 D=iIkdF2FUJ`4IgITfE]k1
+I91DCJf2k3kXJLO=hebfE10
 R5
-I@R9U<f5Nz7S>=L6@25kOf1
-R0
-Z19 w1792594254
-Z20 8../src/key_control.v
-Z21 F../src/key_control.v
-!i122 7
-L0 30 67
-R9
+R6
+Z21 w1792591969
+Z22 8../src/key_control.v
+Z23 F../src/key_control.v
+L0 30
 R10
 r1
 !s85 0
@@ -193,23 +180,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vkey_filter
 R4
 !i10b 1
-!s100 VF0XiAo[g75:X8D9FCOQ[0
+!s100 0lO0zG8D6oSbaMM:5d[oO3
+IHV=6RDImTZe@FZ]m[lmQU3
 R5
-IOQo77:h<<[0M]j5S>RnEH0
-R0
-R19
-R20
+R6
 R21
-!i122 7
-L0 2 26
-R9
+R22
+R23
+L0 2
 R10
 r1
 !s85 0
@@ -217,23 +202,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vmarimba_body_filter
 R4
 !i10b 1
-!s100 7`blCDM85z8:78e]1dR:T2
+!s100 hUm2?_=TzoUc_:61EgW;31
+I<3L[Z:MJ^Gk?7AhA1hWFB1
 R5
-IL3Qol?a1E?6H5G>PRn8C_2
-R0
-w1792607604
+R6
+Z24 w1792679307
 8../src/marimba_body_filter.v
 F../src/marimba_body_filter.v
-!i122 7
-L0 3 72
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -241,23 +224,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vmarimba_synth
 R4
 !i10b 1
-!s100 lMzJSFVOQh:bm`8cQ2Z^=1
+!s100 =R]XS;<CA<e3ig>?f[OaE1
+IOX2f<376;3kOV2kb6PA5Q0
 R5
-IT6<V?j2f[TfiaDCceh2Ao3
-R0
-R16
+R6
+w1792687626
 8../src/marimba_synth.v
 F../src/marimba_synth.v
-!i122 7
-L0 4 297
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -265,23 +246,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 voutput_limiter
 R4
 !i10b 1
-!s100 6W64E8;zXEZAV@VD2`Skd1
+!s100 MeIGhlngIRA6[6eKd47<M2
+I]2SkB_^f@KL?EGGGDVZaW3
 R5
-IR3eW4?cAbbZSCW5N]aQ[i0
-R0
 R6
+w1792337522
 8../src/output_limiter.v
 F../src/output_limiter.v
-!i122 7
-L0 3 103
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -289,23 +268,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vpiano_score_player
 R4
 !i10b 1
-!s100 5DNUU`:n21:GFB0mjZTRX1
+!s100 YWDOT:;KcVBXBKmCb_b_]2
+I2P@E<f_?9aknKEK=`J@m33
 R5
-I7c0E=Mzc;4ST9o_9P3LFK2
-R0
-w1792666546
+R6
+w1792688127
 8../src/piano_score_player.v
 F../src/piano_score_player.v
-!i122 7
-L0 3 210
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -313,23 +290,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vpiano_score_reader
 R4
 !i10b 1
-!s100 gK_EejfBemGT84ocD45RX1
+!s100 3bEcKommDU=CACOcC:@:<1
+Il@_]Xi^WL>ZWW1_PUnbbU0
 R5
-IVGH[Dbba<an27hm[@V3141
-R0
-Z22 w1792509855
+R6
+R17
 8../src/piano_score_reader.v
 F../src/piano_score_reader.v
-!i122 7
-L0 3 88
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -337,23 +312,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vpiano_score_sequencer
 R4
 !i10b 1
-!s100 MQ<@^_]a@2Hi?IA]LU9[<2
+!s100 [KAAP]VFSOgIWNY7W7WQ:1
+IU>Q?j`]nUnoZB3oTmKM4f2
 R5
-ILVVm4?R`h47_2BUPd?BVz2
-R0
-R22
+R6
+R16
 8../src/piano_score_sequencer.v
 F../src/piano_score_sequencer.v
-!i122 7
-L0 3 90
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -361,23 +334,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vpiano_synth
 R4
 !i10b 1
-!s100 2QJEncFRk08IkPSOL52mJ0
+!s100 HzFVM5b[9`UeFN14EckDc2
+I0co1HmhVKiCP0_fC41@Zk0
 R5
-I>HPILEE^^bU7kQ>5KzAB13
-R0
-w1792594255
+R6
+w1792588321
 8../src/piano_synth.v
 F../src/piano_synth.v
-!i122 7
-L0 3 536
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -385,23 +356,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vpt8211_score_tx
 R4
 !i10b 1
-!s100 d]Hiol=H^kcbR]mbYghh71
+!s100 GlTZ6DY?W<O213_[]9LTa0
+ImiMVHOkKF@UcUHgm?T6hB0
 R5
-I@YUNST:edDWUam^AeSF_Q0
-R0
 R6
+w1792422204
 8../src/pt8211_score_tx.v
 F../src/pt8211_score_tx.v
-!i122 7
-L0 5 72
-R9
+L0 5
 R10
 r1
 !s85 0
@@ -409,23 +378,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vringtone_pcm_player
 R4
 !i10b 1
-!s100 PUEXKDidZ9cUC5:dT:ePT2
+!s100 `EhIaI:8?;zD];LO;3nS92
+IkAbRnjHdMS>AKg9mT:lV92
 R5
-IKWSAoFHA6GM?z?S4`9zBc2
-R0
-w1792651859
+R6
+R24
 8../src/ringtone_pcm_player.v
 F../src/ringtone_pcm_player.v
-!i122 7
-L0 4 144
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -433,23 +400,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vscore_player_case
 R4
 !i10b 1
-!s100 YggTXk=Qo6N@k70mVR_RU1
+!s100 gGdaZo:Q8^ocS@da^ZAmJ0
+I=gT0ZH]UL>[I:jBch1Ea>3
 R5
-IF@3o_Vho1TSY^J7W[5PbL1
-R0
-R16
-R17
+R6
 R18
-!i122 7
-L0 4 171
-R9
+R19
+R20
+L0 4
 R10
 r1
 !s85 0
@@ -457,23 +422,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vsd_card_model
 R4
 !i10b 1
-!s100 TmSH_jHaNj@onnY4MSi>`0
+!s100 oHEkCdga=cLkC0eNCO^X80
+IPSJ@emSJfNHa37:fH5=hc1
 R5
-Iio_n@jhnLS?;L6km><KL`0
-R0
 R6
+w1792251784
 8sd_card_model.v
 Fsd_card_model.v
-!i122 7
-L0 4 277
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -481,23 +444,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vsd_spi_byte
 R4
 !i10b 1
-!s100 Gn;@<_M:mQlUmiOEhAQ<`1
+!s100 d^zGgTclPm?S5^nFMVT?Z2
+I`B8QZl5KYN9JXX2L8Q^bP2
 R5
-IZHm3L5iO^Wo;g9CCNOWo53
-R0
 R6
+w1792160308
 8../src/sd_spi_byte.v
 F../src/sd_spi_byte.v
-!i122 7
-L0 2 66
-R9
+L0 2
 R10
 r1
 !s85 0
@@ -505,23 +466,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vsd_spi_reader
 R4
 !i10b 1
-!s100 >VoI<1f:^CHMUaU=MP?if2
+!s100 B:MSOMLC]a9ZWQBkIMLV<2
+ILAzIJ<BFRiz=_ePGM`NDg1
 R5
-Im?B6WFl0=:97cno21Iik60
-R0
 R6
+w1792251737
 8../src/sd_spi_reader.v
 F../src/sd_spi_reader.v
-!i122 7
-L0 4 440
-R9
+L0 4
 R10
 r1
 !s85 0
@@ -529,23 +488,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vtb_score_full
 R4
 !i10b 1
-!s100 L8ZFXjXNF`In7;7^F`DHo2
+!s100 OzV8_bFz5O@HQlCn`SEi?0
+I6g1f2FG6<gL0ZC2FXVR;93
 R5
-IPFHo6BfkCQeBCL10N45YH2
-R0
-w1792502620
+R6
+w1792496387
 8tb_score_full.v
 Ftb_score_full.v
-!i122 7
-L0 3 92
-R9
+L0 3
 R10
 r1
 !s85 0
@@ -553,23 +510,21 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2
 vtb_score_player
 R4
 !i10b 1
-!s100 SYjkII>92B_Eo[^iKazkY2
+!s100 fFm`CdJ<;ZdN@?KQ1YBfI3
+IQ>34eQQIg<=]abDLeF^of3
 R5
-Ih@O`1KYYYf?H7EKeojcbe0
-R0
-R16
-R17
+R6
 R18
-!i122 7
-L0 175 15
-R9
+R19
+R20
+L0 138
 R10
 r1
 !s85 0
@@ -577,7 +532,7 @@ r1
 R11
 R12
 R13
-!i113 0
+!i113 1
 R14
 R15
 R2

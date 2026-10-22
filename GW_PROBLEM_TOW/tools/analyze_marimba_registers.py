@@ -10,13 +10,14 @@ import math
 from pathlib import Path
 import wave
 
-from fit_marimba_params import ANALYSIS_FS, NOTE_FIRST, NOTE_LAST, loudness_metric, read_aiff
+from fit_marimba_params import ANALYSIS_FS, NOTE_FIRST, loudness_metric, read_aiff
 import numpy as np
 from scipy import signal
 from marimba_reference import OUT_FS, decode_modes, render_note
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'sim/marimba_register_analysis42'
+NOTE_LAST = 77
 
 
 def db(ratio):
@@ -50,9 +51,9 @@ def main():
     fit = json.loads((ROOT / 'assets/marimba/fit_report.json').read_text())
     baseline = ROOT / 'sim/marimba_before_bass_trim'
     before = json.loads((baseline / 'fit_report.json').read_text())
-    words = [int(x, 16) for x in (ROOT / 'src/rom/marimba42.hex').read_text().split()]
+    words = [int(x, 16) for x in (ROOT / 'src/rom/marimba48.hex').read_text().split()]
     attacks = [int(x, 16) for x in
-               (ROOT / 'src/rom/marimba_attack42.hex').read_text().split()]
+               (ROOT / 'src/rom/marimba_attack48.hex').read_text().split()]
     old_words = [int(x, 16) for x in (baseline / 'marimba31.hex').read_text().split()]
     old_attacks = [int(x, 16) for x in
                    (baseline / 'marimba_attack31.hex').read_text().split()]
@@ -61,7 +62,7 @@ def main():
     rtl = np.loadtxt(ROOT / 'sim/marimba_scale_pcm.txt', dtype=np.int32)
     assert rtl.shape == ((NOTE_LAST - NOTE_FIRST + 1) * 16276, 3)
     cache, results, comparisons = {}, [], []
-    for index, row in enumerate(fit['rows']):
+    for index, row in enumerate(fit['rows'][:42]):
         midi = row['midi']
         block = rtl[index * 16276:(index + 1) * 16276]
         assert np.all(block[:, 0] == midi)
@@ -148,7 +149,7 @@ def main():
               round(results[-1]['rtl_tail_to_attack_db'], 2), flush=True)
     write_wav(OUT / 'source_then_rtl_C2_B2_C4_A4_C5_F5.wav', np.concatenate(comparisons))
     report = {
-        'rom_sha256': hashlib.sha256((ROOT / 'src/rom/marimba42.hex').read_bytes()).hexdigest(),
+        'rom_sha256': hashlib.sha256((ROOT / 'src/rom/marimba48.hex').read_bytes()).hexdigest(),
         'matched_rtl_samples': len(rtl), 'unchanged_C4_and_above': True,
         'scope': 'mf source left channel; source onsets and modal identities from fitter',
         'preview': 'Each selected note: source then RTL; source gain matched to RTL 300 ms weighted RMS, no synth normalization',

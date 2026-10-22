@@ -1,0 +1,690 @@
+{
+  "title": "Samsung Over the Horizon (2012/S3) - marimba part arrangement",
+  "source": "assets\\ringtone\\android\\samsung_over_the_horizon_s3.mid",
+  "source_url": "http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid",
+  "source_sha256": "8e246db9ee074d4ed12c732d8ec1ee7a8ac911952e86143c6c0d69988bb5e4ed",
+  "source_device": "Samsung GT-E1270 public phone-tone archive",
+  "brand_reference": "https://news.samsung.com/global/over-the-horizon-the-evolution-of-the-samsung-galaxy-brand-sound",
+  "source_audio_reference": "https://raw.githubusercontent.com/w3teal/awesome-ringtone/main/Samsung/2012%20-%20Over%20the%20Horizon%20-%20Ringtone.mp3",
+  "arrangement": "Extract GM program 12 Marimba channel; preserve MIDI note timing/velocity; render with existing modal marimba",
+  "pitchwheel_ignored": [
+    100
+  ],
+  "pitch_policy": "Equal temperament; fixed source pitchwheel offset not applied",
+  "format": "M42S v1",
+  "source_note_on_count": 32,
+  "merged_same_time_unisons": 1,
+  "note_on_count": 31,
+  "event_count": 63,
+  "score_bytes": 520,
+  "score_sha256": "c655f0c909c5d34d6d61bdc6907184be4beaa0d4d29c88dc10d28b4354741768",
+  "duration_ms": 24375,
+  "source_duration_ms": 24375,
+  "note_range": [
+    59,
+    83
+  ],
+  "max_midi_overlap": 2,
+  "notes": [
+    {
+      "time_ms": 0,
+      "midi": 71,
+      "velocity": 95,
+      "slot": 0,
+      "end_ms": 309
+    },
+    {
+      "time_ms": 467,
+      "midi": 71,
+      "velocity": 84,
+      "slot": 0,
+      "end_ms": 621
+    },
+    {
+      "time_ms": 625,
+      "midi": 75,
+      "velocity": 88,
+      "slot": 0,
+      "end_ms": 779
+    },
+    {
+      "time_ms": 780,
+      "midi": 83,
+      "velocity": 95,
+      "slot": 0,
+      "end_ms": 934
+    },
+    {
+      "time_ms": 938,
+      "midi": 82,
+      "velocity": 105,
+      "slot": 0,
+      "end_ms": 1246
+    },
+    {
+      "time_ms": 1250,
+      "midi": 78,
+      "velocity": 97,
+      "slot": 0,
+      "end_ms": 1966
+    },
+    {
+      "time_ms": 1875,
+      "midi": 59,
+      "velocity": 83,
+      "slot": 1,
+      "end_ms": 2184
+    },
+    {
+      "time_ms": 2187,
+      "midi": 63,
+      "velocity": 74,
+      "slot": 0,
+      "end_ms": 2341
+    },
+    {
+      "time_ms": 2342,
+      "midi": 59,
+      "velocity": 74,
+      "slot": 0,
+      "end_ms": 2496
+    },
+    {
+      "time_ms": 2500,
+      "midi": 64,
+      "velocity": 74,
+      "slot": 0,
+      "end_ms": 2654
+    },
+    {
+      "time_ms": 2813,
+      "midi": 66,
+      "velocity": 83,
+      "slot": 0,
+      "end_ms": 3121
+    },
+    {
+      "time_ms": 3125,
+      "midi": 71,
+      "velocity": 105,
+      "slot": 0,
+      "end_ms": 3591
+    },
+    {
+      "time_ms": 3750,
+      "midi": 59,
+      "velocity": 83,
+      "slot": 0,
+      "end_ms": 4059
+    },
+    {
+      "time_ms": 4217,
+      "midi": 59,
+      "velocity": 74,
+      "slot": 0,
+      "end_ms": 4371
+    },
+    {
+      "time_ms": 4530,
+      "midi": 59,
+      "velocity": 74,
+      "slot": 0,
+      "end_ms": 4684
+    },
+    {
+      "time_ms": 5625,
+      "midi": 71,
+      "velocity": 108,
+      "slot": 0,
+      "end_ms": 5934
+    },
+    {
+      "time_ms": 6092,
+      "midi": 71,
+      "velocity": 96,
+      "slot": 0,
+      "end_ms": 6246
+    },
+    {
+      "time_ms": 6250,
+      "midi": 75,
+      "velocity": 104,
+      "slot": 0,
+      "end_ms": 6404
+    },
+    {
+      "time_ms": 6405,
+      "midi": 83,
+      "velocity": 108,
+      "slot": 0,
+      "end_ms": 6559
+    },
+    {
+      "time_ms": 6562,
+      "midi": 82,
+      "velocity": 122,
+      "slot": 0,
+      "end_ms": 6871
+    },
+    {
+      "time_ms": 6875,
+      "midi": 78,
+      "velocity": 114,
+      "slot": 0,
+      "end_ms": 7591
+    },
+    {
+      "time_ms": 13125,
+      "midi": 71,
+      "velocity": 73,
+      "slot": 0,
+      "end_ms": 13279
+    },
+    {
+      "time_ms": 13280,
+      "midi": 75,
+      "velocity": 79,
+      "slot": 0,
+      "end_ms": 13434
+    },
+    {
+      "time_ms": 13438,
+      "midi": 83,
+      "velocity": 84,
+      "slot": 0,
+      "end_ms": 13591
+    },
+    {
+      "time_ms": 13592,
+      "midi": 82,
+      "velocity": 94,
+      "slot": 0,
+      "end_ms": 13904
+    },
+    {
+      "time_ms": 13905,
+      "midi": 78,
+      "velocity": 87,
+      "slot": 0,
+      "end_ms": 14622
+    },
+    {
+      "time_ms": 20625,
+      "midi": 71,
+      "velocity": 84,
+      "slot": 0,
+      "end_ms": 20934
+    },
+    {
+      "time_ms": 21250,
+      "midi": 75,
+      "velocity": 79,
+      "slot": 0,
+      "end_ms": 21404
+    },
+    {
+      "time_ms": 21405,
+      "midi": 83,
+      "velocity": 84,
+      "slot": 0,
+      "end_ms": 21559
+    },
+    {
+      "time_ms": 21562,
+      "midi": 82,
+      "velocity": 94,
+      "slot": 0,
+      "end_ms": 21871
+    },
+    {
+      "time_ms": 21875,
+      "midi": 78,
+      "velocity": 87,
+      "slot": 0,
+      "end_ms": 22591
+    }
+  ],
+  "events": [
+    {
+      "time_ms": 0,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 95,
+      "reserved": 0
+    },
+    {
+      "time_ms": 309,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 467,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 84,
+      "reserved": 0
+    },
+    {
+      "time_ms": 621,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 625,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 88,
+      "reserved": 0
+    },
+    {
+      "time_ms": 779,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 780,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 95,
+      "reserved": 0
+    },
+    {
+      "time_ms": 934,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 938,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 105,
+      "reserved": 0
+    },
+    {
+      "time_ms": 1246,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 1250,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 97,
+      "reserved": 0
+    },
+    {
+      "time_ms": 1875,
+      "slot": 1,
+      "midi": 59,
+      "velocity": 83,
+      "reserved": 0
+    },
+    {
+      "time_ms": 1966,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2184,
+      "slot": 1,
+      "midi": 59,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2187,
+      "slot": 0,
+      "midi": 63,
+      "velocity": 74,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2341,
+      "slot": 0,
+      "midi": 63,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2342,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 74,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2496,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2500,
+      "slot": 0,
+      "midi": 64,
+      "velocity": 74,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2654,
+      "slot": 0,
+      "midi": 64,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 2813,
+      "slot": 0,
+      "midi": 66,
+      "velocity": 83,
+      "reserved": 0
+    },
+    {
+      "time_ms": 3121,
+      "slot": 0,
+      "midi": 66,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 3125,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 105,
+      "reserved": 0
+    },
+    {
+      "time_ms": 3591,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 3750,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 83,
+      "reserved": 0
+    },
+    {
+      "time_ms": 4059,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 4217,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 74,
+      "reserved": 0
+    },
+    {
+      "time_ms": 4371,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 4530,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 74,
+      "reserved": 0
+    },
+    {
+      "time_ms": 4684,
+      "slot": 0,
+      "midi": 59,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 5625,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 108,
+      "reserved": 0
+    },
+    {
+      "time_ms": 5934,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6092,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 96,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6246,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6250,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 104,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6404,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6405,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 108,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6559,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6562,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 122,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6871,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 6875,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 114,
+      "reserved": 0
+    },
+    {
+      "time_ms": 7591,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13125,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 73,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13279,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13280,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 79,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13434,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13438,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 84,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13591,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13592,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 94,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13904,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 13905,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 87,
+      "reserved": 0
+    },
+    {
+      "time_ms": 14622,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 20625,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 84,
+      "reserved": 0
+    },
+    {
+      "time_ms": 20934,
+      "slot": 0,
+      "midi": 71,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21250,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 79,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21404,
+      "slot": 0,
+      "midi": 75,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21405,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 84,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21559,
+      "slot": 0,
+      "midi": 83,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21562,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 94,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21871,
+      "slot": 0,
+      "midi": 82,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 21875,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 87,
+      "reserved": 0
+    },
+    {
+      "time_ms": 22591,
+      "slot": 0,
+      "midi": 78,
+      "velocity": 0,
+      "reserved": 0
+    },
+    {
+      "time_ms": 24375,
+      "slot": 255,
+      "midi": 255,
+      "velocity": 0,
+      "reserved": 0
+    }
+  ]
+}

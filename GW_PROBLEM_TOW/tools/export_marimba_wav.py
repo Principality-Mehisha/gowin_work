@@ -4,13 +4,14 @@ import json
 from pathlib import Path
 import wave
 
-from fit_marimba_params import NOTE_FIRST, NOTE_LAST
+from fit_marimba_params import NOTE_FIRST
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 FS = 50_000_000 / 3072
 RATE = round(FS)
-ROM = ROOT / "src/rom/marimba42.hex"
+NOTE_LAST = 77  # Manual audition; higher notes are reserved for SD scores.
+ROM = ROOT / "src/rom/marimba48.hex"
 
 
 def write_wav(path, samples):
@@ -29,7 +30,7 @@ def main():
     parts = []
     names = ("C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B")
     notes = []
-    for midi in range(NOTE_FIRST, NOTE_LAST + 1):
+    for midi in range(NOTE_FIRST + 1):
         selected = rows[rows[:, 0] == midi]
         assert np.array_equal(selected[:, 1], np.arange(16276))
         audio = selected[:, 2]

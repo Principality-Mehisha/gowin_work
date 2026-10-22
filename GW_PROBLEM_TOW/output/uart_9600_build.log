@@ -1,0 +1,140 @@
+*** GOWIN Tcl Command Line Console  *** 
+Open project C:/Users/30415/Desktop/gowin_work/GW_PROBLEM_TOW/GW_PROBLEM_TOW.gprj finished
+GowinSynthesis start
+Running parser ...
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\GW_PROBLEM_TOW.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\button_debounce.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_rx.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_tx.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\tjc_status_tx.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_score_control.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_note_audition.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\sd_spi_byte.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\sd_spi_reader.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\fat_file_reader.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_reader.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_sequencer.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_player.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\pt8211_score_tx.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\dynamics_fixed.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\key_control.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\adsr_step.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_body_filter.v'
+Analyzing Verilog file 'C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\output_limiter.v'
+Compiling module 'GW_PROBLEM_TOW'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\GW_PROBLEM_TOW.v":2)
+Compiling module 'piano_score_player'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_player.v":3)
+Compiling module 'button_debounce'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\button_debounce.v":2)
+Compiling module 'uart_score_control(TIMEOUT_CYCLES=1000000)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_score_control.v":4)
+Extracting RAM for identifier 'replies'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_score_control.v":54)
+Compiling module 'uart_rx'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_rx.v":3)
+Compiling module 'tjc_status_tx'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\tjc_status_tx.v":4)
+WARN  (EX3791) : Expression size 8 truncated to fit in target size 4("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\tjc_status_tx.v":32)
+WARN  (EX3791) : Expression size 7 truncated to fit in target size 4("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\tjc_status_tx.v":32)
+Compiling module 'uart_tx'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_tx.v":2)
+Compiling module 'sd_spi_reader(READ_HALF_DIV=63)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\sd_spi_reader.v":4)
+Compiling module 'sd_spi_byte'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\sd_spi_byte.v":2)
+Compiling module 'fat_file_reader(DYNAMIC_FILE_NAME=1)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\fat_file_reader.v":3)
+Extracting RAM for identifier 'sector'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\fat_file_reader.v":40)
+Compiling module 'piano_score_reader(DYNAMIC_FORMAT=1)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_reader.v":3)
+Compiling module 'uart_note_audition'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\uart_note_audition.v":4)
+Compiling module 'key_audition(DEBOUNCE_CYCLES=1000000)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\key_control.v":30)
+Compiling module 'key_filter(STABLE_CYCLES=1000000)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\key_control.v":2)
+Compiling module 'dynamics_fixed'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\dynamics_fixed.v":3)
+Compiling module 'piano_score_sequencer'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_sequencer.v":3)
+Extracting RAM for identifier 'fifo'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_score_sequencer.v":27)
+Compiling module 'piano_synth'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":3)
+Extracting RAM for identifier 'dynamics'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":42)
+Extracting RAM for identifier 'voice_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":45)
+Extracting RAM for identifier 'partial_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":53)
+Extracting RAM for identifier 'voicing_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":67)
+Extracting RAM for identifier 'frequency_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":75)
+Extracting RAM for identifier 'decay_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":76)
+Extracting RAM for identifier 'sine_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":78)
+Compiling module 'adsr_pipeline(ATTACK_STEP=24'b000000010001000100010010,DECAY_STEP=24'b000000000000001011000111,SUSTAIN_LEVEL=24'b001100000000000000000000)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\adsr_step.v":51)
+WARN  (EX3791) : Expression size 22 truncated to fit in target size 16("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":258)
+WARN  (EX3791) : Expression size 17 truncated to fit in target size 16("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":259)
+Compiling module 'output_limiter'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\output_limiter.v":3)
+WARN  (EX3791) : Expression size 32 truncated to fit in target size 22("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\output_limiter.v":38)
+WARN  (EX3791) : Expression size 24 truncated to fit in target size 23("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\output_limiter.v":82)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 17("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":294)
+WARN  (EX3791) : Expression size 12 truncated to fit in target size 11("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\piano_synth.v":470)
+Compiling module 'marimba_synth'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":4)
+Extracting RAM for identifier 'dynamics_by_note'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":34)
+Extracting RAM for identifier 'phase_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":35)
+Extracting RAM for identifier 'level_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":36)
+Extracting RAM for identifier 'noise_level_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":37)
+Extracting RAM for identifier 'noise_lfsr_ram'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":38)
+Extracting RAM for identifier 'mode_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":39)
+Extracting RAM for identifier 'attack_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":40)
+Extracting RAM for identifier 'sine_rom'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":41)
+Compiling module 'marimba_body_filter'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_body_filter.v":3)
+WARN  (EX3791) : Expression size 56 truncated to fit in target size 40("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_body_filter.v":47)
+WARN  (EX3791) : Expression size 56 truncated to fit in target size 40("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_body_filter.v":56)
+WARN  (EX3791) : Expression size 41 truncated to fit in target size 32("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":269)
+WARN  (EX3791) : Expression size 40 truncated to fit in target size 32("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\marimba_synth.v":274)
+Compiling module 'pt8211_score_tx(BCK_HALF_DIV=48)'("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\pt8211_score_tx.v":5)
+NOTE  (EX0101) : Current top module is "GW_PROBLEM_TOW"
+[5%] Running netlist conversion ...
+Running device independent optimization ...
+[10%] Optimizing Phase 0 completed
+[15%] Optimizing Phase 1 completed
+[25%] Optimizing Phase 2 completed
+Running inference ...
+[30%] Inferring Phase 0 completed
+[40%] Inferring Phase 1 completed
+[50%] Inferring Phase 2 completed
+[55%] Inferring Phase 3 completed
+Running technical mapping ...
+[60%] Tech-Mapping Phase 0 completed
+[65%] Tech-Mapping Phase 1 completed
+[75%] Tech-Mapping Phase 2 completed
+[80%] Tech-Mapping Phase 3 completed
+[90%] Tech-Mapping Phase 4 completed
+WARN  (NL0002) : The module "dynamics_fixed" instantiated to "dynamics_source" is swept in optimizing("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\key_control.v":56)
+WARN  (NL0002) : The module "key_filter" instantiated to "stop_filter" is swept in optimizing("C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\key_control.v":55)
+[95%] Generate netlist file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\gwsynthesis\GW_PROBLEM_TOW.vg" completed
+[100%] Generate report file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\gwsynthesis\GW_PROBLEM_TOW_syn.rpt.html" completed
+GowinSynthesis finish
+Reading netlist file: "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\gwsynthesis\GW_PROBLEM_TOW.vg"
+Parsing netlist file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\gwsynthesis\GW_PROBLEM_TOW.vg" completed
+Processing netlist completed
+Reading constraint file: "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\src\GW_PROBLEM_TOW.cst"
+Physical Constraint parsed completed
+Running placement......
+[10%] Placement Phase 0 completed
+[20%] Placement Phase 1 completed
+[30%] Placement Phase 2 completed
+[50%] Placement Phase 3 completed
+Running routing......
+[60%] Routing Phase 0 completed
+[70%] Routing Phase 1 completed
+[80%] Routing Phase 2 completed
+WARN  (PR1014) : Generic routing resource will be used to clock signal 'sys_clk_d' by the specified constraint. And then it may lead to the excessive delay or skew
+[90%] Routing Phase 3 completed
+Running timing analysis......
+[95%] Timing analysis completed
+Placement and routing completed
+Bitstream generation in progress......
+Bitstream generation completed
+Running power analysis......
+[100%] Power analysis completed
+Generate file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\pnr\GW_PROBLEM_TOW.power.html" completed
+Generate file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\pnr\GW_PROBLEM_TOW.pin.html" completed
+Generate file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\pnr\GW_PROBLEM_TOW.rpt.html" completed
+Generate file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\pnr\GW_PROBLEM_TOW.rpt.txt" completed
+Generate file "C:\Users\30415\Desktop\gowin_work\GW_PROBLEM_TOW\impl\pnr\GW_PROBLEM_TOW.tr.html" completed
+Fri Oct 23 05:00:22 2026
+
+{
+  "Numbers of Paths Analyzed": 49692,
+  "Numbers of Endpoints Analyzed": 65840,
+  "Numbers of Falling Endpoints": 0,
+  "Numbers of Setup Violated Endpoints": 0,
+  "Numbers of Hold Violated Endpoints": 0,
+  "audio_clock": "sys_clk",
+  "target_mhz": 50.0,
+  "fmax_mhz": 50.009,
+  "worst_paths": []
+}

@@ -2,7 +2,7 @@
 // after a framing error/break. rx_sync is the only asynchronous input boundary.
 module uart_rx #(
     parameter integer CLK_HZ = 50000000,
-    parameter integer BAUD = 115200
+    parameter integer BAUD = 9600
 ) (
     input wire clk, rst_n, rx,
     output reg [7:0] data,

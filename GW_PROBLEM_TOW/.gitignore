@@ -20,3 +20,4 @@ transcript
 vsim.wlf
 __pycache__/
 *.py[cod]
+backup/before_uart_9600/*.fs

@@ -3,7 +3,7 @@
 // Feedback is native TJC ASCII, rather than requiring recmod=1 screen parsing.
 module uart_score_control #(
     parameter integer CLK_HZ = 50000000,
-    parameter integer BAUD = 115200,
+    parameter integer BAUD = 9600,
     parameter integer TIMEOUT_CYCLES = CLK_HZ/50
 ) (
     input wire clk, rst_n, rx,

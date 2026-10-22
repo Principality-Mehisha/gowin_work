@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 module tb_uart_protocol;
- localparam UART_TICKS=434;
+ localparam UART_TICKS=5208;
  reg clk=0,rst_n=0,rx=1,passed=0;
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
@@ -14,7 +14,7 @@ module tb_uart_protocol;
  integer results[0:255],commands[0:255],states[0:255],tracks[0:255];
  reg seen[0:255];
  reg overflow_reported=0;
- uart_score_control #(.TIMEOUT_CYCLES(12000)) dut (
+ uart_score_control #(.TIMEOUT_CYCLES(150000)) dut (
   .clk(clk),.rst_n(rst_n),.rx(rx),.tx(tx),.player_state(state),
   .player_track(selected),.player_error(error),.play_request(play),
   .selected_note(note_selected),
@@ -109,7 +109,7 @@ module tb_uart_protocol;
   if(starts!=1 || seen[5] || seen[6] || seen[7]) $fatal(1,"Corrupt frame accepted");
   // A valid-looking frame split by timeout must not execute.
   send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(9);
-  repeat(15000) @(negedge clk);
+  repeat(180000) @(negedge clk);
   send_byte('h10);send_byte(2);send_byte(0);send_byte(0);send_byte('h1c);send_byte('h0d);
   send_frame(10,'h11,0,0,0);expect_reply(10,0,'h11);
   if(starts!=1 || stops!=1 || states[10]!=0) $fatal(1,"Timeout/stop handling");
@@ -141,7 +141,7 @@ module tb_uart_protocol;
   if(!overflow || state!=0) begin repeat(4) @(negedge clk); end
   if(!overflow || state!=0) $fatal(1,"Saturated feedback blocked stop");
   wait(overflow_reported);
-  passed=1;$display("PASS UART: 115200 8N1, checksum/version/tail, resync, timeout, break, arguments, native TX, queued replies");$finish;
+  passed=1;$display("PASS UART: 9600 8N1, checksum/version/tail, resync, timeout, break, arguments, native TX, queued replies");$finish;
  end
- initial begin #1000000000;$fatal(1,"UART protocol timeout");end
+ initial begin #(64'd15000000000);$fatal(1,"UART protocol timeout");end
 endmodule

@@ -1,7 +1,7 @@
 // Ready/valid 8N1 transmitter; data is captured only on a handshake.
 module uart_tx #(
     parameter integer CLK_HZ = 50000000,
-    parameter integer BAUD = 115200
+    parameter integer BAUD = 9600
 ) (
     input wire clk, rst_n,
     input wire [7:0] data,

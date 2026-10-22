@@ -1,6 +1,6 @@
 // Place these before the final page command in Program.s.
 // Keep the global declarations already provided by the USART HMI template.
-bauds=115200
+bauds=9600
 recmod=0
 bkcmd=0
 page 0

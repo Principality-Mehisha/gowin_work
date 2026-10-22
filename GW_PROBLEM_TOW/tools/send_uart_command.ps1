@@ -22,14 +22,14 @@ $checksum = (1 + $Sequence + $commandByte + $track) -band 255
 Write-Output (($frame | ForEach-Object { $_.ToString('X2') }) -join ' ')
 if (-not $Port) { return }
 # Opens a COM port only when explicitly named by the caller.
-$serial = New-Object System.IO.Ports.SerialPort $Port,115200,None,8,One
+$serial = New-Object System.IO.Ports.SerialPort $Port,9600,None,8,One
 $serial.Handshake = [System.IO.Ports.Handshake]::None
 $serial.DtrEnable = $false
 $serial.RtsEnable = $false
 try {
     $serial.Open()
     $serial.Write($frame,0,$frame.Length)
-    Start-Sleep -Milliseconds 150
+    Start-Sleep -Milliseconds 500
     $received = New-Object 'System.Collections.Generic.List[byte]'
     while ($serial.BytesToRead -gt 0) { $received.Add([byte]$serial.ReadByte()) }
     if ($received.Count -gt 0) {

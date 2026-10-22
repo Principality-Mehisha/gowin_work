@@ -1,5 +1,5 @@
 # vsim -c -voptargs="+acc" -lib sim/uart_work tb_tjc_status -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_tjc_status/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_tjc_status.log 
-# Start time: 04:00:06 on Oct 23,2026
+# Start time: 04:55:17 on Oct 23,2026
 # Loading sv_std.std
 # Loading sim/uart_work.tb_tjc_status
 # Loading sim/uart_work.tjc_status_tx
@@ -12,5 +12,5 @@
 # Stopped at sim/tb_tjc_status.sv line 54
 #  if {[examine -radix unsigned /tb_tjc_status/passed] != 1} {quit -code 1 -f}
 #  quit -code 0 -f
-# End time: 04:00:07 on Oct 23,2026, Elapsed time: 0:00:01
+# End time: 04:55:17 on Oct 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0

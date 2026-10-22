@@ -5,7 +5,7 @@ module piano_score_player #(
     parameter integer DEFAULT_MARIMBA = 1,
     parameter integer UART_ENABLE = 1,
     parameter integer UART_CLK_HZ = 50000000,
-    parameter integer UART_BAUD = 115200,
+    parameter integer UART_BAUD = 9600,
     parameter integer UART_TIMEOUT_CYCLES = UART_CLK_HZ/50,
     parameter integer NOTE_GATE_CYCLES = 25000000,
     parameter integer NOTE_TAIL_CYCLES = 50000000,

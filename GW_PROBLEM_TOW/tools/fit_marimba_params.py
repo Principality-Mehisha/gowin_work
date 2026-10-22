@@ -8,10 +8,10 @@ import struct
 import sys
 from pathlib import Path
 
-import numpy as np
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "output/audio_tools"))
+sys.path.insert(0, str(ROOT / "output/marimba_tools"))
+import numpy as np
 from scipy import signal
 
 from marimba_reference import OUT_FS, decode_modes, render_note
@@ -22,7 +22,7 @@ NOTE_FIRST, NOTE_LAST = 47, 77
 ANALYSIS_FS = 24000
 CALIBRATION_DYNAMICS = 192
 LOUDNESS_TARGET = 1000.0
-BASS_BOOST_DB = 4.0
+BASS_BOOST_DB = 3.0  # Mild trim: -1 dB at B2, tapering to no change at C4.
 BASS_BOOST_END = 60  # C4
 
 

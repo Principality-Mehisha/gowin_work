@@ -1,5 +1,15 @@
 # 验证记录
 
+## 最新：低音补偿从 +4 dB 微调至 +3 dB（2026-10-22）
+
+`tools/fit_marimba_params.py` 重新生成参数后，通过结构检查、ModelSim Intel FPGA Edition 10.5b 的 `tb_marimba` 和 `tb_marimba_wav`。新导出的全部 504556 个采样与独立整数模型一致；C4–F5 ROM/采样与调整前逐点相同，全部音符的频率字与衰减系数不变。B2 加权 RMS 从 1589.36 降至 1410.89（-1.035 dB），低音补偿仍平滑过渡至 C4 的 0 dB。
+
+Gowin 于 2026-10-22 23:15:07 完成综合、布局布线、位流生成及自动时序检查，Fmax 77.538 MHz，Setup/Hold 违规 0/0；位流 `impl/pnr/GW_PROBLEM_TOW.fs`。本次未烧录开发板。31 音首帧 1612 时钟，低于 3072 时钟预算。未重复钢琴、SD 和 PCM 铃声的历史全套回归。
+
+当前证据：`sim/tb_marimba_trim.log`、`sim/tb_marimba_wav_trim.log`、`sim/marimba_register_analysis/report.json`。试听 `sim/marimba_B2_F5_bass_trim.wav`。原 +4 dB 参数及试听保存在 `sim/marimba_before_bass_trim/`。高音分析见 [MARIMBA_REGISTER_ANALYSIS.md](MARIMBA_REGISTER_ANALYSIS.md)；本次未改高音合成结构或参数。
+
+以下为历史记录，其中 `sim/marimba_corrected_report.json` 对应本次削减前的 +4 dB 版本，不能作为最新 ROM 的哈希校验报告。
+
 验证日期：2026-10-22，修正 31 音马林巴参数反演、跨音符音量突变，并增加平滑低音增益补偿；下文保留此前钢琴和 SD 验证记录。
 工具：Gowin IDE V1.9.12.03，ModelSim SE-64 2020.4，Icarus Verilog，Python/NumPy。
 

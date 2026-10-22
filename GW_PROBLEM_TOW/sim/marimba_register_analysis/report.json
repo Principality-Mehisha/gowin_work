@@ -1,0 +1,2025 @@
+{
+  "rom_sha256": "fed2bd1ba83bdcf0f945f405f313482968a0743a469e933faca1d48e1aaf1521",
+  "matched_rtl_samples": 504556,
+  "unchanged_C4_and_above": true,
+  "scope": "mf source left channel; source onsets and modal identities from fitter",
+  "preview": "Each selected note: source then RTL; source gain matched to RTL 300 ms weighted RMS, no synth normalization",
+  "tail_metric": "RMS 300-500 ms / RMS 0-100 ms; includes integer noise floor",
+  "notes": [
+    {
+      "midi": 47,
+      "bass_change_db": -1.034574273260843,
+      "weighted_rms": 1410.8946042424252,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -0.14876293688150616,
+      "rtl_tail_to_attack_db": -11.54856636890086,
+      "body_gain_at_fundamental_db": 4.524742937652903,
+      "source_early_nonfundamental_energy_fraction": 0.25330394009159485,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.29192147630877263,
+          "second_mode_relative_db": -16.928546472051032,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.39345217861431725,
+          "second_mode_relative_db": -15.044125885198142,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.49883404598922565,
+          "second_mode_relative_db": -13.282867508221354,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 123.47082531403103,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.39345217861431725,
+          "integer_t20_seconds": 0.48027648,
+          "integer_zero_seconds": 0.55001088,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 488.92957078444806,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -15.044125885198142,
+          "fitted_tau_seconds": 0.14326975739453526,
+          "integer_t20_seconds": 0.13774848,
+          "integer_zero_seconds": 0.15415296,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1247.0395380553116,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -8.295031749075102,
+          "fitted_tau_seconds": 0.04637810095896899,
+          "integer_t20_seconds": 0.08933376,
+          "integer_zero_seconds": 0.12509184,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2291.1843520626935,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -27.903038602003136,
+          "fitted_tau_seconds": 0.018364824758004054,
+          "integer_t20_seconds": 0.02414592,
+          "integer_zero_seconds": 0.02783232,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 48,
+      "bass_change_db": -1.0047134294232198,
+      "weighted_rms": 1404.2711856530484,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": 0.39390635872914603,
+      "rtl_tail_to_attack_db": -11.555051766140593,
+      "body_gain_at_fundamental_db": 4.537880148417728,
+      "source_early_nonfundamental_energy_fraction": 0.09051303527173615,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.3099977319477566,
+          "second_mode_relative_db": -36.57616322564006,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.4316538849547447,
+          "second_mode_relative_db": -24.86005246848807,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.5245023435258275,
+          "second_mode_relative_db": -12.27210242133128,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 130.8127826502993,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.4316538849547447,
+          "integer_t20_seconds": 0.47634432000000004,
+          "integer_zero_seconds": 0.54503424,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 505.89172518730715,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -24.86005246848807,
+          "fitted_tau_seconds": 0.1632854237431152,
+          "integer_t20_seconds": 0.04718592,
+          "integer_zero_seconds": 0.05240832,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1316.0901500146324,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -9.522482734725994,
+          "fitted_tau_seconds": 0.041426368819018934,
+          "integer_t20_seconds": 0.07815168,
+          "integer_zero_seconds": 0.1087488,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2387.457140644277,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.728607400826675,
+          "fitted_tau_seconds": 0.013543763369460523,
+          "integer_t20_seconds": 0.01744896,
+          "integer_zero_seconds": 0.020090880000000002,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 49,
+      "bass_change_db": -0.979284459500443,
+      "weighted_rms": 1383.6599889699003,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -4.625478169529082,
+      "rtl_tail_to_attack_db": -11.777031127022788,
+      "body_gain_at_fundamental_db": 4.552212279194251,
+      "source_early_nonfundamental_energy_fraction": 0.10326160786219798,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.38569370230153016,
+          "second_mode_relative_db": -13.590663906678868,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.40056302835658164,
+          "second_mode_relative_db": -12.664712236397994,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.43902207860664616,
+          "second_mode_relative_db": -17.251895097455353,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 138.59131548843604,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.40056302835658164,
+          "integer_t20_seconds": 0.46934016,
+          "integer_zero_seconds": 0.53630976,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 548.6252428281938,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -12.664712236397994,
+          "fitted_tau_seconds": 0.10982514872495838,
+          "integer_t20_seconds": 0.13903872,
+          "integer_zero_seconds": 0.15980544,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1397.004643440223,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -12.38119303896216,
+          "fitted_tau_seconds": 0.03544808438090812,
+          "integer_t20_seconds": 0.06537216,
+          "integer_zero_seconds": 0.08681472,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2558.3254439892344,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -35.931626810418145,
+          "fitted_tau_seconds": 0.012052406464517185,
+          "integer_t20_seconds": 0.01173504,
+          "integer_zero_seconds": 0.01314816,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 50,
+      "bass_change_db": -0.876925743993125,
+      "weighted_rms": 1350.2153546971326,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -3.9980919461451823,
+      "rtl_tail_to_attack_db": -13.760472430310083,
+      "body_gain_at_fundamental_db": 4.5677493432915,
+      "source_early_nonfundamental_energy_fraction": 0.02399738506221314,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.32545606250583203,
+          "second_mode_relative_db": -17.19456615527086,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.3475962895160578,
+          "second_mode_relative_db": -32.933945337133,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.38293784513006124,
+          "second_mode_relative_db": -11.161998832616007,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 146.8323839587038,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.3475962895160578,
+          "integer_t20_seconds": 0.43425792,
+          "integer_zero_seconds": 0.50085888,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 609.2195804034053,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -32.933945337133,
+          "fitted_tau_seconds": 0.164318196677441,
+          "integer_t20_seconds": 0.01806336,
+          "integer_zero_seconds": 0.02002944,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1476.5874275989063,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -13.283698922693594,
+          "fitted_tau_seconds": 0.036648479790255546,
+          "integer_t20_seconds": 0.06586368000000001,
+          "integer_zero_seconds": 0.0850944,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2709.6581053940654,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.9041044096305403,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 51,
+      "bass_change_db": -0.7839625990897625,
+      "weighted_rms": 1307.921757171505,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -6.532035969007999,
+      "rtl_tail_to_attack_db": -14.131783834933744,
+      "body_gain_at_fundamental_db": 4.584454196356847,
+      "source_early_nonfundamental_energy_fraction": 0.01007006731649062,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.3277586414353467,
+          "second_mode_relative_db": -18.357306012544704,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.32464340307033435,
+          "second_mode_relative_db": -33.27466831386623,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3330748345780179,
+          "second_mode_relative_db": -27.23607557371377,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 155.56349186104046,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.32464340307033435,
+          "integer_t20_seconds": 0.425472,
+          "integer_zero_seconds": 0.48986112000000004,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 666.5565440153428,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -33.27466831386623,
+          "fitted_tau_seconds": 0.14632459437358775,
+          "integer_t20_seconds": 0.01677312,
+          "integer_zero_seconds": 0.018616320000000002,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1555.1536358151327,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -20.114147291067923,
+          "fitted_tau_seconds": 0.032405627925211046,
+          "integer_t20_seconds": 0.04681728,
+          "integer_zero_seconds": 0.055296000000000005,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2936.14099325727,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 1.1573779789472902,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 52,
+      "bass_change_db": -0.6971062884732004,
+      "weighted_rms": 1262.550180087615,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -6.39367467374815,
+      "rtl_tail_to_attack_db": -16.46631760676847,
+      "body_gain_at_fundamental_db": 4.602218267878687,
+      "source_early_nonfundamental_energy_fraction": 0.03544877848716499,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.237631077976661,
+          "second_mode_relative_db": -20.79640470979113,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.294303934296584,
+          "second_mode_relative_db": -16.36678585866456,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3297510509339772,
+          "second_mode_relative_db": -20.798552678063828,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 164.81377845643496,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.294303934296584,
+          "integer_t20_seconds": 0.39211008,
+          "integer_zero_seconds": 0.4574208,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 650.1984868535748,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -16.36678585866456,
+          "fitted_tau_seconds": 0.09158029553718006,
+          "integer_t20_seconds": 0.09867264,
+          "integer_zero_seconds": 0.11188224000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1645.2288939803407,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -18.812660086361028,
+          "fitted_tau_seconds": 0.030808294643948384,
+          "integer_t20_seconds": 0.0485376,
+          "integer_zero_seconds": 0.05849088,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2939.629445965806,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -34.79258392050218,
+          "fitted_tau_seconds": 0.008972473378691111,
+          "integer_t20_seconds": 0.01087488,
+          "integer_zero_seconds": 0.012410880000000001,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 53,
+      "bass_change_db": -0.5626167858826152,
+      "weighted_rms": 1210.1857673089498,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -4.822708525805882,
+      "rtl_tail_to_attack_db": -15.19763255739682,
+      "body_gain_at_fundamental_db": 4.620826810345794,
+      "source_early_nonfundamental_energy_fraction": 0.006194052837011177,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.3060281444885273,
+          "second_mode_relative_db": -47.945247842851316,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.32586034195191493,
+          "second_mode_relative_db": -30.01852901852572,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3496910185508227,
+          "second_mode_relative_db": -20.492316253603825,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 174.61411571650194,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.32586034195191493,
+          "integer_t20_seconds": 0.4061184,
+          "integer_zero_seconds": 0.46565376,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 752.190832363852,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.01852901852572,
+          "fitted_tau_seconds": 0.1179086826703148,
+          "integer_t20_seconds": 0.022609920000000002,
+          "integer_zero_seconds": 0.02506752,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1738.7211714220439,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -22.683349535178635,
+          "fitted_tau_seconds": 0.027754856137996907,
+          "integer_t20_seconds": 0.036925440000000004,
+          "integer_zero_seconds": 0.042700800000000004,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3034.0267791299234,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.014369781545769024,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 54,
+      "bass_change_db": -0.43905957964664094,
+      "weighted_rms": 1161.1009564453375,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -2.418371781679269,
+      "rtl_tail_to_attack_db": -15.696558451711622,
+      "body_gain_at_fundamental_db": 4.639909245154511,
+      "source_early_nonfundamental_energy_fraction": 0.00436571141132565,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.28115143671482157,
+          "second_mode_relative_db": -42.38935418215562,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.3646073250457937,
+          "second_mode_relative_db": -33.88035514450608,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.39508398901392666,
+          "second_mode_relative_db": -15.244434491265046,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 184.99721135581723,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.3646073250457937,
+          "integer_t20_seconds": 0.39677952,
+          "integer_zero_seconds": 0.45398016,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 736.6237063023935,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -33.88035514450608,
+          "fitted_tau_seconds": 0.26703667040533,
+          "integer_t20_seconds": 0.01388544,
+          "integer_zero_seconds": 0.01542144,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1868.5305590470273,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -21.654751923733503,
+          "fitted_tau_seconds": 0.025540838913332746,
+          "integer_t20_seconds": 0.0359424,
+          "integer_zero_seconds": 0.04220928,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3300.040405505523,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -40.91740495481658,
+          "fitted_tau_seconds": 0.007238940853453438,
+          "integer_t20_seconds": 0.0062054400000000004,
+          "integer_zero_seconds": 0.00688128,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 55,
+      "bass_change_db": -0.3195497600184414,
+      "weighted_rms": 1115.6883728799405,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -4.423127745189527,
+      "rtl_tail_to_attack_db": -16.25696221905449,
+      "body_gain_at_fundamental_db": 4.65886839304123,
+      "source_early_nonfundamental_energy_fraction": 0.008201322497701412,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.3104248104761853,
+          "second_mode_relative_db": -48.99284300544079,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.34771681675510485,
+          "second_mode_relative_db": -22.89739224151804,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3645995667078799,
+          "second_mode_relative_db": -21.623900537345445,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 195.99771799087463,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.34771681675510485,
+          "integer_t20_seconds": 0.38774784,
+          "integer_zero_seconds": 0.44273664,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 783.3527281283588,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -22.89739224151804,
+          "fitted_tau_seconds": 0.0931447589221481,
+          "integer_t20_seconds": 0.047308800000000005,
+          "integer_zero_seconds": 0.0525312,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1964.4631989639602,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -20.195099627883614,
+          "fitted_tau_seconds": 0.024506879309383646,
+          "integer_t20_seconds": 0.0371712,
+          "integer_zero_seconds": 0.04429824,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3562.449012146337,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -50.964432032667645,
+          "fitted_tau_seconds": 0.015452542679419843,
+          "integer_t20_seconds": 0.00190464,
+          "integer_zero_seconds": 0.00208896,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 56,
+      "bass_change_db": -0.16548491220751566,
+      "weighted_rms": 1078.916799499951,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -7.867159180195243,
+      "rtl_tail_to_attack_db": -18.808081036613935,
+      "body_gain_at_fundamental_db": 4.67678000119994,
+      "source_early_nonfundamental_energy_fraction": 0.0019947904416562487,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.2827567907715409,
+          "second_mode_relative_db": -49.077181862612406,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.27649202104923154,
+          "second_mode_relative_db": -30.660586367740272,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.29310394033501763,
+          "second_mode_relative_db": -16.634571463833645,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 207.65234878997256,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.27649202104923154,
+          "integer_t20_seconds": 0.36206592000000004,
+          "integer_zero_seconds": 0.41662464,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 833.253745212457,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.660586367740272,
+          "fitted_tau_seconds": 0.12569717768632965,
+          "integer_t20_seconds": 0.01923072,
+          "integer_zero_seconds": 0.02131968,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2068.8681957071008,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -24.59374124512552,
+          "fitted_tau_seconds": 0.02378474668305631,
+          "integer_t20_seconds": 0.02899968,
+          "integer_zero_seconds": 0.033239040000000004,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3586.9588842587405,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -40.90136110713354,
+          "fitted_tau_seconds": 0.009742505713593093,
+          "integer_t20_seconds": 0.00595968,
+          "integer_zero_seconds": 0.00657408,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 57,
+      "bass_change_db": -0.1268999668758294,
+      "weighted_rms": 1040.24831205322,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -7.141561197818098,
+      "rtl_tail_to_attack_db": -19.506138840534952,
+      "body_gain_at_fundamental_db": 4.6922510352449285,
+      "source_early_nonfundamental_energy_fraction": 0.022594656185748446,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.26669125289657275,
+          "second_mode_relative_db": -50.25897673043504,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.27378908108691835,
+          "second_mode_relative_db": -16.108888631605176,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.286840520853584,
+          "second_mode_relative_db": -17.23404148183253,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 220.0,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.27378908108691835,
+          "integer_t20_seconds": 0.35493888,
+          "integer_zero_seconds": 0.40771584,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 882.2349815947244,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -16.108888631605176,
+          "fitted_tau_seconds": 0.07443328611215765,
+          "integer_t20_seconds": 0.08134656,
+          "integer_zero_seconds": 0.09234432000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2188.6122775197964,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -27.416399686398726,
+          "fitted_tau_seconds": 0.020430785626993082,
+          "integer_t20_seconds": 0.02230272,
+          "integer_zero_seconds": 0.02525184,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3750.3882175827516,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -40.38404823175243,
+          "fitted_tau_seconds": 0.010091334705597319,
+          "integer_t20_seconds": 0.00608256,
+          "integer_zero_seconds": 0.0067584,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 58,
+      "bass_change_db": -0.05687957022634525,
+      "weighted_rms": 1019.0647585548754,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -6.682659627891247,
+      "rtl_tail_to_attack_db": -17.772947149883606,
+      "body_gain_at_fundamental_db": 4.703222043266193,
+      "source_early_nonfundamental_energy_fraction": 0.0021408186253577483,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.2873351992245008,
+          "second_mode_relative_db": -47.359047522862376,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.3105094026921993,
+          "second_mode_relative_db": -37.815409216617056,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3342045033966308,
+          "second_mode_relative_db": -37.111440208779946,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 233.08188075904496,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.3105094026921993,
+          "integer_t20_seconds": 0.36820992,
+          "integer_zero_seconds": 0.41828352,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 920.924878990397,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -37.815409216617056,
+          "fitted_tau_seconds": 0.25156077128136645,
+          "integer_t20_seconds": 0.0077414400000000005,
+          "integer_zero_seconds": 0.008601600000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2356.6243573215297,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -24.38011726632526,
+          "fitted_tau_seconds": 0.02061802379895162,
+          "integer_t20_seconds": 0.0264192,
+          "integer_zero_seconds": 0.0304128,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4118.164363957476,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.5672764128532294,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 59,
+      "bass_change_db": -0.01261900163991383,
+      "weighted_rms": 1000.9359279099403,
+      "enabled_modes": 4,
+      "source_tail_to_attack_db": -7.971402348110973,
+      "rtl_tail_to_attack_db": -22.374389530372063,
+      "body_gain_at_fundamental_db": 4.706696701292383,
+      "source_early_nonfundamental_energy_fraction": 0.002241202661850001,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.25884925246998136,
+          "second_mode_relative_db": -46.828845229743536,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.26640626782014104,
+          "second_mode_relative_db": -25.648033910653886,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.3057435965577529,
+          "second_mode_relative_db": -24.51773965370695,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 246.94165062806206,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.26640626782014104,
+          "integer_t20_seconds": 0.33214464,
+          "integer_zero_seconds": 0.3846144,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 990.9662995657111,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -25.648033910653886,
+          "fitted_tau_seconds": 0.07367897872570936,
+          "integer_t20_seconds": 0.0328704,
+          "integer_zero_seconds": 0.036495360000000004,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2431.785773070471,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -23.55172192839953,
+          "fitted_tau_seconds": 0.018349363042973986,
+          "integer_t20_seconds": 0.026112,
+          "integer_zero_seconds": 0.03072,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4125.735879586185,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -49.79450670985818,
+          "fitted_tau_seconds": 0.009874129716742088,
+          "integer_t20_seconds": 0.00208896,
+          "integer_zero_seconds": 0.00227328,
+          "disabled": null
+        }
+      ]
+    },
+    {
+      "midi": 60,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.6898524104887,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -9.204497613995477,
+      "rtl_tail_to_attack_db": -27.750683165980877,
+      "body_gain_at_fundamental_db": 4.698383412259124,
+      "source_early_nonfundamental_energy_fraction": 0.001396473532740012,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.18119675299977997,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.2066977407047629,
+          "second_mode_relative_db": -30.681440712092293,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.22998690292837815,
+          "second_mode_relative_db": -11.39701049968366,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 261.6255653005986,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.2066977407047629,
+          "integer_t20_seconds": 0.30044160000000003,
+          "integer_zero_seconds": 0.35733504,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1041.2226767566572,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.681440712092293,
+          "fitted_tau_seconds": 0.06768351125339535,
+          "integer_t20_seconds": 0.019968,
+          "integer_zero_seconds": 0.02217984,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2602.474476010695,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -27.786346583513453,
+          "fitted_tau_seconds": 0.016665104423956596,
+          "integer_t20_seconds": 0.02070528,
+          "integer_zero_seconds": 0.02377728,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4582.5391638711535,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.21789704389212022,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 61,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1004.0621677905042,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -11.003375531283297,
+      "rtl_tail_to_attack_db": -24.751114619483317,
+      "body_gain_at_fundamental_db": 4.672246128197706,
+      "source_early_nonfundamental_energy_fraction": 0.0010925308265720014,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.19234396377555488,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.21548336730219383,
+          "second_mode_relative_db": -27.811698114569662,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.22438308981970126,
+          "second_mode_relative_db": -50.34487106807056,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 277.1826309768721,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.21548336730219383,
+          "integer_t20_seconds": 0.3158016,
+          "integer_zero_seconds": 0.37122048,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1133.2521511419302,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -27.811698114569662,
+          "fitted_tau_seconds": 0.04793896437862371,
+          "integer_t20_seconds": 0.02709504,
+          "integer_zero_seconds": 0.0301056,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2763.118818541829,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.901955534576544,
+          "fitted_tau_seconds": 0.013258182238736996,
+          "integer_t20_seconds": 0.015114240000000001,
+          "integer_zero_seconds": 0.017203200000000002,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4793.636112365184,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.2940291725010865,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 62,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.8518121544822,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -11.633248663157016,
+      "rtl_tail_to_attack_db": -27.609805765114686,
+      "body_gain_at_fundamental_db": 4.61999704858635,
+      "source_early_nonfundamental_energy_fraction": 0.0007154949674429133,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.17629024634220694,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.20001015270446232,
+          "second_mode_relative_db": -35.22872752797395,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.2124258391828221,
+          "second_mode_relative_db": -38.31475781511254,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 293.6647679174076,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.20001015270446232,
+          "integer_t20_seconds": 0.30081024,
+          "integer_zero_seconds": 0.35776512,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1195.6089657836708,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -35.22872752797395,
+          "fitted_tau_seconds": 0.05372714958523533,
+          "integer_t20_seconds": 0.011857920000000001,
+          "integer_zero_seconds": 0.01314816,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2866.1392836118684,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -37.293030908623436,
+          "fitted_tau_seconds": 0.014417606475498267,
+          "integer_t20_seconds": 0.00940032,
+          "integer_zero_seconds": 0.010383360000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4867.247816794983,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.010644785669528301,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        }
+      ]
+    },
+    {
+      "midi": 63,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.1141864239507,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -12.970795843246536,
+      "rtl_tail_to_attack_db": -22.304922658118524,
+      "body_gain_at_fundamental_db": 4.530642953450656,
+      "source_early_nonfundamental_energy_fraction": 0.0012911195142594723,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.2663766696966475,
+          "second_mode_relative_db": -47.91710287839425,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.2644761160352971,
+          "second_mode_relative_db": -33.016597663708296,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.25773549028648707,
+          "second_mode_relative_db": -14.878592462779967,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 311.1269837220809,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.2644761160352971,
+          "integer_t20_seconds": 0.33275904,
+          "integer_zero_seconds": 0.38547456,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1248.6177439425567,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -33.016597663708296,
+          "fitted_tau_seconds": 0.052624084507727945,
+          "integer_t20_seconds": 0.014192640000000001,
+          "integer_zero_seconds": 0.015728640000000002,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3022.576602296443,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -44.59734811074135,
+          "fitted_tau_seconds": 0.013648741435872311,
+          "integer_t20_seconds": 0.00374784,
+          "integer_zero_seconds": 0.0041164800000000005,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 5903.735452995796,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 64,
+      "bass_change_db": 0.0,
+      "weighted_rms": 999.5836679969103,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -11.965188800288988,
+      "rtl_tail_to_attack_db": -24.384190040755374,
+      "body_gain_at_fundamental_db": 4.39034289065264,
+      "source_early_nonfundamental_energy_fraction": 0.0011885818616220456,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.23995499332684045,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.23032584744309317,
+          "second_mode_relative_db": -32.240254867796445,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.2372359060261996,
+          "second_mode_relative_db": -18.12316831237971,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 329.6275569128699,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.23032584744309317,
+          "integer_t20_seconds": 0.31813632000000003,
+          "integer_zero_seconds": 0.37459968,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1306.839103946428,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -32.240254867796445,
+          "fitted_tau_seconds": 0.03420923624635945,
+          "integer_t20_seconds": 0.0165888,
+          "integer_zero_seconds": 0.01837056,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3129.0312165277733,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -27.366197676843655,
+          "fitted_tau_seconds": 0.012658199729591877,
+          "integer_t20_seconds": 0.01806336,
+          "integer_zero_seconds": 0.02125824,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6690.159421969504,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 65,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.4762002237554,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -10.925488474404592,
+      "rtl_tail_to_attack_db": -21.636438907431508,
+      "body_gain_at_fundamental_db": 4.183048105924454,
+      "source_early_nonfundamental_energy_fraction": 0.004459511291128861,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.24236117337458682,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.2500370610610315,
+          "second_mode_relative_db": -14.552435815804163,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.254507205700235,
+          "second_mode_relative_db": -18.73519996401329,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 349.2282314330039,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.2500370610610315,
+          "integer_t20_seconds": 0.33712128,
+          "integer_zero_seconds": 0.39174144,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1395.6931116505825,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -14.552435815804163,
+          "fitted_tau_seconds": 0.02945550781675141,
+          "integer_t20_seconds": 0.0516096,
+          "integer_zero_seconds": 0.06518784,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3211.885075563112,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -26.163138288232894,
+          "fitted_tau_seconds": 0.011673178197283399,
+          "integer_t20_seconds": 0.01800192,
+          "integer_zero_seconds": 0.02156544,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6504.0024320153425,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 66,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.8471823501382,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -11.865555025171858,
+      "rtl_tail_to_attack_db": -21.10934588657382,
+      "body_gain_at_fundamental_db": 3.8925893275880092,
+      "source_early_nonfundamental_energy_fraction": 0.0002711684553015807,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.24338236840248148,
+          "second_mode_relative_db": -50.337158750330964,
+          "second_mode_disabled": null
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.24548134603228505,
+          "second_mode_relative_db": -34.37022384750649,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.24415698897403723,
+          "second_mode_relative_db": -21.22720230567299,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 369.9944227116344,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.24548134603228505,
+          "integer_t20_seconds": 0.34136064,
+          "integer_zero_seconds": 0.39776256,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1485.178942193799,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -34.37022384750649,
+          "fitted_tau_seconds": 0.031948240393250435,
+          "integer_t20_seconds": 0.01296384,
+          "integer_zero_seconds": 0.014376960000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3390.3481041912733,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.01599542300046178,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 7035.388414632896,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 67,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1003.8412842872731,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -13.662463465404366,
+      "rtl_tail_to_attack_db": -27.594672420376764,
+      "body_gain_at_fundamental_db": 3.506796114565412,
+      "source_early_nonfundamental_energy_fraction": 0.0006501728559619603,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.18321717117723477,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.18242554106100994,
+          "second_mode_relative_db": -48.16145803020944,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.18920304860233292,
+          "second_mode_relative_db": -31.991589345056795,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 391.9954359817493,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.18242554106100994,
+          "integer_t20_seconds": 0.29718528,
+          "integer_zero_seconds": 0.3631104,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1533.3507500543187,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -48.16145803020944,
+          "fitted_tau_seconds": 0.053924477664817984,
+          "integer_t20_seconds": 0.00313344,
+          "integer_zero_seconds": 0.00344064,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 3556.190981252889,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -31.43419519797304,
+          "fitted_tau_seconds": 0.009861370238733824,
+          "integer_t20_seconds": 0.01370112,
+          "integer_zero_seconds": 0.01603584,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6620.554207536191,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 68,
+      "bass_change_db": 0.0,
+      "weighted_rms": 999.199980768774,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -15.354793993525625,
+      "rtl_tail_to_attack_db": -26.683467188093953,
+      "body_gain_at_fundamental_db": 3.0234866882651614,
+      "source_early_nonfundamental_energy_fraction": 0.0005344711632076181,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.17803678655951566,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.17937210504197135,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.1832450706052267,
+          "second_mode_relative_db": -22.95250822261938,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 415.3046975799451,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.17937210504197135,
+          "integer_t20_seconds": 0.30124032,
+          "integer_zero_seconds": 0.36993024,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1658.6103210417755,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.14235050140465685,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 3737.9880755230306,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -46.63633613515864,
+          "fitted_tau_seconds": 0.009312989709191187,
+          "integer_t20_seconds": 0.0038707200000000002,
+          "integer_zero_seconds": 0.00423936,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 7571.337094650633,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 69,
+      "bass_change_db": 0.0,
+      "weighted_rms": 999.5767417383756,
+      "enabled_modes": 1,
+      "source_tail_to_attack_db": -19.48650923747111,
+      "rtl_tail_to_attack_db": -38.23309798982383,
+      "body_gain_at_fundamental_db": 2.456609760632436,
+      "source_early_nonfundamental_energy_fraction": 0.00037375827167898624,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.1312355003606955,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.13275878831183954,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.1373715165176192,
+          "second_mode_relative_db": -34.395924017998766,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 440.0,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.13275878831183954,
+          "integer_t20_seconds": 0.24895488000000002,
+          "integer_zero_seconds": 0.3311616,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1765.775934792643,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.03232347344758361,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 4064.1128170405846,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 2.640046612101557,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 7579.654355344897,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 70,
+      "bass_change_db": 0.0,
+      "weighted_rms": 999.6530484555925,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -16.11803883041508,
+      "rtl_tail_to_attack_db": -24.61349234803704,
+      "body_gain_at_fundamental_db": 1.8391848762385556,
+      "source_early_nonfundamental_energy_fraction": 0.003432506675309839,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.17919556535954903,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.17825061943635548,
+          "second_mode_relative_db": -29.660282481698864,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.17202702785009977,
+          "second_mode_relative_db": -4.907168005484035,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 466.1637615180899,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.17825061943635548,
+          "integer_t20_seconds": 0.31205376,
+          "integer_zero_seconds": 0.38928384,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1862.3240174207351,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -29.660282481698864,
+          "fitted_tau_seconds": 0.024358447192380003,
+          "integer_t20_seconds": 0.02562048,
+          "integer_zero_seconds": 0.02899968,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4294.77536196532,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.16584591761440587,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 7845.83050701528,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        }
+      ]
+    },
+    {
+      "midi": 71,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1001.6342444337923,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -19.263846417461227,
+      "rtl_tail_to_attack_db": -28.45856891895528,
+      "body_gain_at_fundamental_db": 1.2195933568316235,
+      "source_early_nonfundamental_energy_fraction": 0.0012652287178310598,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.15180917858914053,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.14931902034596348,
+          "second_mode_relative_db": -30.455913241537885,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.15197389598630448,
+          "second_mode_relative_db": -11.341264202846508,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 493.8833012561241,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.14931902034596348,
+          "integer_t20_seconds": 0.28305408,
+          "integer_zero_seconds": 0.3707904,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 1974.981493587572,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -30.455913241537885,
+          "fitted_tau_seconds": 0.0239697262005651,
+          "integer_t20_seconds": 0.02605056,
+          "integer_zero_seconds": 0.02955264,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4756.395795176172,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.010962063237718289,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 8164.414115121942,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.6629082349709429,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 72,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1000.9238158391353,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -18.68683743041165,
+      "rtl_tail_to_attack_db": -30.12963837331177,
+      "body_gain_at_fundamental_db": 0.6504328570994746,
+      "source_early_nonfundamental_energy_fraction": 0.003163655101096469,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.1440071345375317,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.1457016174745674,
+          "second_mode_relative_db": -29.62962351249931,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.14330751387524795,
+          "second_mode_relative_db": -27.339575020849345,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 523.2511306011972,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.1457016174745674,
+          "integer_t20_seconds": 0.26996736,
+          "integer_zero_seconds": 0.365568,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2092.198666099744,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -29.62962351249931,
+          "fitted_tau_seconds": 0.021464926933259323,
+          "integer_t20_seconds": 0.02752512,
+          "integer_zero_seconds": 0.03170304,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 4798.844421368764,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -47.099661557421854,
+          "fitted_tau_seconds": 0.004565135836185512,
+          "integer_t20_seconds": 0.00454656,
+          "integer_zero_seconds": 0.005099520000000001,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 10621.984224214033,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 73,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1000.5921709442016,
+      "enabled_modes": 3,
+      "source_tail_to_attack_db": -20.542740570184833,
+      "rtl_tail_to_attack_db": -31.815994628371907,
+      "body_gain_at_fundamental_db": 0.17377066595784876,
+      "source_early_nonfundamental_energy_fraction": 0.00022112219107931115,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.1336286408548767,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "no reliable decaying component"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.135739626654842,
+          "second_mode_relative_db": -45.48000340527637,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.13741273647134025,
+          "second_mode_relative_db": -37.472146703683045,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 554.3652619537442,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.135739626654842,
+          "integer_t20_seconds": 0.25632768,
+          "integer_zero_seconds": 0.35966976,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2189.3759280165737,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -45.48000340527637,
+          "fitted_tau_seconds": 0.02264339951969645,
+          "integer_t20_seconds": 0.006635520000000001,
+          "integer_zero_seconds": 0.00731136,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 5121.623170580634,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -48.13950891230338,
+          "fitted_tau_seconds": 0.006871665990884647,
+          "integer_t20_seconds": 0.0049152,
+          "integer_zero_seconds": 0.00540672,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 10657.785693377979,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 74,
+      "bass_change_db": 0.0,
+      "weighted_rms": 1000.6355280209425,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -19.501310345679226,
+      "rtl_tail_to_attack_db": -31.31325256309418,
+      "body_gain_at_fundamental_db": -0.1900014787949102,
+      "source_early_nonfundamental_energy_fraction": 0.0036966005684817838,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.14406550204081867,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "no reliable decaying component"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.136830032143829,
+          "second_mode_relative_db": -26.62864546270064,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.13692650958847136,
+          "second_mode_relative_db": -13.24120622123461,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 587.3295358348151,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.136830032143829,
+          "integer_t20_seconds": 0.25706496,
+          "integer_zero_seconds": 0.3634176,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2333.8763936525256,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -26.62864546270064,
+          "fitted_tau_seconds": 0.01774100121379658,
+          "integer_t20_seconds": 0.029184,
+          "integer_zero_seconds": 0.035758080000000005,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6022.845400479008,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        },
+        {
+          "frequency_hz": 9821.393296005304,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 75,
+      "bass_change_db": 0.0,
+      "weighted_rms": 999.9656338428206,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -22.2104475980664,
+      "rtl_tail_to_attack_db": -30.872201637774012,
+      "body_gain_at_fundamental_db": -0.44406013652145715,
+      "source_early_nonfundamental_energy_fraction": 0.0006128653941156055,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.1361938594283807,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "no reliable decaying component"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.1347983041754015,
+          "second_mode_relative_db": -41.26933879573418,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.13214373618538694,
+          "second_mode_relative_db": -35.29040653214631,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 622.2539674441618,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.1347983041754015,
+          "integer_t20_seconds": 0.25749504,
+          "integer_zero_seconds": 0.3664896,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2476.4022440229196,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -41.26933879573418,
+          "fitted_tau_seconds": 0.01580713266893257,
+          "integer_t20_seconds": 0.011304960000000001,
+          "integer_zero_seconds": 0.01253376,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6697.552103043783,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "no reliable decaying component"
+        },
+        {
+          "frequency_hz": 10325.886094207284,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 76,
+      "bass_change_db": 0.0,
+      "weighted_rms": 998.0392779190626,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -20.093826821670003,
+      "rtl_tail_to_attack_db": -36.36549947821676,
+      "body_gain_at_fundamental_db": -0.608168381495688,
+      "source_early_nonfundamental_energy_fraction": 0.010552479337669788,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.11933964731648299,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.1170519588732031,
+          "second_mode_relative_db": -24.82853822842495,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.11172228438352032,
+          "second_mode_relative_db": -29.967824629796148,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 659.2551138257398,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.1170519588732031,
+          "integer_t20_seconds": 0.22843392,
+          "integer_zero_seconds": 0.34443264,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2592.190289042271,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -24.82853822842495,
+          "fitted_tau_seconds": 0.017163866102240414,
+          "integer_t20_seconds": 0.03084288,
+          "integer_zero_seconds": 0.03969024,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 6204.623747593477,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 1.5485171029996316,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 10884.120301682444,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    },
+    {
+      "midi": 77,
+      "bass_change_db": 0.0,
+      "weighted_rms": 997.9184674146547,
+      "enabled_modes": 2,
+      "source_tail_to_attack_db": -26.01110299752844,
+      "rtl_tail_to_attack_db": -44.10360707682534,
+      "body_gain_at_fundamental_db": -0.7081197042142457,
+      "source_early_nonfundamental_energy_fraction": 0.0017168952102827057,
+      "measured_dynamics": {
+        "pp": {
+          "fundamental_tau_seconds": 0.10684728643886018,
+          "second_mode_relative_db": null,
+          "second_mode_disabled": "below -52 dB relative to fundamental"
+        },
+        "mf": {
+          "fundamental_tau_seconds": 0.10600152279465297,
+          "second_mode_relative_db": -42.884415027083136,
+          "second_mode_disabled": null
+        },
+        "ff": {
+          "fundamental_tau_seconds": 0.10513181147618696,
+          "second_mode_relative_db": -13.85982215695009,
+          "second_mode_disabled": null
+        }
+      },
+      "modes": [
+        {
+          "frequency_hz": 698.4564628660078,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": 0.0,
+          "fitted_tau_seconds": 0.10600152279465297,
+          "integer_t20_seconds": 0.21067776000000002,
+          "integer_zero_seconds": 0.32483328,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 2726.2920590449794,
+          "enabled": true,
+          "source_gain_relative_fundamental_db": -42.884415027083136,
+          "fitted_tau_seconds": 0.014076870769665045,
+          "integer_t20_seconds": 0.010567680000000001,
+          "integer_zero_seconds": 0.01173504,
+          "disabled": null
+        },
+        {
+          "frequency_hz": 7178.370592626083,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": 0.47207912281952474,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "below -52 dB relative to fundamental"
+        },
+        {
+          "frequency_hz": 12921.444563021145,
+          "enabled": false,
+          "source_gain_relative_fundamental_db": null,
+          "fitted_tau_seconds": null,
+          "integer_t20_seconds": null,
+          "integer_zero_seconds": null,
+          "disabled": "above output Nyquist"
+        }
+      ]
+    }
+  ]
+}

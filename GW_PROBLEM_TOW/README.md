@@ -1,5 +1,7 @@
 # Tang Mega 60K SD 乐谱钢琴播放器
 
+当前开发核心为 **31 音实时马林巴**。2026-10-22 最新微调将低音补偿最大值从 +4 dB 降为 +3 dB，C4 以上参数和采样保持一致。最新试听为 `sim/marimba_B2_F5_bass_trim.wav`；低音削减校验、高音区音色分析及源 PCM/RTL 对照见 [MARIMBA_REGISTER_ANALYSIS.md](MARIMBA_REGISTER_ANALYSIS.md)，当前验证数据为 `sim/marimba_register_analysis/report.json`。下文及 `sim/marimba_corrected_report.json` 中的 +4 dB 数据属于此前版本。
+
 工程：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`。
 工程提供可选的 SD 卡 FAT16/FAT32 乐谱播放路径、默认马林巴逐音试听路径，以及一个用于听感对比的 PCM 铃声实验。默认 `SD_SCORE_ENABLE=0`，不访问 SD 卡；马林巴由 DDS 实时生成并输出到 PT8211。KEY0 播放/停止实验性立体声 PCM 铃声，KEY1 触发默认马林巴音符。
 

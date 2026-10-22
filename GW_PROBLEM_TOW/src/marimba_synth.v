@@ -1,10 +1,10 @@
-// PCM-fitted 31-note modal marimba with velocity-sensitive modes, a short
+// PCM-fitted 42-note modal marimba with velocity-sensitive modes, a short
 // mallet transient and a separate body/tube resonator.
-// Note indices 47..77 map to the fitted B2..F5 range.
+// MIDI notes 36..77 map to the fitted C2..F5 range.
 module marimba_synth #(
     parameter SINE_FILE = "src/rom/sine256.hex",
-    parameter MODE_FILE = "src/rom/marimba31.hex",
-    parameter ATTACK_FILE = "src/rom/marimba_attack31.hex"
+    parameter MODE_FILE = "src/rom/marimba42.hex",
+    parameter ATTACK_FILE = "src/rom/marimba_attack42.hex"
 ) (
     input wire clk, reset_n, sample_tick, stop_all,
     input wire event_valid, event_on,
@@ -17,8 +17,8 @@ module marimba_synth #(
     output wire pcm_valid, limiting, saturated,
     output reg deadline_error
 );
-    localparam NOTE_FIRST = 7'd47;
-    localparam NOTE_COUNT = 31;
+    localparam NOTE_FIRST = 7'd36;
+    localparam NOTE_COUNT = 42;
     localparam IDLE=0, NOTE_START=1, MODE_LOAD=2, SINE_READ=3,
                INTERP_MUL=4, INTERP_USE=5, AMP_MUL=6, AMP_USE=7,
                DYN_MUL=8, DYN_USE=9, DECAY_MUL=10, DECAY_USE=11,
@@ -27,17 +27,17 @@ module marimba_synth #(
                NOISE_COMMIT=18, ADVANCE=19;
 
     reg [4:0] state;
-    reg [4:0] note_index;
+    reg [5:0] note_index;
     reg [1:0] mode_index;
-    reg [30:0] pending, active_noise;
-    reg [123:0] active_modes;
-    reg [7:0] dynamics_by_note [0:30] /* synthesis syn_ramstyle="registers" */;
-    reg [31:0] phase_ram [0:123] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] level_ram [0:123] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] noise_level_ram [0:30] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] noise_lfsr_ram [0:30] /* synthesis syn_ramstyle="registers" */;
-    reg [255:0] mode_rom [0:30];
-    reg [31:0] attack_rom [0:30];
+    reg [NOTE_COUNT-1:0] pending, active_noise;
+    reg [NOTE_COUNT*4-1:0] active_modes;
+    reg [7:0] dynamics_by_note [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
+    reg [31:0] phase_ram [0:NOTE_COUNT*4-1] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] level_ram [0:NOTE_COUNT*4-1] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] noise_level_ram [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] noise_lfsr_ram [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
+    reg [255:0] mode_rom [0:NOTE_COUNT-1];
+    reg [31:0] attack_rom [0:NOTE_COUNT-1];
     reg signed [15:0] sine_rom [0:255];
     reg [255:0] mode_row;
     reg [31:0] attack_row;
@@ -56,7 +56,7 @@ module marimba_synth #(
     reg signed [15:0] mult_b;
     reg signed [47:0] mult_product;
     wire signed [47:0] mult_result = mult_a * mult_b;
-    wire [6:0] mode_address = {note_index, mode_index};
+    wire [7:0] mode_address = {note_index, mode_index};
     wire [63:0] selected_mode = select_mode(mode_row, mode_index);
     wire [31:0] stored_phase = phase_ram[mode_address];
     wire [15:0] stored_level = level_ram[mode_address];
@@ -257,7 +257,9 @@ module marimba_synth #(
                                        stored_noise_level;
                         noise_step <= attack_row[15:0];
                         noise_lfsr <= trigger_note ?
-                            (16'h1ace + {12'd0, note_index}) :
+                            // Seed by MIDI pitch, preserving B2..F5 exactly
+                            // when lower notes are added before them.
+                            (16'h1a9f + {10'd0, note_index} + NOTE_FIRST) :
                             stored_noise_lfsr;
                         state <= NOISE_MUL;
                     end

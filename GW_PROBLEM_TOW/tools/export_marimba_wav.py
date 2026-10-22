@@ -4,12 +4,13 @@ import json
 from pathlib import Path
 import wave
 
+from fit_marimba_params import NOTE_FIRST, NOTE_LAST
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 FS = 50_000_000 / 3072
 RATE = round(FS)
-ROM = ROOT / "src/rom/marimba31.hex"
+ROM = ROOT / "src/rom/marimba42.hex"
 
 
 def write_wav(path, samples):
@@ -22,13 +23,13 @@ def write_wav(path, samples):
 
 def main():
     rows = np.loadtxt(ROOT / "sim/marimba_scale_pcm.txt", dtype=np.int32)
-    assert rows.shape == (31 * 16276, 3)
+    assert rows.shape == ((NOTE_LAST - NOTE_FIRST + 1) * 16276, 3)
     out = ROOT / "sim/marimba_wav"
     out.mkdir(exist_ok=True)
     parts = []
     names = ("C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B")
     notes = []
-    for midi in range(47, 78):
+    for midi in range(NOTE_FIRST, NOTE_LAST + 1):
         selected = rows[rows[:, 0] == midi]
         assert np.array_equal(selected[:, 1], np.arange(16276))
         audio = selected[:, 2]
@@ -46,15 +47,15 @@ def main():
                       "scale_start_seconds": len(parts) * (16276 + 1628) / RATE})
         parts.append(np.concatenate((preview, np.zeros(1628, dtype="<i2"))))
     scale = np.concatenate(parts)
-    write_wav(ROOT / "sim/marimba_B2_F5_realtime.wav", scale)
+    write_wav(ROOT / "sim/marimba_C2_F5_realtime.wav", scale)
+    write_wav(ROOT / "sim/marimba_C2_B2_realtime.wav",
+              np.concatenate(parts[:48 - NOTE_FIRST]))
+    write_wav(ROOT / "sim/marimba_C2_C3_realtime.wav",
+              np.concatenate(parts[:49 - NOTE_FIRST]))
+    write_wav(ROOT / "sim/marimba_B2_F5_realtime.wav",
+              np.concatenate(parts[47 - NOTE_FIRST:]))
     write_wav(ROOT / "sim/marimba_C5_F5_realtime.wav",
-              np.concatenate(parts[72 - 47:]))
-    write_wav(ROOT / "sim/marimba_notes_14_23_corrected.wav",
-              np.concatenate(parts[13:23]))
-    write_wav(ROOT / "sim/marimba_B2_F5_corrected.wav", scale)
-    write_wav(ROOT / "sim/marimba_B2_F5_bass_boost.wav", scale)
-    write_wav(ROOT / "sim/marimba_B2_C4_bass_boost.wav",
-              np.concatenate(parts[:14]))
+              np.concatenate(parts[72 - NOTE_FIRST:]))
     report = {
         "source": "ModelSim marimba_synth RTL, not PCM reference playback",
         "sample_rate_exact": FS, "wav_sample_rate": RATE,

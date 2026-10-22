@@ -20,8 +20,8 @@ module score_player_case #(
         .SINE_FILE("../src/rom/sine256.hex"),
         .FREQ_FILE("../src/rom/frequency88.hex"),
         .VOICING_FILE("../src/rom/voicing88.hex"),
-        .MARIMBA_MODE_FILE("../src/rom/marimba31.hex"),
-        .MARIMBA_ATTACK_FILE("../src/rom/marimba_attack31.hex"),
+        .MARIMBA_MODE_FILE("../src/rom/marimba42.hex"),
+        .MARIMBA_ATTACK_FILE("../src/rom/marimba_attack42.hex"),
         .RINGTONE_ROM_PREFIX("../src/rom/ringtone_bank"),
         .RINGTONE_HEADER_FILE("../src/rom/ringtone_headers.hex"),
         .RINGTONE_STEP_FILE("../src/rom/ima_steps.hex")
@@ -93,11 +93,11 @@ module score_player_case #(
                 $fatal(1, "SD-disabled audition did not remain isolated from the card");
             replay_key();
             wait (manual_on_count == 1);
-            if (manual_last_note != 47 || !dut.marimba_mode)
-                $fatal(1, "Default audition key was not marimba B2");
+            if (manual_last_note != 36 || !dut.marimba_mode)
+                $fatal(1, "Default audition key was not marimba C2");
             replay_key();
             wait (manual_on_count == 2);
-            if (manual_last_note != 48) $fatal(1, "Second audition key was not C3");
+            if (manual_last_note != 37) $fatal(1, "Second audition key was not Cs2");
             sound_mode_key();
             if (!dut.ringtone_active || !dut.marimba_mode)
                 $fatal(1, "KEY0 did not start the recorded reference");
@@ -116,16 +116,16 @@ module score_player_case #(
                 $fatal(1, "Stopping PCM left residual synth or recorded audio");
             replay_key();
             wait (manual_on_count == 3);
-            if (manual_last_note != 47)
-                $fatal(1, "Marimba audition did not start at B2");
+            if (manual_last_note != 36)
+                $fatal(1, "Marimba audition did not start at C2");
             reset_key();
             if (!dut.manual_mode || dut.initialized || dut.file_found ||
                 dut.marimba_mode !== 1'b1 || dut.ringtone_active)
                 $fatal(1, "KEY2 did not reset the SD-disabled player");
             replay_key();
             wait (manual_on_count == 4);
-            if (manual_last_note != 47)
-                $fatal(1, "KEY2 reset did not restart marimba audition at B2");
+            if (manual_last_note != 36)
+                $fatal(1, "KEY2 reset did not restart marimba audition at C2");
             sound_mode_key();
             if (!dut.ringtone_active) $fatal(1, "PCM restart failed");
             reset_key();

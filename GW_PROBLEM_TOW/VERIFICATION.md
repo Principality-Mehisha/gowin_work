@@ -1,5 +1,17 @@
 # 验证记录
 
+## 最新：C2–F5 的 42 音低音扩展（2026-10-22）
+
+由项目原有 Iowa yarn mallet C2B2 的 pp/mf/ff PCM 逐音定位并拟合，新增 MIDI 36–46 共 11 音。ROM 使用连贯 mf 参数；C2–B2 的补偿保持 +3 dB，B2–C4 延续原平滑曲线。原 B2–F5 的 ROM 参数不变，噪声种子改为按 MIDI 音高计算，避免扩展后索引偏移改变已有音色。
+
+通过结构检查、统一 `sim/run.ps1` 的七个测试，以及完整 `tb_marimba_wav` 音频导出。`tb_marimba` 覆盖 MIDI 35/78 拒绝、C2 重触发/自然衰减和全部 42 音同时触发；首帧耗时 2184 时钟，小于 3072 时钟预算。新增 `tb_marimba_controls` 覆盖 KEY1 从 C2 到 F5 的遍历及回绕、KEY2 复位回 C2、实际合成输出和默认 SD 隔离。更新了 SD 集成测试的马林巴 ROM 路径及默认音符断言，本次未重复 SD/FAT 全套回归。
+
+Gowin 于 2026-10-22 23:32:50 完成综合、布局布线、位流与自动时序检查：Fmax 58.827 MHz，Setup/Hold 违规均为 0。资源 Logic 10793/59904、寄存器 16039/60780、BSRAM 94/118、DSP 10.5/118。位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，本次未烧录开发板。保留原时钟管脚的一般布线警告 PR1014。
+
+全部 683592 个实际 RTL 采样与独立整数模型逐点一致，其中原 B2–F5 的 504556 个采样与扩展前保持一致。全音区最大音高误差约 0.0171 音分，相邻音符加权 RMS 最大变化约 0.3679 dB，目标曲线最大误差约 0.0355 dB，单音 PCM 峰值最大 7848。
+
+音频逐点校验、音高和响度结果见 `sim/marimba42_report.json`；最新试听见 `sim/marimba_C2_F5_realtime.wav`。扩展前快照保存在 `sim/marimba_before_low_extension/`，其余下文均为历史记录。
+
 ## 最新：低音补偿从 +4 dB 微调至 +3 dB（2026-10-22）
 
 `tools/fit_marimba_params.py` 重新生成参数后，通过结构检查、ModelSim Intel FPGA Edition 10.5b 的 `tb_marimba` 和 `tb_marimba_wav`。新导出的全部 504556 个采样与独立整数模型一致；C4–F5 ROM/采样与调整前逐点相同，全部音符的频率字与衰减系数不变。B2 加权 RMS 从 1589.36 降至 1410.89（-1.035 dB），低音补偿仍平滑过渡至 C4 的 0 dB。

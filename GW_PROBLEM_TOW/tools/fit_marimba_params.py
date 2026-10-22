@@ -18,17 +18,18 @@ from marimba_reference import OUT_FS, decode_modes, render_note
 
 SOURCE = ROOT / "assets/marimba/source"
 ROM = ROOT / "src/rom"
-NOTE_FIRST, NOTE_LAST = 47, 77
+NOTE_FIRST, NOTE_LAST = 36, 77
 ANALYSIS_FS = 24000
 CALIBRATION_DYNAMICS = 192
 LOUDNESS_TARGET = 1000.0
 BASS_BOOST_DB = 3.0  # Mild trim: -1 dB at B2, tapering to no change at C4.
+BASS_BOOST_START = 47  # Preserve B2..F5; C2..B2 share the +3 dB plateau.
 BASS_BOOST_END = 60  # C4
 
 
 def bass_boost_db(midi: int) -> float:
-    position = min(1.0, max(0.0, (midi - NOTE_FIRST) /
-                            (BASS_BOOST_END - NOTE_FIRST)))
+    position = min(1.0, max(0.0, (midi - BASS_BOOST_START) /
+                            (BASS_BOOST_END - BASS_BOOST_START)))
     return BASS_BOOST_DB * .5 * (1 + math.cos(math.pi * position))
 
 
@@ -94,7 +95,7 @@ def locate_notes(samples: np.ndarray, midis: list[int]):
         start = max(0, candidate * block - round(.02 * ANALYSIS_FS))
         frequencies, magnitude = spectrum(
             samples[start:start + round(.22 * ANALYSIS_FS)])
-        useful = (frequencies > 80) & (frequencies < 1500)
+        useful = (frequencies > 40) & (frequencies < 1500)
         spectra.append((candidate, frequencies, magnitude, magnitude[useful].max()))
     result = {}
     for midi in midis:
@@ -307,7 +308,8 @@ def main():
         scale = .65 / max(sum(mode["gain"] for mode in row["modes"]), 1e-9)
         for _ in range(6):
             mode_word, attack_word = pack_note(row, scale)
-            audio = render_note(decode_modes(mode_word), attack_word, sine, index)
+            audio = render_note(decode_modes(mode_word), attack_word, sine, index,
+                                note_first=NOTE_FIRST)
             measured = loudness_metric(audio)
             error_db = 20 * math.log10(measured / target)
             if abs(error_db) < .04:
@@ -324,10 +326,10 @@ def main():
         mode_lines.append(f"{mode_word:064x}\n")
         attack_lines.append(f"{attack_word:08x}\n")
         print(f"MIDI {row['midi']}: RMS={measured:.2f}, peak={max(abs(audio))}", flush=True)
-    (ROM / "marimba31.hex").write_text("".join(mode_lines), encoding="ascii")
-    (ROM / "marimba_attack31.hex").write_text("".join(attack_lines), encoding="ascii")
+    (ROM / "marimba42.hex").write_text("".join(mode_lines), encoding="ascii")
+    (ROM / "marimba_attack42.hex").write_text("".join(attack_lines), encoding="ascii")
     report = {
-        "version": 3, "source": "University of Iowa MIS yarn mallet AIFF",
+        "version": 4, "source": "University of Iowa MIS yarn mallet AIFF",
         "sample_rate": 96000, "analysis_sample_rate": ANALYSIS_FS,
         "output_sample_rate": OUT_FS, "notes": [row["midi"] for row in rows],
         "tuning": "equal temperament A4=440 Hz; measured source modal ratios retained",
@@ -339,8 +341,9 @@ def main():
             "dynamics": CALIBRATION_DYNAMICS, "target": LOUDNESS_TARGET,
             "bass_boost": {
                 "maximum_db": BASS_BOOST_DB, "first_midi": NOTE_FIRST,
+                "plateau_end_midi": BASS_BOOST_START,
                 "end_midi": BASS_BOOST_END,
-                "curve": "raised cosine in semitone position; zero at and above C4",
+                "curve": "flat C2-B2; raised cosine B2-C4; zero at and above C4",
             },
             "method": "80 Hz highpass, +0.5 of 1500 Hz highpass, RMS of first 300 ms",
             "unit": "weighted PCM RMS proxy, not LUFS",
@@ -349,10 +352,10 @@ def main():
         "sources": sources, "rows": rows,
         "measured_by_dynamics": rows_by_dynamics,
     }
-    report["mode_rom_sha256"] = hashlib.sha256((ROM / "marimba31.hex").read_bytes()).hexdigest()
+    report["mode_rom_sha256"] = hashlib.sha256((ROM / "marimba42.hex").read_bytes()).hexdigest()
     (ROOT / "assets/marimba/fit_report.json").write_text(
         json.dumps(report, indent=2), encoding="ascii")
-    print("PASS: regenerated 31 measured, tuned, loudness-calibrated notes")
+    print("PASS: regenerated 42 measured, tuned, loudness-calibrated notes")
 
 
 if __name__ == "__main__":

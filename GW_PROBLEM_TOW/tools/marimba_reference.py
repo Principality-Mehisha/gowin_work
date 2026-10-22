@@ -12,11 +12,12 @@ def decode_modes(row: int) -> list[tuple[int, int, int]]:
              (row >> (i * 64)) & 65535) for i in range(4)]
 
 
-def render_note(modes, attack, sine, note_index, frames=16276, dynamics=192):
+def render_note(modes, attack, sine, note_index, frames=16276, dynamics=192,
+                note_first=47):
     phase = [0] * 4
     level = [mode[1] for mode in modes]
     noise_level, noise_step = attack >> 16, attack & 65535
-    lfsr = (0x1ace + note_index) & 65535
+    lfsr = (0x1ace + note_index + note_first - 47) & 65535
     bright = (dynamics >> 4) ** 2
     r1_y1 = r1_y2 = r2_y1 = r2_y2 = 0
     pcm = np.empty(frames, dtype=np.int32)

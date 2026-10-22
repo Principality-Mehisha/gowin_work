@@ -1,4 +1,8 @@
-# Tang Mega 60K SD 乐谱钢琴播放器
+# Tang Mega 60K 实时马林巴与钢琴乐谱播放器
+
+当前音域已扩展为 **C2–F5，共 42 音（MIDI 36–77）**，新增 C2–A♯2 共 11 音，使用项目内 Iowa 原始 PCM 逐音拟合。KEY1 从 C2 开始逐音试听，F5 后回到 C2；KEY2 复位后回到 C2。新增 C2–B2 保持 +3 dB 补偿平台，再沿用 B2–C4 的平滑回落曲线；原 B2–F5 的参数和逐样本音频不变。
+
+当前综合输入为 `src/rom/marimba42.hex` 与 `marimba_attack42.hex`；`marimba31.hex` 等旧文件只用于历史比较。最新试听为 `sim/marimba_C2_B2_realtime.wav`（低音区）、`sim/marimba_C2_C3_realtime.wav`（跨原边界）和 `sim/marimba_C2_F5_realtime.wav`（完整 42 音）。当前音频校验报告为 `sim/marimba42_report.json`，扩展说明见 [MARIMBA_LOW_EXTENSION.md](MARIMBA_LOW_EXTENSION.md)。下文 31 音记录为扩展前历史。
 
 当前开发核心为 **31 音实时马林巴**。2026-10-22 最新微调将低音补偿最大值从 +4 dB 降为 +3 dB，C4 以上参数和采样保持一致。最新试听为 `sim/marimba_B2_F5_bass_trim.wav`；低音削减校验、高音区音色分析及源 PCM/RTL 对照见 [MARIMBA_REGISTER_ANALYSIS.md](MARIMBA_REGISTER_ANALYSIS.md)，当前验证数据为 `sim/marimba_register_analysis/report.json`。下文及 `sim/marimba_corrected_report.json` 中的 +4 dB 数据属于此前版本。
 

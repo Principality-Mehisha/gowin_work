@@ -3,6 +3,7 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $relativeTargets = @(
     "work",
     "sim/work",
+    "sim/controls_work",
     "sim/work_score",
     "sim/bass_work",
     "sim/tone_work",

@@ -18,10 +18,10 @@ assert not re.search(r"\b(always|initial|assign|function|task)\b", top)
 assert len((root / "src/rom/sine256.hex").read_text().splitlines()) == 256
 assert len((root / "src/rom/frequency88.hex").read_text().splitlines()) == 88
 assert len((root / "src/rom/voicing88.hex").read_text().splitlines()) == 88
-marimba_table = (root / "src/rom/marimba31.hex").read_text().splitlines()
-attack_table = (root / "src/rom/marimba_attack31.hex").read_text().splitlines()
-assert len(marimba_table) == 31 and all(len(row) == 64 for row in marimba_table)
-assert len(attack_table) == 31 and all(len(row) == 8 for row in attack_table)
+marimba_table = (root / "src/rom/marimba42.hex").read_text().splitlines()
+attack_table = (root / "src/rom/marimba_attack42.hex").read_text().splitlines()
+assert len(marimba_table) == 42 and all(len(row) == 64 for row in marimba_table)
+assert len(attack_table) == 42 and all(len(row) == 8 for row in attack_table)
 for row in marimba_table:
     packed = int(row, 16)
     assert all(
@@ -64,7 +64,7 @@ assert not any(p.suffix.lower() in (".wav", ".mp3", ".pcm") for p in sources)
 assert "voicing88.hex" in text
 marimba = (root / "src/marimba_synth.v").read_text()
 assert marimba.count("$readmemh") == 3
-assert "marimba31.hex" in marimba and "marimba_attack31.hex" in marimba
+assert "marimba42.hex" in marimba and "marimba_attack42.hex" in marimba
 assert "sine256.hex" in marimba
 assert (root / "src/marimba_body_filter.v").exists()
 ringtone = (root / "src/ringtone_pcm_player.v").read_text()

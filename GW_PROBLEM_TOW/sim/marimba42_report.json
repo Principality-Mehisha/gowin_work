@@ -1,0 +1,393 @@
+{
+  "source": "ModelSim RTL, checked against independent integer model",
+  "mode_rom_sha256": "5e89ca3065e7a49cf1669985e79449d8e8be9252fdb97c1edb979f9571756f64",
+  "matched_samples": 683592,
+  "first_midi": 36,
+  "last_midi": 77,
+  "note_count": 42,
+  "unchanged_B2_F5_samples": 504556,
+  "max_adjacent_level_change_db": 0.36793214360847376,
+  "max_pitch_error_cents": 0.017060233016486518,
+  "max_target_error_db": 0.03546170920450529,
+  "peak_pcm": 7848,
+  "notes": [
+    {
+      "midi": 36,
+      "pitch_hz": 65.40640730926411,
+      "pitch_error_cents": 0.0004230815865171681,
+      "peak_pcm": 5396,
+      "weighted_rms": 1410.7943343122015,
+      "target_error_db": -0.01072586217045927,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 37,
+      "pitch_hz": 69.29564329026158,
+      "pitch_error_cents": -0.0003611075348343381,
+      "peak_pcm": 6504,
+      "weighted_rms": 1414.210433285802,
+      "target_error_db": 0.010280738229178509,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 38,
+      "pitch_hz": 73.41623107395445,
+      "pitch_error_cents": 0.0009218932125098738,
+      "peak_pcm": 7848,
+      "weighted_rms": 1413.2298227145013,
+      "target_error_db": 0.0042558713739621655,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 39,
+      "pitch_hz": 77.78178763410897,
+      "pitch_error_cents": 0.0009282210442398542,
+      "peak_pcm": 6747,
+      "weighted_rms": 1413.2784329361386,
+      "target_error_db": 0.004554630820087954,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 40,
+      "pitch_hz": 82.40689154242926,
+      "pitch_error_cents": 4.861780599076382e-05,
+      "peak_pcm": 6156,
+      "weighted_rms": 1409.5077971781768,
+      "target_error_db": -0.018650346722492765,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 41,
+      "pitch_hz": 87.30707799551956,
+      "pitch_error_cents": 0.00039930701921487904,
+      "peak_pcm": 6196,
+      "weighted_rms": 1414.3458590576915,
+      "target_error_db": 0.011112465222108367,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 42,
+      "pitch_hz": 92.49859767495282,
+      "pitch_error_cents": -0.0001497859350009576,
+      "peak_pcm": 5975,
+      "weighted_rms": 1415.8824715975213,
+      "target_error_db": 0.020544105845791236,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 43,
+      "pitch_hz": 97.9989178329667,
+      "pitch_error_cents": 0.001039415200176271,
+      "peak_pcm": 5312,
+      "weighted_rms": 1414.9190793147939,
+      "target_error_db": 0.014632056400785983,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 44,
+      "pitch_hz": 103.82620445355488,
+      "pitch_error_cents": 0.0005012070432507431,
+      "peak_pcm": 4259,
+      "weighted_rms": 1416.5669498955638,
+      "target_error_db": 0.024742100010886767,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 45,
+      "pitch_hz": 110.00005323581537,
+      "pitch_error_cents": 0.0008378512171255284,
+      "peak_pcm": 4272,
+      "weighted_rms": 1412.495633940724,
+      "target_error_db": -0.0002577184307511657,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 46,
+      "pitch_hz": 116.54097294342614,
+      "pitch_error_cents": 0.00048374185710670797,
+      "peak_pcm": 3730,
+      "weighted_rms": 1410.8016076556705,
+      "target_error_db": -0.01068108222324468,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 47,
+      "pitch_hz": 123.4708751866199,
+      "pitch_error_cents": 0.0006992834649520805,
+      "peak_pcm": 4326,
+      "weighted_rms": 1410.8946042424252,
+      "target_error_db": -0.010108548520888843,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 48,
+      "pitch_hz": 130.81277002876493,
+      "pitch_error_cents": -0.00016703895962908385,
+      "peak_pcm": 3802,
+      "weighted_rms": 1404.2711856530484,
+      "target_error_db": -0.007393033796670995,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 49,
+      "pitch_hz": 138.59138041281608,
+      "pitch_error_cents": 0.0008110123685928629,
+      "peak_pcm": 3650,
+      "weighted_rms": 1383.6599889699003,
+      "target_error_db": -0.0075963842695090066,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 50,
+      "pitch_hz": 146.83239405471042,
+      "pitch_error_cents": 0.00011903743130799387,
+      "peak_pcm": 3418,
+      "weighted_rms": 1350.2153546971326,
+      "target_error_db": -0.014705272392462297,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 51,
+      "pitch_hz": 155.56352007056736,
+      "pitch_error_cents": 0.0003139379843992357,
+      "peak_pcm": 3128,
+      "weighted_rms": 1307.921757171505,
+      "target_error_db": -0.0204618342925667,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 52,
+      "pitch_hz": 164.81387015991592,
+      "pitch_error_cents": 0.0009632698551659757,
+      "peak_pcm": 3413,
+      "weighted_rms": 1262.550180087615,
+      "target_error_db": -0.0069343669943151415,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 53,
+      "pitch_hz": 174.61425369359253,
+      "pitch_error_cents": 0.0013679910232867651,
+      "peak_pcm": 2897,
+      "weighted_rms": 1210.1857673089498,
+      "target_error_db": -0.023764200421968886,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 54,
+      "pitch_hz": 184.99733058669457,
+      "pitch_error_cents": 0.001115781619640145,
+      "peak_pcm": 2827,
+      "weighted_rms": 1161.1009564453375,
+      "target_error_db": -0.021795323502941347,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 55,
+      "pitch_hz": 195.9978760622191,
+      "pitch_error_cents": 0.001396232497725236,
+      "peak_pcm": 2778,
+      "weighted_rms": 1115.6883728799405,
+      "target_error_db": -0.01723452718579058,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 56,
+      "pitch_hz": 207.65234727466594,
+      "pitch_error_cents": -1.2633377110820067e-05,
+      "peak_pcm": 2629,
+      "weighted_rms": 1078.916799499951,
+      "target_error_db": 0.01185622856046336,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 57,
+      "pitch_hz": 220.00008718387943,
+      "pitch_error_cents": 0.0006860712302884384,
+      "peak_pcm": 2664,
+      "weighted_rms": 1040.24831205322,
+      "target_error_db": -0.034493482489641236,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 58,
+      "pitch_hz": 233.0819727211567,
+      "pitch_error_cents": 0.0006830557018304663,
+      "peak_pcm": 2466,
+      "weighted_rms": 1019.0647585548754,
+      "target_error_db": -0.007780301226554893,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 59,
+      "pitch_hz": 246.94173931213774,
+      "pitch_error_cents": 0.000621737416472346,
+      "peak_pcm": 2506,
+      "weighted_rms": 1000.9359279099403,
+      "target_error_db": -0.03546170920450529,
+      "enabled_modes": 4
+    },
+    {
+      "midi": 60,
+      "pitch_hz": 261.625054719308,
+      "pitch_error_cents": -0.0033786322701313595,
+      "peak_pcm": 2674,
+      "weighted_rms": 997.6898524104887,
+      "target_error_db": -0.020088900116735482,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 61,
+      "pitch_hz": 277.18244878549564,
+      "pitch_error_cents": -0.0011379357244499573,
+      "peak_pcm": 2590,
+      "weighted_rms": 1004.0621677905042,
+      "target_error_db": 0.03521207077180505,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 62,
+      "pitch_hz": 293.6639016787699,
+      "pitch_error_cents": -0.005106720995566377,
+      "peak_pcm": 2688,
+      "weighted_rms": 997.8518121544822,
+      "target_error_db": -0.01867899273148128,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 63,
+      "pitch_hz": 311.1262755656592,
+      "pitch_error_cents": -0.003940467939642521,
+      "peak_pcm": 2525,
+      "weighted_rms": 997.1141864239507,
+      "target_error_db": -0.025102095667695418,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 64,
+      "pitch_hz": 329.62635458027336,
+      "pitch_error_cents": -0.006314772178583577,
+      "peak_pcm": 2683,
+      "weighted_rms": 999.5836679969103,
+      "target_error_db": -0.0036169668134062504,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 65,
+      "pitch_hz": 349.22694667222873,
+      "pitch_error_cents": -0.006368974469866503,
+      "peak_pcm": 2656,
+      "weighted_rms": 997.4762002237554,
+      "target_error_db": -0.02194915562733822,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 66,
+      "pitch_hz": 369.9930573424759,
+      "pitch_error_cents": -0.006388685323794951,
+      "peak_pcm": 2421,
+      "weighted_rms": 997.8471823501382,
+      "target_error_db": -0.018719293367689155,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 67,
+      "pitch_hz": 391.99283503844856,
+      "pitch_error_cents": -0.01148701267187682,
+      "peak_pcm": 2707,
+      "weighted_rms": 1003.8412842872731,
+      "target_error_db": 0.03330105285140787,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 68,
+      "pitch_hz": 415.3020012482264,
+      "pitch_error_cents": -0.011239931692398238,
+      "peak_pcm": 2736,
+      "weighted_rms": 999.199980768774,
+      "target_error_db": -0.0069516598524652536,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 69,
+      "pitch_hz": 439.99566409547833,
+      "pitch_error_cents": -0.017060233016486518,
+      "peak_pcm": 3235,
+      "weighted_rms": 999.5767417383756,
+      "target_error_db": -0.0036771527964264126,
+      "enabled_modes": 1
+    },
+    {
+      "midi": 70,
+      "pitch_hz": 466.1617820654262,
+      "pitch_error_cents": -0.0073512859827136005,
+      "peak_pcm": 3117,
+      "weighted_rms": 999.6530484555925,
+      "target_error_db": -0.003014105729038749,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 71,
+      "pitch_hz": 493.8813238679049,
+      "pitch_error_cents": -0.00693145254704578,
+      "peak_pcm": 3590,
+      "weighted_rms": 1001.6342444337923,
+      "target_error_db": 0.014183280474052982,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 72,
+      "pitch_hz": 523.248856385688,
+      "pitch_error_cents": -0.007524509074954919,
+      "peak_pcm": 3837,
+      "weighted_rms": 1000.9238158391353,
+      "target_error_db": 0.008020458281576215,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 73,
+      "pitch_hz": 554.3637672853878,
+      "pitch_error_cents": -0.004667724362632622,
+      "peak_pcm": 3950,
+      "weighted_rms": 1000.5921709442016,
+      "target_error_db": 0.0051420091442152885,
+      "enabled_modes": 3
+    },
+    {
+      "midi": 74,
+      "pitch_hz": 587.328417796971,
+      "pitch_error_cents": -0.00329557243085672,
+      "peak_pcm": 4325,
+      "weighted_rms": 1000.6355280209425,
+      "target_error_db": 0.005518372897179401,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 75,
+      "pitch_hz": 622.253351294503,
+      "pitch_error_cents": -0.0017142514996333392,
+      "peak_pcm": 4299,
+      "weighted_rms": 999.9656338428206,
+      "target_error_db": -0.00029850577782266626,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 76,
+      "pitch_hz": 659.2548840607155,
+      "pitch_error_cents": -0.0006033735565694403,
+      "peak_pcm": 4691,
+      "weighted_rms": 998.0392779190626,
+      "target_error_db": -0.017047333614461837,
+      "enabled_modes": 2
+    },
+    {
+      "midi": 77,
+      "pitch_hz": 698.4557843167514,
+      "pitch_error_cents": -0.0016818917278031084,
+      "peak_pcm": 4506,
+      "weighted_rms": 997.9184674146547,
+      "target_error_db": -0.018098805482681477,
+      "enabled_modes": 2
+    }
+  ]
+}

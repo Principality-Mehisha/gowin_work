@@ -1,0 +1,60 @@
+# vsim -c -voptargs="+acc" -lib sim/work tb_marimba_wav -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_marimba_wav/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_marimba42_wav.log 
+# Start time: 23:30:46 on Oct 22,2026
+# Loading sv_std.std
+# Loading sim/work.tb_marimba_wav
+# Loading sim/work.marimba_synth
+# Loading sim/work.marimba_body_filter
+# Loading sim/work.output_limiter
+# onfinish stop
+#  run -all
+# Rendered note 36 / 77
+# Rendered note 37 / 77
+# Rendered note 38 / 77
+# Rendered note 39 / 77
+# Rendered note 40 / 77
+# Rendered note 41 / 77
+# Rendered note 42 / 77
+# Rendered note 43 / 77
+# Rendered note 44 / 77
+# Rendered note 45 / 77
+# Rendered note 46 / 77
+# Rendered note 47 / 77
+# Rendered note 48 / 77
+# Rendered note 49 / 77
+# Rendered note 50 / 77
+# Rendered note 51 / 77
+# Rendered note 52 / 77
+# Rendered note 53 / 77
+# Rendered note 54 / 77
+# Rendered note 55 / 77
+# Rendered note 56 / 77
+# Rendered note 57 / 77
+# Rendered note 58 / 77
+# Rendered note 59 / 77
+# Rendered note 60 / 77
+# Rendered note 61 / 77
+# Rendered note 62 / 77
+# Rendered note 63 / 77
+# Rendered note 64 / 77
+# Rendered note 65 / 77
+# Rendered note 66 / 77
+# Rendered note 67 / 77
+# Rendered note 68 / 77
+# Rendered note 69 / 77
+# Rendered note 70 / 77
+# Rendered note 71 / 77
+# Rendered note 72 / 77
+# Rendered note 73 / 77
+# Rendered note 74 / 77
+# Rendered note 75 / 77
+# Rendered note 76 / 77
+# Rendered note 77 / 77
+# PASS: 42 notes, 683592 RTL PCM frames
+# ** Note: $finish    : sim/tb_marimba_wav.sv(48)
+#    Time: 6051102400 ns  Iteration: 1  Instance: /tb_marimba_wav
+# Break in Module tb_marimba_wav at sim/tb_marimba_wav.sv line 48
+# Stopped at sim/tb_marimba_wav.sv line 48
+#  if {[examine -radix unsigned /tb_marimba_wav/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 23:40:19 on Oct 22,2026, Elapsed time: 0:09:33
+# Errors: 0, Warnings: 0

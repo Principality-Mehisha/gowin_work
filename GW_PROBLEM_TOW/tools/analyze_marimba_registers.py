@@ -10,13 +10,13 @@ import math
 from pathlib import Path
 import wave
 
-from fit_marimba_params import ANALYSIS_FS, loudness_metric, read_aiff
+from fit_marimba_params import ANALYSIS_FS, NOTE_FIRST, NOTE_LAST, loudness_metric, read_aiff
 import numpy as np
 from scipy import signal
 from marimba_reference import OUT_FS, decode_modes, render_note
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'sim/marimba_register_analysis'
+OUT = ROOT / 'sim/marimba_register_analysis42'
 
 
 def db(ratio):
@@ -50,35 +50,38 @@ def main():
     fit = json.loads((ROOT / 'assets/marimba/fit_report.json').read_text())
     baseline = ROOT / 'sim/marimba_before_bass_trim'
     before = json.loads((baseline / 'fit_report.json').read_text())
-    words = [int(x, 16) for x in (ROOT / 'src/rom/marimba31.hex').read_text().split()]
+    words = [int(x, 16) for x in (ROOT / 'src/rom/marimba42.hex').read_text().split()]
     attacks = [int(x, 16) for x in
-               (ROOT / 'src/rom/marimba_attack31.hex').read_text().split()]
+               (ROOT / 'src/rom/marimba_attack42.hex').read_text().split()]
     old_words = [int(x, 16) for x in (baseline / 'marimba31.hex').read_text().split()]
     old_attacks = [int(x, 16) for x in
                    (baseline / 'marimba_attack31.hex').read_text().split()]
     sine = [int(x, 16) for x in (ROOT / 'src/rom/sine256.hex').read_text().split()]
     sine = [x - 65536 if x >= 32768 else x for x in sine]
     rtl = np.loadtxt(ROOT / 'sim/marimba_scale_pcm.txt', dtype=np.int32)
-    assert rtl.shape == (31 * 16276, 3)
+    assert rtl.shape == ((NOTE_LAST - NOTE_FIRST + 1) * 16276, 3)
     cache, results, comparisons = {}, [], []
     for index, row in enumerate(fit['rows']):
         midi = row['midi']
         block = rtl[index * 16276:(index + 1) * 16276]
         assert np.all(block[:, 0] == midi)
         assert np.array_equal(block[:, 1], np.arange(16276))
-        audio = render_note(decode_modes(words[index]), attacks[index], sine, index)
+        audio = render_note(decode_modes(words[index]), attacks[index], sine, index, note_first=NOTE_FIRST)
         assert np.array_equal(audio, block[:, 2]), ('RTL mismatch', midi)
         assert 0 < np.max(abs(audio)) < 12000
-        previous = render_note(decode_modes(old_words[index]), old_attacks[index], sine, index)
-        change = db(loudness_metric(audio) / loudness_metric(previous))
-        target_change = (row['calibration']['bass_boost_db'] -
-                         before['rows'][index]['calibration']['bass_boost_db'])
-        assert abs(change - target_change) < .12, (midi, change, target_change)
-        for old, new in zip(decode_modes(old_words[index]), decode_modes(words[index])):
-            assert old[0] == new[0] and old[2] == new[2], ('pitch/decay changed', midi)
-        if midi >= 60:
-            assert words[index] == old_words[index] and attacks[index] == old_attacks[index]
-            assert np.array_equal(audio, previous), ('C4+ changed', midi)
+        change = None
+        if midi >= 47:
+            old_index = midi - 47
+            previous = render_note(decode_modes(old_words[old_index]), old_attacks[old_index], sine, old_index)
+            change = db(loudness_metric(audio) / loudness_metric(previous))
+            target_change = (row['calibration']['bass_boost_db'] -
+                             before['rows'][old_index]['calibration']['bass_boost_db'])
+            assert abs(change - target_change) < .12, (midi, change, target_change)
+            for old, new in zip(decode_modes(old_words[old_index]), decode_modes(words[index])):
+                assert old[0] == new[0] and old[2] == new[2], ('pitch/decay changed', midi)
+            if midi >= 60:
+                assert words[index] == old_words[old_index] and attacks[index] == old_attacks[old_index]
+                assert np.array_equal(audio, previous), ('C4+ changed', midi)
         path = row['source_file']
         if path not in cache:
             source, rate = read_aiff(ROOT / path)
@@ -109,7 +112,7 @@ def main():
         spectrum = abs(np.fft.rfft(part * np.hanning(len(part)), n=65536)) ** 2
         frequency = np.fft.rfftfreq(65536, 1 / ANALYSIS_FS)
         f0 = row['source_fundamental']
-        valid = (frequency >= 80) & (frequency < OUT_FS / 2)
+        valid = (frequency >= 40) & (frequency < OUT_FS / 2)
         outside = valid & (abs(frequency - f0) > max(35, f0 * .08))
         source_nonfundamental = float(spectrum[outside].sum() / spectrum[valid].sum())
         results.append({
@@ -132,7 +135,7 @@ def main():
             },
             'modes': mode_metrics,
         })
-        if midi in (47, 60, 69, 72, 77):
+        if midi in (36, 47, 60, 69, 72, 77):
             resampled = signal.resample_poly(source, 15625, 23040)[:16276]
             resampled *= loudness_metric(audio) / loudness_metric(resampled)
             for name, sound in (('source', resampled), ('rtl', audio)):
@@ -140,12 +143,12 @@ def main():
                 preview[-163:] *= np.linspace(1, 0, 163)
                 write_wav(OUT / f'{midi}_{name}.wav', preview)
                 comparisons.extend((preview, np.zeros(round(.15 * OUT_FS))))
-        print(midi, 'trim dB', round(change, 3), 'modes', results[-1]['enabled_modes'],
+        print(midi, 'trim dB', None if change is None else round(change, 3), 'modes', results[-1]['enabled_modes'],
               'source/RTL tail dB', round(results[-1]['source_tail_to_attack_db'], 2),
               round(results[-1]['rtl_tail_to_attack_db'], 2), flush=True)
-    write_wav(OUT / 'source_then_rtl_B2_C4_A4_C5_F5.wav', np.concatenate(comparisons))
+    write_wav(OUT / 'source_then_rtl_C2_B2_C4_A4_C5_F5.wav', np.concatenate(comparisons))
     report = {
-        'rom_sha256': hashlib.sha256((ROOT / 'src/rom/marimba31.hex').read_bytes()).hexdigest(),
+        'rom_sha256': hashlib.sha256((ROOT / 'src/rom/marimba42.hex').read_bytes()).hexdigest(),
         'matched_rtl_samples': len(rtl), 'unchanged_C4_and_above': True,
         'scope': 'mf source left channel; source onsets and modal identities from fitter',
         'preview': 'Each selected note: source then RTL; source gain matched to RTL 300 ms weighted RMS, no synth normalization',
@@ -153,7 +156,7 @@ def main():
         'notes': results,
     }
     (OUT / 'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
-    print('PASS: 504556 exact RTL samples; bass trim; pitch/decay preserved; C4+ unchanged')
+    print(f'PASS: {len(rtl)} exact RTL samples; C2-F5 analysis; C4+ unchanged')
 
 
 if __name__ == '__main__':

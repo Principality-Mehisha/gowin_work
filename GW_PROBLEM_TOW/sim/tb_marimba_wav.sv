@@ -3,7 +3,7 @@ module tb_marimba_wav;
     reg clk=0;
     always #10 clk=~clk;
     reg reset_n=0, sample_tick=0, stop_all=0, event_valid=0;
-    reg [6:0] note=47;
+    reg [6:0] note=36;
     wire ready, valid, deadline, saturated;
     wire signed [15:0] pcm;
     integer fd, frame, note_number, cycles;
@@ -20,7 +20,7 @@ module tb_marimba_wav;
         if (!fd) $fatal(1,"Cannot open audio output");
         repeat(4) @(negedge clk);
         reset_n=1;
-        for(note_number=47; note_number<=77; note_number=note_number+1) begin
+        for(note_number=36; note_number<=77; note_number=note_number+1) begin
             @(negedge clk); stop_all=1;
             repeat(4) @(negedge clk);
             stop_all=0;
@@ -44,7 +44,7 @@ module tb_marimba_wav;
         end
         $fclose(fd);
         passed=1;
-        $display("PASS: 31 notes, 504556 RTL PCM frames");
+        $display("PASS: 42 notes, 683592 RTL PCM frames");
         $finish;
     end
     initial begin #(64'd20_000_000_000); $fatal(1,"Audio render timeout"); end

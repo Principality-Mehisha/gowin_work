@@ -1,8 +1,10 @@
-// Four-mode, 24-note modal marimba using tabled frequencies and live DDS.
-// Note indices 24..47 map to A2..G#4; note-off does not stop a strike.
+// PCM-fitted 31-note modal marimba with velocity-sensitive modes, a short
+// mallet transient and a separate body/tube resonator.
+// Note indices 47..77 map to the fitted B2..F5 range.
 module marimba_synth #(
     parameter SINE_FILE = "src/rom/sine256.hex",
-    parameter MODE_FILE = "src/rom/marimba24.hex"
+    parameter MODE_FILE = "src/rom/marimba31.hex",
+    parameter ATTACK_FILE = "src/rom/marimba_attack31.hex"
 ) (
     input wire clk, reset_n, sample_tick, stop_all,
     input wire event_valid, event_on,
@@ -15,35 +17,40 @@ module marimba_synth #(
     output wire pcm_valid, limiting, saturated,
     output reg deadline_error
 );
-    localparam NOTE_FIRST = 7'd24;
-    localparam NOTE_COUNT = 24;
+    localparam NOTE_FIRST = 7'd47;
+    localparam NOTE_COUNT = 31;
     localparam IDLE=0, NOTE_START=1, MODE_LOAD=2, SINE_READ=3,
                INTERP_MUL=4, INTERP_USE=5, AMP_MUL=6, AMP_USE=7,
                DYN_MUL=8, DYN_USE=9, DECAY_MUL=10, DECAY_USE=11,
-               MODE_COMMIT=12, ADVANCE=13;
+               MODE_COMMIT=12, NOISE_LOAD=13, NOISE_MUL=14,
+               NOISE_USE=15, NOISE_DYN=16, NOISE_DYN_USE=17,
+               NOISE_COMMIT=18, ADVANCE=19;
 
-    reg [3:0] state;
+    reg [4:0] state;
     reg [4:0] note_index;
     reg [1:0] mode_index;
-    reg [23:0] pending;
-    reg [7:0] dynamics_by_note [0:23];
-    reg active_mode_cell [0:95];
-    wire [95:0] active_modes;
-    reg [31:0] phase_ram [0:95];
-    reg [15:0] level_ram [0:95];
-    reg [255:0] mode_rom [0:23];
+    reg [30:0] pending, active_noise;
+    reg [123:0] active_modes;
+    reg [7:0] dynamics_by_note [0:30] /* synthesis syn_ramstyle="registers" */;
+    reg [31:0] phase_ram [0:123] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] level_ram [0:123] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] noise_level_ram [0:30] /* synthesis syn_ramstyle="registers" */;
+    reg [15:0] noise_lfsr_ram [0:30] /* synthesis syn_ramstyle="registers" */;
+    reg [255:0] mode_rom [0:30];
+    reg [31:0] attack_rom [0:30];
     reg signed [15:0] sine_rom [0:255];
     reg [255:0] mode_row;
-    reg [31:0] mode_step;
+    reg [31:0] attack_row;
+    reg [31:0] mode_step, mode_phase;
     reg [15:0] mode_decay, mode_level;
-    reg [31:0] mode_phase;
+    reg [15:0] noise_level, noise_step, noise_lfsr;
     reg [7:0] note_dynamics;
     reg trigger_note;
     reg signed [15:0] sine_value, sine_next;
     reg [7:0] phase_fraction;
     reg signed [16:0] interpolated_sample;
-    reg signed [31:0] amp_sample, scaled_sample;
-    reg [15:0] next_level;
+    reg signed [31:0] amp_sample, scaled_sample, noise_amp, noise_sample;
+    reg [15:0] next_level, next_noise_level;
     reg signed [31:0] mix_accum;
     reg signed [31:0] mult_a;
     reg signed [15:0] mult_b;
@@ -53,11 +60,18 @@ module marimba_synth #(
     wire [63:0] selected_mode = select_mode(mode_row, mode_index);
     wire [31:0] stored_phase = phase_ram[mode_address];
     wire [15:0] stored_level = level_ram[mode_address];
+    wire [15:0] stored_noise_level = noise_level_ram[note_index];
+    wire [15:0] stored_noise_lfsr = noise_lfsr_ram[note_index];
     wire signed [16:0] sine_delta =
         $signed({sine_next[15], sine_next}) -
         $signed({sine_value[15], sine_value});
-    wire [7:0] next_sine_address = phase_fraction[7:0];
-    wire signed [31:0] scaled_mode_sample = scaled_sample;
+    wire [7:0] bright_dynamics =
+        {4'd0, note_dynamics[7:4]} *
+        {4'd0, note_dynamics[7:4]};
+    wire signed [8:0] noise_centered =
+        $signed({1'b0, noise_lfsr[7:0]}) - 9'sd128;
+    wire signed [31:0] filtered_sample;
+    wire filtered_valid;
 
     function [63:0] select_mode;
         input [255:0] row;
@@ -72,32 +86,22 @@ module marimba_synth #(
         end
     endfunction
 
-    genvar state_index;
+    function [15:0] next_lfsr;
+        input [15:0] current;
+        reg feedback;
+        begin
+            feedback = current[15] ^ current[13] ^
+                       current[12] ^ current[10];
+            next_lfsr = {current[14:0], feedback};
+            if (next_lfsr == 0) next_lfsr = 16'h1ace;
+        end
+    endfunction
+
     initial begin
         $readmemh(SINE_FILE, sine_rom);
         $readmemh(MODE_FILE, mode_rom);
+        $readmemh(ATTACK_FILE, attack_rom);
     end
-
-    generate
-        for (state_index=0; state_index<96; state_index=state_index+1) begin: modal_state
-            assign active_modes[state_index] = active_mode_cell[state_index];
-            always @(posedge clk) begin
-                if (state==MODE_COMMIT && mode_address==state_index[6:0]) begin
-                    phase_ram[state_index] <= mode_phase + mode_step;
-                    level_ram[state_index] <= next_level;
-                end
-            end
-            always @(posedge clk or negedge reset_n) begin
-                if (!reset_n)
-                    active_mode_cell[state_index] <= 0;
-                else if (stop_all)
-                    active_mode_cell[state_index] <= 0;
-                else if (state==MODE_COMMIT &&
-                         mode_address==state_index[6:0])
-                    active_mode_cell[state_index] <= next_level != 0;
-            end
-        end
-    endgenerate
 
     always @* begin
         mult_a = 0;
@@ -113,11 +117,20 @@ module marimba_synth #(
             end
             DYN_MUL: begin
                 mult_a = amp_sample;
-                mult_b = $signed({8'd0, note_dynamics});
+                mult_b = $signed({8'd0, mode_index == 0 ?
+                                  note_dynamics : bright_dynamics});
             end
             DECAY_MUL: begin
                 mult_a = $signed({16'd0, mode_level});
                 mult_b = $signed({1'b0, mode_decay[14:0]});
+            end
+            NOISE_MUL: begin
+                mult_a = noise_centered;
+                mult_b = $signed({1'b0, noise_level[14:0]});
+            end
+            NOISE_DYN: begin
+                mult_a = noise_amp;
+                mult_b = $signed({8'd0, bright_dynamics});
             end
             default: begin
                 mult_a = 0;
@@ -126,7 +139,7 @@ module marimba_synth #(
         endcase
     end
 
-    assign event_ready = reset_n && !stop_all && (state == IDLE);
+    assign event_ready = reset_n && !stop_all && state == IDLE;
 
     always @(posedge clk) begin
         if (state == SINE_READ) begin
@@ -135,48 +148,42 @@ module marimba_synth #(
             phase_fraction <= mode_phase[23:16];
         end
         if (state == INTERP_MUL || state == AMP_MUL ||
-            state == DYN_MUL || state == DECAY_MUL)
+            state == DYN_MUL || state == DECAY_MUL ||
+            state == NOISE_MUL || state == NOISE_DYN)
             mult_product <= mult_result;
     end
 
-    output_limiter limiter (
+    marimba_body_filter body_filter (
         .clk(clk), .reset_n(reset_n), .clear(stop_all),
         .in_valid(mix_valid), .in_sample(mix_sample),
+        .out_valid(filtered_valid), .out_sample(filtered_sample)
+    );
+
+    output_limiter limiter (
+        .clk(clk), .reset_n(reset_n), .clear(stop_all),
+        .in_valid(filtered_valid), .in_sample(filtered_sample),
         .out_valid(pcm_valid), .out_sample(pcm),
         .limiting(limiting), .saturated(saturated)
     );
 
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
-            state <= IDLE;
-            note_index <= 0;
-            mode_index <= 0;
-            pending <= 0;
-            trigger_note <= 0;
-            mode_step <= 0;
-            mode_decay <= 0;
-            mode_level <= 0;
-            mode_phase <= 0;
-            note_dynamics <= 0;
-            interpolated_sample <= 0;
-            amp_sample <= 0;
-            scaled_sample <= 0;
-            next_level <= 0;
-            mix_accum <= 0;
-            mix_sample <= 0;
-            mix_valid <= 0;
-            deadline_error <= 0;
+            state <= IDLE; note_index <= 0; mode_index <= 0;
+            pending <= 0; active_modes <= 0; active_noise <= 0;
+            mode_step <= 0; mode_decay <= 0; mode_level <= 0; mode_phase <= 0;
+            noise_level <= 0; noise_step <= 0; noise_lfsr <= 16'h1ace;
+            note_dynamics <= 0; trigger_note <= 0;
+            interpolated_sample <= 0; amp_sample <= 0; scaled_sample <= 0;
+            noise_amp <= 0; noise_sample <= 0;
+            next_level <= 0; next_noise_level <= 0; mix_accum <= 0;
+            mix_sample <= 0; mix_valid <= 0; deadline_error <= 0;
         end else if (stop_all) begin
-            state <= IDLE;
-            pending <= 0;
-            trigger_note <= 0;
-            mix_accum <= 0;
-            mix_sample <= 0;
-            mix_valid <= 0;
+            state <= IDLE; pending <= 0;
+            active_modes <= 0; active_noise <= 0;
+            mix_accum <= 0; mix_sample <= 0; mix_valid <= 0;
         end else begin
             mix_valid <= 0;
-            if (sample_tick && state != IDLE)
-                deadline_error <= 1;
+            if (sample_tick && state != IDLE) deadline_error <= 1;
             if (event_valid && event_ready && event_on &&
                 event_note >= NOTE_FIRST &&
                 event_note < NOTE_FIRST + NOTE_COUNT) begin
@@ -185,22 +192,20 @@ module marimba_synth #(
             end
             case (state)
                 IDLE: if (sample_tick) begin
-                    note_index <= 0;
-                    mode_index <= 0;
-                    mix_accum <= 0;
-                    state <= NOTE_START;
+                    note_index <= 0; mode_index <= 0;
+                    mix_accum <= 0; state <= NOTE_START;
                 end
                 NOTE_START: begin
                     mode_row <= mode_rom[note_index];
+                    attack_row <= attack_rom[note_index];
                     trigger_note <= pending[note_index];
                     pending[note_index] <= 0;
                     note_dynamics <= dynamics_by_note[note_index];
-                    mode_index <= 0;
-                    state <= MODE_LOAD;
+                    mode_index <= 0; state <= MODE_LOAD;
                 end
                 MODE_LOAD: begin
                     if (!trigger_note && !active_modes[mode_address])
-                        state <= ADVANCE;
+                        state <= mode_index == 3 ? NOISE_LOAD : ADVANCE;
                     else begin
                         mode_step <= selected_mode[63:32];
                         mode_decay <= selected_mode[15:0];
@@ -234,28 +239,58 @@ module marimba_synth #(
                     state <= MODE_COMMIT;
                 end
                 MODE_COMMIT: begin
-                    if (note_index == NOTE_COUNT-1 && mode_index == 3) begin
-                        mix_sample <= mix_accum + scaled_mode_sample;
-                        mix_valid <= 1;
-                        state <= IDLE;
-                    end else begin
-                        mix_accum <= mix_accum + scaled_mode_sample;
-                        state <= ADVANCE;
-                    end
-                end
-                ADVANCE: begin
-                    if (mode_index == 3) begin
-                        if (note_index == NOTE_COUNT-1) begin
-                            mix_sample <= mix_accum;
-                            mix_valid <= 1;
-                            state <= IDLE;
-                        end else begin
-                            note_index <= note_index + 1'b1;
-                            state <= NOTE_START;
-                        end
-                    end else begin
+                    phase_ram[mode_address] <= mode_phase + mode_step;
+                    level_ram[mode_address] <= next_level;
+                    active_modes[mode_address] <= next_level != 0;
+                    mix_accum <= mix_accum + scaled_sample;
+                    if (mode_index == 3) state <= NOISE_LOAD;
+                    else begin
                         mode_index <= mode_index + 1'b1;
                         state <= MODE_LOAD;
+                    end
+                end
+                NOISE_LOAD: begin
+                    if (!trigger_note && !active_noise[note_index])
+                        state <= ADVANCE;
+                    else begin
+                        noise_level <= trigger_note ? attack_row[31:16] :
+                                       stored_noise_level;
+                        noise_step <= attack_row[15:0];
+                        noise_lfsr <= trigger_note ?
+                            (16'h1ace + {12'd0, note_index}) :
+                            stored_noise_lfsr;
+                        state <= NOISE_MUL;
+                    end
+                end
+                NOISE_MUL: state <= NOISE_USE;
+                NOISE_USE: begin
+                    noise_amp <= $signed(mult_product >>> 7);
+                    state <= NOISE_DYN;
+                end
+                NOISE_DYN: state <= NOISE_DYN_USE;
+                NOISE_DYN_USE: begin
+                    noise_sample <= $signed(mult_product >>> 8);
+                    next_noise_level <= noise_level <= noise_step ?
+                                        16'd0 : noise_level - noise_step;
+                    state <= NOISE_COMMIT;
+                end
+                NOISE_COMMIT: begin
+                    noise_level_ram[note_index] <= next_noise_level;
+                    noise_lfsr_ram[note_index] <= next_lfsr(noise_lfsr);
+                    active_noise[note_index] <= next_noise_level != 0;
+                    mix_accum <= mix_accum + noise_sample;
+                    state <= ADVANCE;
+                end
+                ADVANCE: begin
+                    if (mode_index != 3) begin
+                        mode_index <= mode_index + 1'b1;
+                        state <= MODE_LOAD;
+                    end else if (note_index == NOTE_COUNT-1) begin
+                        mix_sample <= mix_accum;
+                        mix_valid <= 1; state <= IDLE;
+                    end else begin
+                        note_index <= note_index + 1'b1;
+                        state <= NOTE_START;
                     end
                 end
                 default: state <= IDLE;

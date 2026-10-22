@@ -1,7 +1,7 @@
 # Tang Mega 60K SD 乐谱钢琴播放器
 
 工程：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`。
-工程提供可选的 SD 卡 FAT16/FAT32 乐谱播放路径和默认逐音试听路径。默认 `SD_SCORE_ENABLE=0`，不访问 SD 卡；DDS 实时生成 PCM 样本并输出到 PT8211。旧的 PCM 采样链路已从工程源文件中移除。
+工程提供可选的 SD 卡 FAT16/FAT32 乐谱播放路径、默认马林巴逐音试听路径，以及一个用于听感对比的 PCM 铃声实验。默认 `SD_SCORE_ENABLE=0`，不访问 SD 卡；马林巴由 DDS 实时生成并输出到 PT8211。KEY0 播放/停止实验性立体声 PCM 铃声，KEY1 触发默认马林巴音符。
 
 ## 架构速览
 
@@ -18,7 +18,7 @@ SD 卡 -> SPI -> FAT16/FAT32 -> P88S 解码 -> 事件 FIFO/调度 ─┐
 | 时钟与复位 | `piano_score_player.v` | 直接使用板载 50 MHz `sys_clk`，上电复位和 KEY2 异步复位、同步释放 |
 | SD 与乐谱 | `sd_spi_byte.v`, `sd_spi_reader.v`, `fat_file_reader.v`, `piano_score_reader.v`, `piano_score_sequencer.v` | SPI 扇区读取、FAT 文件定位、P88S 校验与定时调度 |
 | 演奏输入 | `button_debounce.v`, `key_control.v`, `dynamics_fixed.v` | 按键同步/去抖、逐音试听；`dynamics_fixed` 是后续压力输入的替换接口，需保留 |
-| 音频链 | `piano_synth.v`, `adsr_step.v`, `output_limiter.v`, `pt8211_score_tx.v` | DDS 复音合成、包络、峰值限制与 PT8211 串行输出 |
+| 音频链 | `piano_synth.v`, `marimba_synth.v`, `ringtone_pcm_player.v`, `adsr_step.v`, `output_limiter.v`, `pt8211_score_tx.v` | 实时合成、实验性 PCM/IMA 解码、包络、峰值限制与 PT8211 串行输出 |
 
 `src/rom/` 中的 HEX 文件是合成输入；`sd_card/PIANO.BIN` 是示例乐谱。`sim/` 保存测试平台、运行脚本和可复查的仿真证据；`output/score_test/` 是乐谱/FAT 测试夹具。ModelSim 编译库、临时波形和 Python 缓存均为可再生成文件，不属于工程输入。
 
@@ -36,9 +36,15 @@ powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter
 
 该脚本只在目标文件缺失或内容一致时直接写入；若卡上已有不同的 `PIANO.BIN`，必须额外指定 `-Replace`，旧文件会先备份到 `output/sd_backup`。目前检测到的 H: 卡根目录没有 `PIANO.BIN`，所以需要先运行该命令，播放器才有乐谱可读。
 
-默认配置禁用 SD 乐谱读取，启动后进入逐音试听。参数 `SD_SCORE_ENABLE=1` 可在工程配置中显式启用 SD 乐谱路径。KEY0 在钢琴与马林巴之间切换；KEY1 每按一次触发当前音色的下一个音符，并释放前一个逐音；KEY2 是低有效复位，复位后恢复钢琴并从 A0 开始。默认模式下 SD SPI 控制器保持复位，不会初始化或读取卡片。
+默认配置禁用 SD 乐谱读取，启动后默认进入马林巴逐音试听。参数 `SD_SCORE_ENABLE=1` 可显式启用 SD 乐谱路径，SD 模式仍使用钢琴音源。KEY0 每按一次播放/停止经典 Marimba PCM 参考铃声；PCM 播放期间 KEY1 不触发合成音。手动模式下 KEY1 在停止 PCM 后触发下一个马林巴音符；KEY2 是低有效复位，复位后回到默认马林巴试听。SD SPI 控制器在默认模式下保持复位。
 
-钢琴使用 88 键 DDS 与 ADSR。马林巴是独立的四模态阻尼振荡器：`src/rom/marimba24.hex` 查出 A2–G#4 共 24 个音符的模态步进、起振权重和衰减系数，频率比例为基频、4.0198、10.7185 和 18.0697 倍；第四模态权重很低并快速衰减，避免固定高频模态在不同音符上形成持续的嘶声。`sine256.hex` 提供正弦查表，FPGA 实时插值、叠加并衰减模态。note-on 设置四个模态的初始状态，力度控制激励幅度；note-off 不截断敲击尾音。没有读取敲击录音或使用钢琴的 ADSR/谐波配置。手动试听在马林巴模式循环 A2–G#4；SD 乐谱保持原音高，音符不在该范围时马林巴不发声。
+钢琴使用 88 键 DDS 与 ADSR。马林巴为独立的 31 音参数合成器，手动音域 B2–F5，事件号直接使用 MIDI 47–77。这个手动事件编号与钢琴的 A0 起始索引不同，不能混用。`assets/marimba/source/` 保存 University of Iowa MIS 的 96 kHz、24 位、双声道 yarn mallet pp/mf/ff 源 AIFF。`tools/fit_marimba_params.py` 解码文件实际采样率，按音高验证逐音起音，独立测量三种力度；当前 ROM 使用一套连贯的 mf 模态，并保留实测频率比例，将基音校准为 A4=440 Hz 的十二平均律。
+
+每音最多四个模态，加短槌击噪声和独立琴体滤波。源录音按秒拟合衰减，再换算到输出采样率，生成 `src/rom/marimba31.hex` 和 `marimba_attack31.hex`。弱到无法可靠拟合及超过奈奎斯特频率的模态关闭。音量在完整整数合成、噪声、琴体和限幅链之后逐音校准。低音补偿在 B2 取 +4 dB，沿半音位置按余弦曲线平滑降至 C4 的 0 dB，C4 及以上保持原参数；补偿幅度可在 `tools/fit_marimba_params.py` 的 `BASS_BOOST_DB` 调整。校准指标为固定力度 192 时的 300 ms 加权 RMS，不是 LUFS 或实测声压。FPGA 仍逐样本实时合成，不读取录音。note-off 不截断尾音。硬件采样率约 16.276 kHz、奈奎斯特约 8.138 kHz。
+
+重新拟合运行 `python tools/fit_marimba_params.py`（NumPy/SciPy；优先使用 `output/audio_tools` 的依赖）。`sim/tb_marimba_wav.sv` 导出实际 RTL 采样；随后运行 `python tools/check_marimba_audio.py` 和 `python tools/export_marimba_wav.py`。检查报告为 `sim/marimba_corrected_report.json`，试听 WAV 不做逐音归一化。错误版本保存在 `sim/marimba_before_fix/`，历史诊断见 `sim/marimba_source_audit/FINDINGS.md`。
+
+低音补偿前的正确音色保存在 `sim/marimba_before_bass_boost/`。最新试听为 `sim/marimba_B2_F5_bass_boost.wav`（完整 31 音）和 `sim/marimba_B2_C4_bass_boost.wav`（低音至中音过渡）。
 
 SD 接口使用 3.3 V SPI：MISO AA15、SCK V15、CS W15、MOSI Y16。其余 PT8211 和按键沿用原板卡引脚。SD 初始化和读取都使用约 397 kHz SPI 时钟。音频输出保持参考采样库的 16.276 kHz 采样率。
 
@@ -68,9 +74,9 @@ powershell -ExecutionPolicy Bypass -File sim/run_score.ps1
 
 | 按键 | 行为 |
 | --- | --- |
-| KEY2 | 低有效复位；复位后从 A0 开始 |
-| KEY0 | 钢琴与马林巴之间切换 |
-| KEY1（默认模式） | 每次按下触发当前音色的下一个音符；钢琴 A0–C8，马林巴 A2–G#4 |
+| KEY2 | 低有效复位；复位后回到默认马林巴 |
+| KEY0 | 播放/停止实验性经典 Marimba PCM 参考铃声 |
+| KEY1（默认模式） | 停止 PCM 后触发下一个马林巴音符：B2–F5 |
 | KEY1（启用 SD 乐谱时） | 从头重播 SD 卡乐谱 |
 
 钢琴新音触发时释放前一个音；马林巴按 one-shot 衰减，不受 note-off 截断。KEY0/KEY1 使用双触发器同步与去抖；KEY2 作为异步低有效复位输入，并在系统时钟域同步释放。逐音模式沿用 `dynamics_fixed.v` 的 Q0.8 力度接口，后续可替换为压力传感器。
@@ -87,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File sim/run_score.ps1
 | `src/rom/voicing88.hex` | 每键 8 个泛音权重、响度增益、衰减比例、弦刚度步进 | 88 项，每项 140 位 |
 
 ADSR 基础参数写在 RTL 中；每键的衰减步长 ROM 在综合时由这些常量计算。
-没有每键的 PCM，没有录音，没有整段乐曲 ROM，也没有预录音频解码器。
+钢琴和马林巴实时合成链不读取录音。PCM 实验例外：`ringtone_pcm_player.v` 使用 IMA ADPCM 参数和 ROM 播放一段 8.78 秒的立体声参考铃声，专门用于听感对比，不参与马林巴实时音源。
 `tools/generate_tables.py` 根据 `sin()`、十二平均律及人工设置的音色锚点生成上述函数、参数表。
 `voicing88.hex` 不存逐时刻幅度曲线，也不含从录音提取的参数轨迹。
 

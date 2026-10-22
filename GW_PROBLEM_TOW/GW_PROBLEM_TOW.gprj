@@ -13,12 +13,14 @@
         <File path="src/piano_score_reader.v" type="file.verilog" enable="1"/>
         <File path="src/piano_score_sequencer.v" type="file.verilog" enable="1"/>
         <File path="src/piano_score_player.v" type="file.verilog" enable="1"/>
+        <File path="src/ringtone_pcm_player.v" type="file.verilog" enable="1"/>
         <File path="src/pt8211_score_tx.v" type="file.verilog" enable="1"/>
         <File path="src/dynamics_fixed.v" type="file.verilog" enable="1"/>
         <File path="src/key_control.v" type="file.verilog" enable="1"/>
         <File path="src/adsr_step.v" type="file.verilog" enable="1"/>
         <File path="src/piano_synth.v" type="file.verilog" enable="1"/>
         <File path="src/marimba_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/marimba_body_filter.v" type="file.verilog" enable="1"/>
         <File path="src/output_limiter.v" type="file.verilog" enable="1"/>
         <File path="src/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>
         <File path="src/GW_PROBLEM_TOW.sdc" type="file.sdc" enable="1"/>

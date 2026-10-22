@@ -1,4 +1,4 @@
-"""Small structural checks for the real-time synthesis data boundary."""
+"""Check synthesis tables and the explicitly separate PCM experiment."""
 from pathlib import Path
 import hashlib
 import re
@@ -18,8 +18,10 @@ assert not re.search(r"\b(always|initial|assign|function|task)\b", top)
 assert len((root / "src/rom/sine256.hex").read_text().splitlines()) == 256
 assert len((root / "src/rom/frequency88.hex").read_text().splitlines()) == 88
 assert len((root / "src/rom/voicing88.hex").read_text().splitlines()) == 88
-marimba_table = (root / "src/rom/marimba24.hex").read_text().splitlines()
-assert len(marimba_table) == 24 and all(len(row) == 64 for row in marimba_table)
+marimba_table = (root / "src/rom/marimba31.hex").read_text().splitlines()
+attack_table = (root / "src/rom/marimba_attack31.hex").read_text().splitlines()
+assert len(marimba_table) == 31 and all(len(row) == 64 for row in marimba_table)
+assert len(attack_table) == 31 and all(len(row) == 8 for row in attack_table)
 for row in marimba_table:
     packed = int(row, 16)
     assert all(
@@ -30,7 +32,7 @@ readmem_sources = []
 for source in sources:
     if "$readmem" in source.read_text():
         readmem_sources.append(source.name)
-assert readmem_sources == ["piano_synth.v", "marimba_synth.v"]
+assert set(readmem_sources) == {"piano_synth.v", "marimba_synth.v", "ringtone_pcm_player.v"}
 for removed in (
     "piano_bank.hex", "piano_pcm_voice.v", "piano_polyphony.v",
     "piano_sample_map.v", "pt8211_tx.v",
@@ -42,6 +44,7 @@ assert len(score) == 16 + 8 * int.from_bytes(score[12:16], "little")
 assert "piano_score_player" in top
 assert "parameter integer SD_SCORE_ENABLE = 0" in top
 assert ".SD_SCORE_ENABLE(SD_SCORE_ENABLE)" in top
+assert "parameter integer DEFAULT_MARIMBA = 1" in top
 player = (root / "src/piano_score_player.v").read_text()
 assert "sd_spi_reader" in player
 assert ".clk(sys_clk)" in player and ".sys_clk(sys_clk)" in player
@@ -60,8 +63,18 @@ assert "sine256.hex" in text and "frequency88.hex" in text
 assert not any(p.suffix.lower() in (".wav", ".mp3", ".pcm") for p in sources)
 assert "voicing88.hex" in text
 marimba = (root / "src/marimba_synth.v").read_text()
-assert marimba.count("$readmemh") == 2
-assert "marimba24.hex" in marimba and "sine256.hex" in marimba
-print("PASS structural checks: top, 50 MHz clock, dynamics hook, DDS tables")
+assert marimba.count("$readmemh") == 3
+assert "marimba31.hex" in marimba and "marimba_attack31.hex" in marimba
+assert "sine256.hex" in marimba
+assert (root / "src/marimba_body_filter.v").exists()
+ringtone = (root / "src/ringtone_pcm_player.v").read_text()
+assert "ringtone_config.vh" in ringtone
+assert "ringtone_pcm_player" in player and ".toggle(ringtone_press)" in player
+assert "ringtone_button" in player
+for bank in range(5):
+    data = (root / f"src/rom/ringtone_bank{bank}.hex").read_text().splitlines()
+    assert len(data) == 32768 and all(len(row) == 2 for row in data)
+assert len((root / "src/rom/ima_steps.hex").read_text().splitlines()) == 89
+print("PASS structural checks: default marimba, separate PCM experiment, 50 MHz, DDS tables")
 for source in sources:
     print(hashlib.sha256(source.read_bytes()).hexdigest(), source.relative_to(root))

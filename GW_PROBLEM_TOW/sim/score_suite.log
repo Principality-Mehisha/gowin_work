@@ -1,12 +1,14 @@
 # do run_score.do
-# Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
-# Start time: 22:41:58 on Oct 21,2026
-# vlog -work work_score ../src/adsr_step.v ../src/output_limiter.v ../src/piano_synth.v ../src/marimba_synth.v ../src/dynamics_fixed.v ../src/key_control.v ../src/piano_score_reader.v ../src/piano_score_sequencer.v ../src/piano_score_player.v ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/button_debounce.v ../src/pt8211_score_tx.v sd_card_model.v tb_score_full.v tb_score_player.v 
+# Model Technology ModelSim SE-64 vlog 2020.4 Compiler 2020.10 Oct 13 2020
+# Start time: 19:05:40 on Oct 22,2026
+# vlog "+incdir+../src" -work work_score ../src/adsr_step.v ../src/output_limiter.v ../src/piano_synth.v ../src/marimba_synth.v ../src/marimba_body_filter.v ../src/ringtone_pcm_player.v ../src/dynamics_fixed.v ../src/key_control.v ../src/piano_score_reader.v ../src/piano_score_sequencer.v ../src/piano_score_player.v ../src/sd_spi_byte.v ../src/sd_spi_reader.v ../src/fat_file_reader.v ../src/button_debounce.v ../src/pt8211_score_tx.v sd_card_model.v tb_score_full.v tb_score_player.v 
 # -- Compiling module adsr_step
 # -- Compiling module adsr_pipeline
 # -- Compiling module output_limiter
 # -- Compiling module piano_synth
 # -- Compiling module marimba_synth
+# -- Compiling module marimba_body_filter
+# -- Compiling module ringtone_pcm_player
 # -- Compiling module dynamics_fixed
 # -- Compiling module key_filter
 # -- Compiling module key_audition
@@ -28,50 +30,76 @@
 # 	adsr_step
 # 	tb_score_full
 # 	tb_score_player
-# End time: 22:41:58 on Oct 21,2026, Elapsed time: 0:00:00
+# End time: 19:05:40 on Oct 22,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vsim -voptargs="+acc" work_score.tb_score_full 
-# Start time: 22:41:58 on Oct 21,2026
-# Loading work_score.tb_score_full
-# Loading work_score.fat_file_reader
-# Loading work_score.piano_score_reader
-# Loading work_score.piano_score_sequencer
+# Start time: 19:05:40 on Oct 22,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  ModelSim SE-64 2020.4 Oct 13 2020
+# //
+# //  Copyright 1991-2020 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading work.tb_score_full(fast)
+# Loading work.fat_file_reader(fast)
+# Loading work.piano_score_reader(fast)
+# Loading work.piano_score_sequencer(fast)
 # PASS: complete Croatian Rhapsody, 3721 exact events through fragmented FAT32 and timed sequencer
 # ** Note: $finish    : tb_score_full.v(90)
 #    Time: 405539190 ns  Iteration: 1  Instance: /tb_score_full
 # Break in Module tb_score_full at tb_score_full.v line 90
 # Stopped at tb_score_full.v line 90
-# End time: 22:42:23 on Oct 21,2026, Elapsed time: 0:00:25
+# End time: 19:05:52 on Oct 22,2026, Elapsed time: 0:00:12
 # Errors: 0, Warnings: 0
 # vsim -voptargs="+acc" work_score.tb_score_player 
-# Start time: 22:42:23 on Oct 21,2026
-# Loading work_score.tb_score_player
-# Loading work_score.score_player_case
-# Loading work_score.piano_score_player
-# Loading work_score.GSR
-# Loading work_score.button_debounce
-# Loading work_score.sd_spi_reader
-# Loading work_score.sd_spi_byte
-# Loading work_score.fat_file_reader
-# Loading work_score.piano_score_reader
-# Loading work_score.key_audition
-# Loading work_score.key_filter
-# Loading work_score.dynamics_fixed
-# Loading work_score.piano_score_sequencer
-# Loading work_score.piano_synth
-# Loading work_score.adsr_pipeline
-# Loading work_score.output_limiter
-# Loading work_score.marimba_synth
-# Loading work_score.pt8211_score_tx
-# Loading work_score.sd_card_model
-# PASS: SD disabled, KEY1 note audition, KEY2 reset
+# Start time: 19:05:52 on Oct 22,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Note: (vopt-143) Recognized 1 FSM in module "marimba_synth(fast)".
+# Loading work.tb_score_player(fast)
+# Loading work.score_player_case(fast)
+# Loading work.piano_score_player(fast)
+# Loading work.GSR(fast)
+# Loading work.button_debounce(fast)
+# Loading work.sd_spi_reader(fast)
+# Loading work.sd_spi_byte(fast)
+# Loading work.fat_file_reader(fast)
+# Loading work.piano_score_reader(fast)
+# Loading work.key_audition(fast)
+# Loading work.key_filter(fast)
+# Loading work.dynamics_fixed(fast)
+# Loading work.piano_score_sequencer(fast)
+# Loading work.ringtone_pcm_player(fast)
+# Loading work.piano_synth(fast)
+# Loading work.adsr_pipeline(fast)
+# Loading work.output_limiter(fast)
+# Loading work.marimba_synth(fast)
+# Loading work.marimba_body_filter(fast)
+# Loading work.pt8211_score_tx(fast)
+# Loading work.sd_card_model(fast)
+# Loading work.score_player_case(fast__1)
+# Loading work.sd_card_model(fast__1)
+# Loading work.score_player_case(fast__2)
+# Loading work.sd_card_model(fast__2)
+# Loading work.score_player_case(fast__3)
+# Loading work.sd_card_model(fast__3)
+# Loading work.score_player_case(fast__4)
+# Loading work.piano_score_player(fast__1)
 # PASS: score failure case 1 rejected and silent
 # PASS: score failure case 2 rejected and silent
+# PASS: default marimba, KEY0 stereo PCM start/stop, KEY1 isolation, KEY2 reset
 # PASS: SPI divider 63, FAT profile 2, chord, repeated note, DAC audio, controls/EOF
 # PASS: SPI divider 63, FAT profile 0, chord, repeated note, DAC audio, controls/EOF
-# ** Note: $finish    : tb_score_player.v(164)
-#    Time: 297077630 ns  Iteration: 3  Instance: /tb_score_player
-# Break in Module tb_score_player at tb_score_player.v line 164
-# Stopped at tb_score_player.v line 164
-# End time: 22:47:59 on Oct 21,2026, Elapsed time: 0:05:36
+# ** Note: $finish    : tb_score_player.v(187)
+#    Time: 297200510 ns  Iteration: 3  Instance: /tb_score_player
+# Break in Module tb_score_player at tb_score_player.v line 187
+# Stopped at tb_score_player.v line 187
+# End time: 19:06:21 on Oct 22,2026, Elapsed time: 0:00:29
 # Errors: 0, Warnings: 0

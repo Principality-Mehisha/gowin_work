@@ -3,7 +3,7 @@ module tb_marimba_audio;
     reg clk=0;
     always #10 clk=~clk;
     reg reset_n=0, sample_tick=0, event_valid=0, event_on=0;
-    reg [6:0] event_note=24;
+    reg [6:0] event_note=26;
     reg [7:0] event_dynamics=192;
     wire event_ready, mix_valid, pcm_valid, limiting, saturated, deadline;
     wire signed [31:0] mix_sample;

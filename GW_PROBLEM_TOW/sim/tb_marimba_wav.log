@@ -1,0 +1,66 @@
+# vsim -c -voptargs="+acc" -lib sim/work tb_marimba_wav -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_marimba_wav/passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l sim/tb_marimba_wav.log 
+# Start time: 20:26:35 on Oct 22,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Note: (vopt-143) Recognized 1 FSM in module "marimba_synth(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "output_limiter(fast)".
+# ** Note: (vopt-143) Recognized 1 FSM in module "marimba_body_filter(fast)".
+# //  ModelSim SE-64 2020.4 Oct 13 2020
+# //
+# //  Copyright 1991-2020 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  ModelSim SE-64 and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.tb_marimba_wav(fast)
+# Loading work.marimba_synth(fast)
+# Loading work.marimba_body_filter(fast)
+# Loading work.output_limiter(fast)
+# onfinish stop
+#  run -all
+# Rendered note 47 / 77
+# Rendered note 48 / 77
+# Rendered note 49 / 77
+# Rendered note 50 / 77
+# Rendered note 51 / 77
+# Rendered note 52 / 77
+# Rendered note 53 / 77
+# Rendered note 54 / 77
+# Rendered note 55 / 77
+# Rendered note 56 / 77
+# Rendered note 57 / 77
+# Rendered note 58 / 77
+# Rendered note 59 / 77
+# Rendered note 60 / 77
+# Rendered note 61 / 77
+# Rendered note 62 / 77
+# Rendered note 63 / 77
+# Rendered note 64 / 77
+# Rendered note 65 / 77
+# Rendered note 66 / 77
+# Rendered note 67 / 77
+# Rendered note 68 / 77
+# Rendered note 69 / 77
+# Rendered note 70 / 77
+# Rendered note 71 / 77
+# Rendered note 72 / 77
+# Rendered note 73 / 77
+# Rendered note 74 / 77
+# Rendered note 75 / 77
+# Rendered note 76 / 77
+# Rendered note 77 / 77
+# PASS: 31 notes, 504556 RTL PCM frames
+# ** Note: $finish    : sim/tb_marimba_wav.sv(48)
+#    Time: 3361697980 ns  Iteration: 1  Instance: /tb_marimba_wav
+# Break in Module tb_marimba_wav at sim/tb_marimba_wav.sv line 48
+# Stopped at sim/tb_marimba_wav.sv line 48
+#  if {[examine -radix unsigned /tb_marimba_wav/passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 20:28:41 on Oct 22,2026, Elapsed time: 0:02:06
+# Errors: 0, Warnings: 0

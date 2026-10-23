@@ -1,6 +1,6 @@
 // Fixed 10-byte control frames: A5 5A 01 SEQ CMD P0 P1 P2 SUM 0D.
 // SUM = low byte of bytes 2..7. Unsupported/invalid commands never alter audio.
-// Feedback is native TJC ASCII, rather than requiring recmod=1 screen parsing.
+// Feedback uses native TJC commands, without recmod=1 screen parsing.
 module uart_score_control #(
     parameter integer CLK_HZ = 50000000,
     parameter integer BAUD = 9600,
@@ -10,8 +10,10 @@ module uart_score_control #(
     output wire tx,
     input wire [7:0] player_state, player_track, player_error,
     input wire [6:0] selected_note,
+    input wire selected_marimba,
     output wire play_request, stop_request,
     output wire note_previous, note_next, note_play,
+    output wire note_select_piano, note_select_marimba,
     output wire [7:0] requested_track,
     output reg overflow
 );
@@ -48,10 +50,10 @@ module uart_score_control #(
         end
     end
     wire known=(cmd==8'h01 || cmd==8'h10 || cmd==8'h11 ||
-                cmd==8'h40 || cmd==8'h41 || cmd==8'h42);
+                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44);
     wire args_ok=(p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : p0==0));
     // A FIFO slot is reserved while the accepted command changes player state.
-    reg [54:0] replies[0:15];
+    reg [55:0] replies[0:15];
     reg [3:0] wr, rd;
     reg [4:0] count;
     reg pending;
@@ -64,14 +66,16 @@ module uart_score_control #(
     assign note_previous=request && args_ok && room && cmd==8'h40;
     assign note_next=request && args_ok && room && cmd==8'h41;
     assign note_play=request && args_ok && room && cmd==8'h42;
-    reg [30:0] observed;
+    assign note_select_piano=request && args_ok && room && cmd==8'h43;
+    assign note_select_marimba=request && args_ok && room && cmd==8'h44;
+    reg [31:0] observed;
     reg dirty;
     wire [7:0] reported_error=player_error!=0 ? player_error : (overflow ? 8'h60 : 8'h00);
-    wire [30:0] current={selected_note,player_state,player_track,reported_error};
+    wire [31:0] current={selected_marimba,selected_note,player_state,player_track,reported_error};
     wire push=pending || (dirty && room && !request);
     wire response_ready;
     wire pop=count!=0 && response_ready;
-    wire [54:0] push_data=pending ? {current,ack_result,ack_seq,ack_cmd} :
+    wire [55:0] push_data=pending ? {current,ack_result,ack_seq,ack_cmd} :
                                                   {current,(overflow ? 8'd3 : 8'd0),8'd0,8'h81};
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

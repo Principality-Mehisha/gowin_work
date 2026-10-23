@@ -5,6 +5,9 @@ module tb_uart_protocol;
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
  wire note_previous,note_next,note_play;
+ wire select_piano,select_marimba;
+ reg marimba_selected=0;
+ integer piano_count=0,marimba_count=0;
  integer previous_count=0,next_count=0,note_count=0;
  wire [7:0] track;
  reg [7:0] state=0,selected=0,error=0;
@@ -18,6 +21,7 @@ module tb_uart_protocol;
   .clk(clk),.rst_n(rst_n),.rx(rx),.tx(tx),.player_state(state),
   .player_track(selected),.player_error(error),.play_request(play),
   .selected_note(note_selected),
+  .selected_marimba(marimba_selected),.note_select_piano(select_piano),.note_select_marimba(select_marimba),
   .stop_request(stop),.requested_track(track),.overflow(overflow),
   .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
@@ -27,12 +31,14 @@ module tb_uart_protocol;
   if(note_previous) begin previous_count=previous_count+1;note_selected<=(note_selected==0)?87:note_selected-1'b1;end
   if(note_next) begin next_count=next_count+1;note_selected<=(note_selected==87)?0:note_selected+1'b1;end
   if(note_play) note_count=note_count+1;
+  if(select_piano) begin piano_count=piano_count+1;marimba_selected<=0;end
+  if(select_marimba) begin marimba_count=marimba_count+1;marimba_selected<=1;end
  end
  // Decode physical TX independently of the transmitter/formatter internals.
  reg [7:0] c;
  integer bit_index,ff=0,pos=0,number=0,field=0,i;
  reg [103:0] prefix;
- reg [191:0] text_command=0;
+ reg [287:0] text_command=0;
  initial forever begin
   @(negedge tx);
   repeat(UART_TICKS/2) @(posedge clk);
@@ -54,6 +60,17 @@ module tb_uart_protocol;
       $fatal(1,"Previous note reply did not contain C8");
      if(fields[5]=='h41 && fields[4]==17 && text_command!="every.tNote.txt=\"A0\"")
       $fatal(1,"Next note reply did not contain A0");
+     field=7;
+    end else if(field==7) begin
+     if(text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""} &&
+        text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""})
+      $fatal(1,"Native instrument command invalid: %h",text_command);
+     if(fields[4]==20 && fields[5]=='h44 &&
+        text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""})
+      $fatal(1,"Marimba reply snapshot precedes execution");
+     if(fields[4]==21 && fields[5]=='h43 &&
+        text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""})
+      $fatal(1,"Piano reply snapshot precedes execution");
      if(fields[2]=='h60) overflow_reported=1;
      snapshots=snapshots+1;
      if(fields[5]!=8'h81) begin
@@ -70,7 +87,7 @@ module tb_uart_protocol;
    end
   end else begin
    if(ff!=0) $fatal(1,"Missing three FF terminators");
-   if(field==6) text_command={text_command[183:0],c};
+   if(field>=6) text_command={text_command[279:0],c};
    else if(pos<13) prefix={prefix[95:0],c};
    else begin
     if(c<"0" || c>"9") $fatal(1,"Non-decimal native value");
@@ -133,6 +150,13 @@ module tb_uart_protocol;
   send_frame(19,'h42,1,0,0);expect_reply(19,1,'h42);
   if(previous_count!=1 || next_count!=1 || note_count!=1)
    $fatal(1,"Three-key command count/argument validation");
+  send_frame(20,'h44,0,0,0);expect_reply(20,0,'h44);
+  send_frame(21,'h43,0,0,0);expect_reply(21,0,'h43);
+  send_frame(22,'h44,1,0,0);expect_reply(22,1,'h44);
+  send_frame(23,'h43,0,1,0);expect_reply(23,1,'h43);
+  send_frame(24,'h44,0,0,1);expect_reply(24,1,'h44);
+  if(piano_count!=1 || marimba_count!=1 || marimba_selected)
+   $fatal(1,"Instrument commands accepted invalid parameters");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

@@ -5,6 +5,7 @@ module playback_control #(
 ) (
     input wire clk, rst_n,
     input wire ringtone_press, replay_press, uart_play, uart_stop, uart_note_play,
+    input wire instrument_request, audition_marimba,
     input wire note_busy, playing, finished, failed, sequence_error,
     input wire [7:0] uart_track,
     input wire [3:0] sd_error_code, fat_error, score_error,
@@ -18,12 +19,12 @@ module playback_control #(
     reg storage_restart;
     assign manual_mode = !ringtone_active;
     assign uart_start = uart_play && !(ringtone_active && selected_track==uart_track);
-    assign control_restart = ringtone_press || uart_start || uart_stop || uart_note_play ||
+    assign control_restart = ringtone_press || uart_start || uart_stop || uart_note_play || instrument_request ||
                            (note_busy && replay_press) ||
                            (replay_press && SD_SCORE_ENABLE && ringtone_active);
     assign play_rst_n = rst_n && !control_restart;
     assign marimba_mode = ringtone_active ? (selected_track!=3) :
-                       (note_busy ? 1'b0 : (DEFAULT_MARIMBA!=0));
+                       (note_busy ? audition_marimba : (DEFAULT_MARIMBA!=0));
     assign storage_enable = ringtone_active;
     assign storage_rst_n = play_rst_n && storage_enable && !storage_restart;
     // Error category occupies the high nibble: SD=1, FAT=2, score=3,
@@ -46,7 +47,7 @@ module playback_control #(
             if (uart_stop) begin
                 legacy_autoplay<=0;
                 ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
-            end else if (uart_note_play) begin
+            end else if (uart_note_play || instrument_request) begin
                 legacy_autoplay<=0;
                 ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
             end else if (ringtone_press) begin

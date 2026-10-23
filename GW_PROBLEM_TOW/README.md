@@ -11,10 +11,11 @@ SD 卡保存音符事件，FPGA 实时计算钢琴或马林巴波形，通过 PT
 | KEY1 | 马林巴 C2～F5 的 42 音逐音试听，F5 后回到 C2 |
 | KEY2 | 低有效复位，恢复默认模式及音符选择 |
 | 串口选曲 | 1=ANDROID.BIN，2=RINGTONE.BIN，3=PIANO.BIN |
-| 串口单音 | 40=上一个，41=下一个，42=播放当前钢琴音；命令均为十六进制 |
+| 串口单音 | 40=上一个，41=下一个，42=播放；43=选择钢琴，44=选择马林巴，命令均为十六进制 |
 
-串口单音覆盖 A0～C8，复位选中 A0；选择不发声，播放保持约 0.5 秒后释放，保留约 1 秒尾音。
-音名自动回传至串口屏 `every.tNote`。单音试听不需要 SD 卡。
+串口单音支持钢琴 A0～C8 共 88 音及马林巴 C2～B5 共 48 音，分别记忆选择；复位选中钢琴 A0，马林巴初始 C2。
+选音不发声，切换乐器清音；播放约 0.5 秒后发送释放，再保留约 1 秒尾音窗口。
+音名和所选试听乐器自动回传至串口屏 `every.tNote`、`every.tInstrument`。单音试听不需要 SD 卡。
 
 ## 目录
 
@@ -71,9 +72,9 @@ GW_PROBLEM_TOW
 | PT8211 BCK / WS / DIN / PA_EN | Y17 / AB17 / AA16 / AB16 |
 
 UART 波特率由 `piano_score_player.UART_BAUD` 决定，当前默认 115200/8N1；屏幕 TX 接 FPGA RX=B17，屏幕 RX 接 FPGA TX=B18，共地。
-工程内原有屏幕脚本示例使用 9600，实际使用时两端波特率须一致；本次存储优化保留现有 RTL 和屏幕脚本的配置。
+屏幕配置脚本和主机工具默认已对齐为 115200；沿用旧 9600 屏幕工程时须同步修改波特率。
 串口屏供电按其规格独立提供。球位不能直接当作排针脚号。
-屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，三键与音名显示见 [88 音试听](docs/UART_THREE_KEYS.md)。
+屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，五键与音名/乐器显示见 [双乐器逐音试听](docs/UART_THREE_KEYS.md)。
 
 ## 构建与验证
 
@@ -100,7 +101,7 @@ python -m pip install --target output/marimba_tools numpy scipy
 
 ## 参数与维护
 
-默认 `DEFAULT_MARIMBA=1`、`SD_SCORE_ENABLE=0`，上电进入马林巴手动试听。
+默认 `DEFAULT_MARIMBA=1`、`SD_SCORE_ENABLE=0`，实体 KEY1 上电试听马林巴；串口虚拟试听键独立默认选择钢琴 A0。
 `SD_SCORE_ENABLE` 控制上电钢琴乐谱模式；设为 0 时，KEY0 和 UART 仍可启动 SD 播放。
 系统集成层保留原参数接口，测试可以加速复位、串口和谱面时间。
 

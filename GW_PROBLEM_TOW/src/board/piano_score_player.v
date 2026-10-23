@@ -52,6 +52,9 @@ module piano_score_player #(
     wire [7:0] selected_track, last_error;
     wire uart_play, uart_stop;
     wire uart_note_previous, uart_note_next, uart_note_play;
+    wire uart_select_piano, uart_select_marimba;
+    wire selected_marimba;
+    wire instrument_request=uart_select_piano || uart_select_marimba;
     wire note_busy, note_clear;
     wire [6:0] selected_note;
     wire [7:0] uart_track;
@@ -67,6 +70,7 @@ module piano_score_player #(
         .clk(sys_clk), .rst_n(rst_n),
         .ringtone_press(ringtone_press), .replay_press(replay_press),
         .uart_play(uart_play), .uart_stop(uart_stop), .uart_note_play(uart_note_play),
+        .instrument_request(instrument_request), .audition_marimba(selected_marimba),
         .note_busy(note_busy), .playing(playing), .finished(finished),
         .failed(failed), .sequence_error(sequence_error), .uart_track(uart_track),
         .sd_error_code(sd_error_code), .fat_error(fat_error), .score_error(score_error),
@@ -83,14 +87,17 @@ module piano_score_player #(
             .clk(sys_clk),.rst_n(rst_n),.rx(uart_rx),.tx(uart_tx),
             .player_state(player_state),.player_track(selected_track),
             .selected_note(selected_note),
+            .selected_marimba(selected_marimba),
             .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
+            .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
             .requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;
         assign uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
+        assign uart_select_piano=0; assign uart_select_marimba=0;
     end endgenerate
     wire initialized, file_found;
     wire [55:0] notes, velocities;
@@ -128,9 +135,11 @@ module piano_score_player #(
     uart_note_audition #(.GATE_CYCLES(NOTE_GATE_CYCLES),.TAIL_CYCLES(NOTE_TAIL_CYCLES)) uart_notes (
         .clk(sys_clk),.rst_n(rst_n),.previous_request(uart_note_previous),
         .next_request(uart_note_next),.play_request(uart_note_play),
+        .select_piano_request(uart_select_piano),.select_marimba_request(uart_select_marimba),
         .cancel(ringtone_press || uart_start || uart_stop || (replay_press && note_busy)),
         .event_ready(manual_mode && note_busy && synth_event_ready),
-        .selected_note(selected_note),.event_valid(note_event_valid),.event_on(note_event_on),
+        .selected_note(selected_note),.selected_marimba(selected_marimba),
+        .event_valid(note_event_valid),.event_on(note_event_on),
         .event_note(note_event_note),.event_dynamics(note_event_dynamics),
         .busy(note_busy),.clear(note_clear));
     // Select exactly one event source; the audition source is gated by mode.

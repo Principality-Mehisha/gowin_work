@@ -1,8 +1,9 @@
 param(
-    [ValidateSet('Android', 'Apple', 'Piano', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay')]
+    [ValidateSet('Android', 'Apple', 'Piano', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
-    [string]$Port
+    [string]$Port,
+    [ValidateRange(1200,1000000)][int]$BaudRate = 115200
 )
 $ErrorActionPreference = 'Stop'
 $commandByte = 0x10
@@ -16,13 +17,15 @@ switch ($Command) {
     'NotePrevious' { $commandByte = 0x40 }
     'NoteNext' { $commandByte = 0x41 }
     'NotePlay' { $commandByte = 0x42 }
+    'InstrumentPiano' { $commandByte = 0x43 }
+    'InstrumentMarimba' { $commandByte = 0x44 }
 }
 $checksum = (1 + $Sequence + $commandByte + $track) -band 255
 [byte[]]$frame = 0xA5,0x5A,1,$Sequence,$commandByte,$track,0,0,$checksum,0x0D
 Write-Output (($frame | ForEach-Object { $_.ToString('X2') }) -join ' ')
 if (-not $Port) { return }
 # Opens a COM port only when explicitly named by the caller.
-$serial = New-Object System.IO.Ports.SerialPort $Port,9600,None,8,One
+$serial = New-Object System.IO.Ports.SerialPort $Port,$BaudRate,None,8,One
 $serial.Handshake = [System.IO.Ports.Handshake]::None
 $serial.DtrEnable = $false
 $serial.RtsEnable = $false
@@ -33,7 +36,7 @@ try {
     $received = New-Object 'System.Collections.Generic.List[byte]'
     while ($serial.BytesToRead -gt 0) { $received.Add([byte]$serial.ReadByte()) }
     if ($received.Count -gt 0) {
-        Write-Output ([Text.Encoding]::ASCII.GetString($received.ToArray()).Replace([string][char]127,'?'))
+        Write-Output ([Text.Encoding]::GetEncoding(936).GetString($received.ToArray()))
         Write-Output ('RX HEX: ' + (($received | ForEach-Object { $_.ToString('X2') }) -join ' '))
     }
 } finally { if ($serial.IsOpen) { $serial.Close() }; $serial.Dispose() }

@@ -1,9 +1,9 @@
 // Native TJC commands, recmod=0. Each snapshot updates page0.n0..n5:
-// state, track, error, result, sequence, command; then every.tNote.txt.
-// payload layout: {selected_note[6:0],state,track,error,result,sequence,command}.
+// state, track, error, result, sequence, command; then note/instrument text.
+// payload: {marimba,selected_note[6:0],state,track,error,result,sequence,command}.
 module tjc_status_tx (
     input wire clk, rst_n,
-    input wire [54:0] snapshot,
+    input wire [55:0] snapshot,
     input wire valid,
     output wire ready,
     output reg [7:0] byte_data,
@@ -11,16 +11,17 @@ module tjc_status_tx (
     input wire byte_ready
 );
     reg busy;
-    reg [54:0] saved;
+    reg [55:0] saved;
     reg [2:0] field;
     reg [1:0] fence;
-    reg [4:0] pos;
+    reg [5:0] pos;
     reg [7:0] value;
     reg [3:0] hundreds, tens, ones;
     reg [4:0] digits;
     reg [7:0] semitones, pitch_class, octave, note_letter;
     reg sharp;
     reg [4:0] note_length;
+    wire [5:0] instrument_length=saved[55] ? 6'd8 : 6'd4;
     assign ready = !busy;
     assign byte_valid = busy;
     always @* begin
@@ -75,6 +76,29 @@ module tjc_status_tx (
                 default: byte_data=8'hff;
             endcase
         end
+        if (field==7) begin
+            // Native screen text uses GB2312: piano / marimba (Chinese).
+            case(pos)
+                0: byte_data="e"; 1: byte_data="v"; 2: byte_data="e";
+                3: byte_data="r"; 4: byte_data="y"; 5: byte_data=".";
+                6: byte_data="t"; 7: byte_data="I"; 8: byte_data="n";
+                9: byte_data="s"; 10: byte_data="t"; 11: byte_data="r";
+                12: byte_data="u"; 13: byte_data="m"; 14: byte_data="e";
+                15: byte_data="n"; 16: byte_data="t"; 17: byte_data=".";
+                18: byte_data="t"; 19: byte_data="x"; 20: byte_data="t";
+                21: byte_data="="; 22: byte_data=8'h22;
+                23: byte_data=saved[55] ? 8'hc2 : 8'hb8;
+                24: byte_data=saved[55] ? 8'hed : 8'hd6;
+                25: byte_data=saved[55] ? 8'hc1 : 8'hc7;
+                26: byte_data=saved[55] ? 8'hd6 : 8'hd9;
+                27: byte_data=saved[55] ? 8'hb0 : 8'h22;
+                28: byte_data=saved[55] ? 8'hcd : 8'hff;
+                29: byte_data=saved[55] ? 8'hc7 : 8'hff;
+                30: byte_data=saved[55] ? 8'hd9 : 8'hff;
+                31: byte_data=8'h22;
+                default: byte_data=8'hff;
+            endcase
+        end
         // Discard any partial screen command left by an FPGA reset mid-TX.
         if (fence!=0) byte_data=8'hff;
     end
@@ -85,9 +109,10 @@ module tjc_status_tx (
         end else if (byte_ready) begin
             if (fence!=0) fence<=fence-1'b1;
             else if ((field==6 && pos==20+note_length) ||
-                     (field!=6 && pos==15+digits)) begin
+                     (field==7 && pos==26+instrument_length) ||
+                     (field<6 && pos==15+digits)) begin
                 pos<=0;
-                if (field==6) busy<=0;
+                if (field==7) busy<=0;
                 else field<=field+1'b1;
             end else pos<=pos+1'b1;
         end

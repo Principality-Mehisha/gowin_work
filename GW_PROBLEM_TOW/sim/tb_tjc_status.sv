@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module tb_tjc_status;
  reg clk=0,rst_n=0,valid=0,passed=0;
- reg [54:0] snapshot=0;
+ reg [55:0] snapshot=0;
  wire ready,byte_valid;
  wire [7:0] data;
  reg [3:0] cycle=0;
@@ -25,10 +25,12 @@ module tb_tjc_status;
     if(ff==3) begin
      if(line=="") fences=fences+1;
      else begin
-      expected_line=(field==6) ? {"every.tNote.txt=\"",expected[n],"\""} :
-                       $sformatf("page0.n%0d.val=%0d",field,fields[field]);
+      if(field==7) expected_line=(n%2) ? {"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""} :
+                                                         {"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""};
+      else if(field==6) expected_line={"every.tNote.txt=\"",expected[n],"\""};
+      else expected_line=$sformatf("page0.n%0d.val=%0d",field,fields[field]);
       if(line!=expected_line) $fatal(1,"Packet %0d field %0d: got %s expected %s",n,field,line,expected_line);
-      if(field==6) begin field=0;packets=packets+1;end
+      if(field==7) begin field=0;packets=packets+1;end
       else field=field+1;
      end
      ff=0;line="";
@@ -45,13 +47,13 @@ module tb_tjc_status;
   for(n=0;n<88;n=n+1) begin
    fields[0]=n%5;fields[1]=n%4;fields[2]=0;fields[3]=0;fields[4]=255-n;fields[5]='h41;
    wait(ready);@(negedge clk);
-   snapshot={n[6:0],8'(fields[0]),8'(fields[1]),8'd0,8'd0,8'(fields[4]),8'h41};valid=1;
+   snapshot={1'(n%2),n[6:0],8'(fields[0]),8'(fields[1]),8'd0,8'd0,8'(fields[4]),8'h41};valid=1;
    @(negedge clk);valid=0;snapshot='1;
    // Input changes during byte transmission must not affect this snapshot.
    wait(packets==n+1);@(negedge clk);
   end
   if(fences!=88) $fatal(1,"Each snapshot needs an initial command fence");
-  passed=1;$display("PASS TJC status: all 88 literal note names including sharps, numeric fields, quotes, FF fences/terminators, backpressure and atomic snapshots");$finish;
+  passed=1;$display("PASS TJC status: all 88 note names, both GB2312 instruments, numeric fields, FF fences, backpressure and atomic snapshots");$finish;
  end
  initial begin #10000000;$fatal(1,"TJC status timeout");end
 endmodule

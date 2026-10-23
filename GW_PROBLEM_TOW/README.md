@@ -56,6 +56,7 @@ GW_PROBLEM_TOW
 ```
 
 详见 [架构说明](docs/ARCHITECTURE.md)、[音频与乐谱](docs/AUDIO_AND_SD.md)。
+马林巴同步 RAM 优化及音频等价性验证见 [存储优化说明](docs/MARIMBA_STORAGE.md)。
 
 ## 硬件与串口
 
@@ -69,7 +70,8 @@ GW_PROBLEM_TOW
 | SD MISO / SCK / CS / MOSI | AA15 / V15 / W15 / Y16 |
 | PT8211 BCK / WS / DIN / PA_EN | Y17 / AB17 / AA16 / AB16 |
 
-UART 使用 9600/8N1；屏幕 TX 接 FPGA RX=B17，屏幕 RX 接 FPGA TX=B18，共地。
+UART 波特率由 `piano_score_player.UART_BAUD` 决定，当前默认 115200/8N1；屏幕 TX 接 FPGA RX=B17，屏幕 RX 接 FPGA TX=B18，共地。
+工程内原有屏幕脚本示例使用 9600，实际使用时两端波特率须一致；本次存储优化保留现有 RTL 和屏幕脚本的配置。
 串口屏供电按其规格独立提供。球位不能直接当作排针脚号。
 屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，三键与音名显示见 [88 音试听](docs/UART_THREE_KEYS.md)。
 

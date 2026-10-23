@@ -32,10 +32,12 @@ module marimba_synth #(
     reg [NOTE_COUNT-1:0] pending, active_noise;
     reg [NOTE_COUNT*4-1:0] active_modes;
     reg [7:0] dynamics_by_note [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
-    reg [31:0] phase_ram [0:NOTE_COUNT*4-1] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] level_ram [0:NOTE_COUNT*4-1] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] noise_level_ram [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
-    reg [15:0] noise_lfsr_ram [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
+    // One synchronous read port and one write port per state memory. Keep
+    // reset/stop on the small validity vectors, never on the RAM contents.
+    reg [47:0] mode_state_ram [0:255]; // {phase[31:0], level[15:0]}
+    reg [31:0] noise_state_ram [0:63]; // {level[15:0], lfsr[15:0]}
+    reg [47:0] mode_state_q;
+    reg [31:0] noise_state_q;
     reg [255:0] mode_rom [0:NOTE_COUNT-1];
     reg [31:0] attack_rom [0:NOTE_COUNT-1];
     reg signed [15:0] sine_rom [0:255];
@@ -58,10 +60,16 @@ module marimba_synth #(
     wire signed [47:0] mult_result = mult_a * mult_b;
     wire [7:0] mode_address = {note_index, mode_index};
     wire [63:0] selected_mode = select_mode(mode_row, mode_index);
-    wire [31:0] stored_phase = phase_ram[mode_address];
-    wire [15:0] stored_level = level_ram[mode_address];
-    wire [15:0] stored_noise_level = noise_level_ram[note_index];
-    wire [15:0] stored_noise_lfsr = noise_lfsr_ram[note_index];
+    // Fetch the next mode on the clock that advances its index. NOTE_START
+    // always fetches mode zero, including when the previous note ended at 3.
+    // This hides the synchronous RAM latency inside existing FSM cycles.
+    wire [7:0] mode_read_address = state == NOTE_START ? {note_index, 2'd0} :
+        ((state == MODE_COMMIT || state == ADVANCE) && mode_index != 3) ?
+        mode_address + 8'd1 : mode_address;
+    wire [31:0] stored_phase = mode_state_q[47:16];
+    wire [15:0] stored_level = mode_state_q[15:0];
+    wire [15:0] stored_noise_level = noise_state_q[31:16];
+    wire [15:0] stored_noise_lfsr = noise_state_q[15:0];
     wire signed [16:0] sine_delta =
         $signed({sine_next[15], sine_next}) -
         $signed({sine_value[15], sine_value});
@@ -142,6 +150,16 @@ module marimba_synth #(
     assign event_ready = reset_n && !stop_all && state == IDLE;
 
     always @(posedge clk) begin
+        mode_state_q <= mode_state_ram[mode_read_address];
+        if (reset_n && !stop_all && state == MODE_COMMIT)
+            mode_state_ram[mode_address] <= {mode_phase + mode_step, next_level};
+        // Noise is fetched once at NOTE_START, well before NOISE_LOAD. The
+        // mutually exclusive read/write enables avoid a read-first SP RAM
+        // mode that this device does not implement; write output is unused.
+        if (reset_n && !stop_all && state == NOISE_COMMIT)
+            noise_state_ram[note_index] <= {next_noise_level, next_lfsr(noise_lfsr)};
+        else if (state == NOTE_START)
+            noise_state_q <= noise_state_ram[note_index];
         if (state == SINE_READ) begin
             sine_value <= sine_rom[mode_phase[31:24]];
             sine_next <= sine_rom[mode_phase[31:24] + 8'd1];
@@ -239,8 +257,6 @@ module marimba_synth #(
                     state <= MODE_COMMIT;
                 end
                 MODE_COMMIT: begin
-                    phase_ram[mode_address] <= mode_phase + mode_step;
-                    level_ram[mode_address] <= next_level;
                     active_modes[mode_address] <= next_level != 0;
                     mix_accum <= mix_accum + scaled_sample;
                     if (mode_index == 3) state <= NOISE_LOAD;
@@ -277,8 +293,6 @@ module marimba_synth #(
                     state <= NOISE_COMMIT;
                 end
                 NOISE_COMMIT: begin
-                    noise_level_ram[note_index] <= next_noise_level;
-                    noise_lfsr_ram[note_index] <= next_lfsr(noise_lfsr);
                     active_noise[note_index] <= next_noise_level != 0;
                     mix_accum <= mix_accum + noise_sample;
                     state <= ADVANCE;

@@ -75,15 +75,15 @@ module tb_marimba;
         send_event(0,36);
         render_frame();
         if (mix_sample == 0) $fatal(1,"Marimba modes produced no audible sample");
-        level_after_one=dut.level_ram[0];
+        level_after_one=dut.mode_state_ram[0][15:0];
         render_frame();
-        level_after_two=dut.level_ram[0];
+        level_after_two=dut.mode_state_ram[0][15:0];
         if (level_after_two >= level_after_one || level_after_one == 0)
             $fatal(1,"Note-off cut the strike or modal decay stalled");
 
         send_event(1,36);
         render_frame();
-        if (dut.level_ram[0] <= level_after_one)
+        if (dut.mode_state_ram[0][15:0] <= level_after_one)
             $fatal(1,"Repeated strike did not retrigger the modal envelope");
 
         for (note=37; note<=83; note=note+1)

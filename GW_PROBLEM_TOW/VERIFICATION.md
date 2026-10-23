@@ -1,63 +1,65 @@
 # 当前工程验证记录
 
-验证日期：2026-10-23。本记录针对目录分层与模块拆分后的当前工程。
+验证日期：2026-10-23。当前验证目标为马林巴状态 RAM 优化；此前目录分层的完整回归记录保存在 `output/verification/`。
 
-## 本次改动
+## 本次改动与边界
 
-- `src/` 按 board、control、storage、audio、rom 分层。
-- 从系统集成中提取 `board_reset`、`playback_control`、`sd_score_stream`。
-- 保留现有顶层、参数、按键、三曲播放、88 音试听和 UART 屏幕接口。
-- 删除退出板级路径的 PCM/ADPCM 播放器、旧 ROM、历史快照、过时对照工具与缓存。
-- 只保留当前使用的 `adsr_pipeline`；音色生成源、授权与原始设计参考资料保留。
-- 仿真统一读取 `.gprj` 源码清单，测试夹具直接从三首现有 BIN 生成。
+`marimba_synth.v` 将模态相位/幅度和噪声幅度/LFSR 从动态索引寄存器数组改为同步 RAM。
+利用原状态机周期提前读取，不增加状态或出样周期；复位/停止仍清除小型有效标志，不复位整块 RAM。
+详见 [马林巴存储优化](docs/MARIMBA_STORAGE.md)。
 
-## 输入一致性
+本次没有改变频率表、马林巴模态/起音 ROM、定点运算和截位、力度曲线、衰减、噪声种子、琴体滤波、限幅、采样率或三首乐谱。
+没有改变钢琴音源、顶层接口、按键、UART 协议、管脚及时序约束，没有写入 SD 卡。产品 UART 默认波特率保持本次开始时的 115200。
 
-当前结构检查通过：24 个 RTL 文件与工程清单一致，五份 ROM、三首乐谱及 UART 管脚校验通过。
-与重构前 Git 版本对照，钢琴/马林巴音源、琴体滤波、限幅和 PT8211 逻辑内容一致；比较文本时忽略 CRLF/LF 差异。
-五份当前 ROM 内容一致，三首 BIN 及 CST/SDC 与重构前一致。
-本次未重新拟合音色、转写乐谱或写入 SD 卡。
+## 音频与实时等价性
 
-## 功能回归
+- 修改前 RTL 已保存为外部参考输入，来源 Git 版本及 SHA256 见 `output/marimba_storage/before/baseline.json`。
+- `tb_marimba_storage` 同时驱动原版与优化版，每个时钟核对 event_ready、mix_valid、pcm_valid、音频值及错误/限幅标志。
+- 已通过 1832 个 PCM 样本的逐时钟对照，覆盖全部 48 音、不同力度、复音、重触发、随机输入、采样边界事件、忙时输入、提前采样、各状态的复位/停止。
+- 原有 48 音混音测试仍为 2496 个时钟，加入滤波/限幅后对照测试最大完整输出等待 2509 个时钟，低于 3072 个时钟的板级帧预算。
+- 完整安卓曲谱的 396729 个 PCM 样本与独立整数模型完全一致，峰值 PCM=5896；生成 WAV 与修改前基线逐字节相同，SHA256 为 86d4b5e7139ee30293932fb9fadf94dc18b1d836ea419e5d8934dfd6bf76981d。
 
-| 入口 | 测试平台 | 覆盖内容 | 本次结果 |
-| --- | --- | --- | --- |
-| sim/run.ps1 | tb_keys、tb_limiter、tb_dac、tb_synth、tb_marimba、tb_marimba_controls | 按键、限幅、DAC、88 音钢琴、48 音马林巴、42 音实体试听 | 6 项通过 |
-| sim/run_uart.ps1 | tb_tjc_status、tb_note_audition、tb_uart_protocol、tb_uart_player、tb_uart_notes | 全部音名、88 音选择、9600/8N1、错误帧、反馈、三曲与单音切换 | 5 项通过 |
-| sim/run_score.ps1 | tb_score_full、tb_score_player | 3721 条完整钢琴事件、碎片 FAT32、FAT16/FAT32 板级播放、重播、CRC/格式/缺文件错误与静音 | 2 项通过 |
-| sim/run_ringtone.ps1 | tb_sd_ringtone、tb_ringtone_synth | 完整安卓事件播放、SD 错误处理、切换/停止及实时音频 | 2 项通过 |
+## 本轮功能回归
 
-共 15 个测试平台通过。完整安卓音频 396729 个样本与独立整数模型逐点一致，峰值 PCM=5896。
+| 测试范围 | 平台 | 状态 |
+| --- | --- | --- |
+| 存储优化逐时钟对照 | tb_marimba_storage | 通过 |
+| 基础回归 | tb_keys、tb_limiter、tb_dac、tb_synth、tb_marimba、tb_marimba_controls | 6 项通过 |
+| UART 选曲/单音集成 | tb_uart_player、tb_uart_notes | 2 项通过 |
+| 完整 SD 铃声/音频 | tb_sd_ringtone、tb_ringtone_synth | 2 项通过 |
 
-`output/verification/` 保存本次测试日志、音频/时序报告及试听 WAV，`regression_summary.json` 保存汇总和日志哈希。
+本轮共 11 个相关测试平台通过，日志、完整音频及报告保存在 `output/marimba_storage/after/`，汇总与日志哈希见 `output/marimba_storage/comparison.json`。
 
-`run_all.ps1` 顺序调用上述四组。`sim/run_marimba_audio.ps1` 为额外的完整 42 音音频导出，不包含在默认回归；本次未运行该可选导出。
-Python 工具与 PowerShell 脚本已进行语法检查，当前文档的本地链接已检查。
+本轮针对修改后的音源与集成路径验证；未修改的 UART 协议、屏幕格式化、钢琴完整谱面等此前完整回归已通过，本轮不把旧结果记作重跑结果。
+通用入口仍为 `sim/run_all.ps1`。存储等价性需要修改前 RTL，使用 `sim/run_marimba_storage.ps1 -ReferenceRtl <参考文件>`，不加入通用回归。
 
-## 综合、布局布线与位流
+## 构建对照
 
-Gowin EDA V1.9.12.03 (64-bit) 的综合、布局布线、位流生成与时序检查通过，构建退出码为 0。
+| 项目 | 修改前最后一次构建 | 本次优化构建 |
+| --- | ---: | ---: |
+| 目标时钟 | 50.000 MHz | 50.000 MHz |
+| Fmax | 50.013 MHz | 50.051 MHz |
+| Setup / Hold 违例端点 | 0 / 0 | 0 / 0 |
+| Logic | 19640 | 11463 |
+| Register | 21143 | 6794 |
+| CLS | 22825（77%） | 8338（28%） |
+| BSRAM | 54 / 118 | 60 / 118 |
+| DSP | 22 | 22 |
+| 综合报告耗时 | 39 秒 | 30 秒 |
+| 布局布线报告耗时 | 122 秒 | 39 秒 |
+| 两阶段合计 | 161 秒 | 69 秒 |
 
-| 项目 | 当前结果 |
-| --- | --- |
-| 目标时钟 | sys_clk，50.000 MHz |
-| 布局 Fmax | 50.753 MHz |
-| Setup / Hold 违例端点 | 0 / 0 |
-| Logic | 19507 / 59904（33%） |
-| Register | 21151 / 60780（35%） |
-| BSRAM | 54 / 118（46%） |
-| DSP | 22 / 118（19%） |
+Gowin EDA V1.9.12.03 (64-bit) 的综合、布局布线、位流生成与时序检查通过，退出码 0。
+耗时是本机单次报告值，不包含 ModelSim 仿真，不代表每次运行的固定耗时。
+位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，输入哈希和位流 SHA256 见 `output/build_manifest.json`。
+前后报告保存在 `output/marimba_storage/before/` 与 `after/`。
 
-位流：`impl/pnr/GW_PROBLEM_TOW.fs`。
-当前 UART 球位仍为 RX=B17、TX=B18；时序与引脚约束位置改为 `src/board/`。
-`output/build_manifest.json` 保存当前工程输入及位流的 SHA256，可用于确认构建对应的源文件。
-编译时原有位宽截断提示和 V22 时钟采用一般布线的 PR1014 警告仍存在，最终同步时序检查通过。
+## 工具与硬件边界
 
-## 工具环境与边界
+旧 UART 集成测试按 9600 的加速时序发送，却隐式继承产品已改为 115200 的默认参数，导致第一次集成超时。两个测试已显式设置 UART_BAUD=9600，产品端及屏幕脚本不变。
 
-本机 32 位 ModelSim 在受限执行环境中出现 DLL 重定位问题，本次使用本机执行环境完成回归。
-铃声独立编译缓存曾在编译启动阶段异常退出并留下锁，入口已改为复用基础测试的 `sim/work` 库。
-Python 启动有安装位置提示，但检查程序退出码为 0；Tcl 构建脚本已合并标准错误输出，同时保留非零退出码检查。
+第一次 RAM 映射遇到器件不支持的噪声单口 RAM read-first 模式；改为 NOTE_START 读取、NOISE_COMMIT 写入的互斥读写后，重新通过逐时钟对照与物理实现。
+原有定点位宽截断提示和 V22 时钟一般布线的 PR1014 警告仍存在，最终 50 MHz 同步时序检查通过。
+本机 ModelSim 10.5b 为 32 位版本，受限环境启动有 DLL 问题，本次在本机执行环境运行；一次编译启动异常后复用已验证的测试库继续检查。
 
-没有执行真实开发板下载、串口屏烧录、示波器测量或实际扬声器试听。
-历史写卡 JSON 仅作既有操作记录，不能证明当前插卡状态。
+没有执行真实开发板下载、串口屏烧录、示波器测量或扬声器试听；仿真样本一致性不能替代板级测量。

@@ -8,7 +8,7 @@ module tb_uart_notes;
  integer displayed_note=-1,display_count=0;
  reg [6:0] expected_note=0;
  piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
-  .UART_CLK_HZ(76800),.UART_TIMEOUT_CYCLES(4000),.NOTE_GATE_CYCLES(30000),.NOTE_TAIL_CYCLES(40000)) dut (
+  .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),.NOTE_GATE_CYCLES(30000),.NOTE_TAIL_CYCLES(40000)) dut (
   .sys_clk(clk),.KEY0(k0),.KEY1(k1),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(),.sd_sck(),.sd_mosi(),.sd_miso(1'b1),.LEDs());
  `include "uart_test_tasks.vh"

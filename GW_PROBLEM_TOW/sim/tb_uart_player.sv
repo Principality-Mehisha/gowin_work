@@ -12,7 +12,7 @@ module uart_player_case #(
  reg [15:0] expected_notes[0:5];
  reg [7:0] last_track=0;
  piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
-  .UART_CLK_HZ(76800),.UART_TIMEOUT_CYCLES(4000),.SD_POWER_WAIT_CYCLES(16),
+  .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),.SD_POWER_WAIT_CYCLES(16),
   .SD_INIT_HALF_DIV(3),.SD_READ_HALF_DIV(3),.CLOCKS_PER_MS(128)) dut (
   .sys_clk(clk),.KEY0(k0),.KEY1(k1),.KEY2(k2),.uart_rx(rx),.uart_tx(),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(cs),.sd_sck(sck),

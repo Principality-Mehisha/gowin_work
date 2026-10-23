@@ -1,9 +1,0 @@
-{
-  "sample_rate": 16276,
-  "frames": 2400,
-  "duration_seconds": 0.147456,
-  "peak_pcm": 7704,
-  "rms_pcm": 4860.583278741691,
-  "mean_pcm": 36.20041666666667,
-  "source": "RTL simulation, B2 (event note 26), dynamics 192"
-}

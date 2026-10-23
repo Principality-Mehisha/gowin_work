@@ -1,48 +1,13 @@
-$ErrorActionPreference = "Stop"
-$root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$relativeTargets = @(
-    "work",
-    "sim/work",
-    "sim/controls_work",
-    "sim/ringtone_work",
-    "sim/uart_work",
-    "sim/work_score",
-    "sim/bass_work",
-    "sim/tone_work",
-    "tools/__pycache__",
-    "tools/vendor/mido/__pycache__",
-    "tools/vendor/mido/backends/__pycache__",
-    "tools/vendor/mido/messages/__pycache__",
-    "tools/vendor/mido/midifiles/__pycache__",
-    "tools/vendor/mido/scripts/__pycache__",
-    "tools/vendor/packaging/__pycache__",
-    "tools/vendor/packaging/licenses/__pycache__"
-)
-
-foreach ($relativeTarget in $relativeTargets) {
-    $target = Join-Path $root $relativeTarget
-    if (-not (Test-Path -LiteralPath $target)) { continue }
-
-    $resolvedTarget = (Resolve-Path -LiteralPath $target).Path
-    if (-not $resolvedTarget.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Refusing to clean a path outside the project: $resolvedTarget"
-    }
-
-    Remove-Item -LiteralPath $resolvedTarget -Recurse -Force
-    Write-Output "Removed generated cache: $relativeTarget"
+$ErrorActionPreference = 'Stop'
+$projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+$targets = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'sim') | Where-Object {
+    ($_.PSIsContainer -and ($_.Name -in @('work','work_score','marimba_wav') -or $_.Name -like '*_work')) -or
+    (-not $_.PSIsContainer -and ($_.Extension -in @('.log','.wlf','.vvp','.wav','.json') -or $_.Name -like '*_pcm.txt' -or $_.Name -eq 'transcript'))
+})
+$targets += @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'output') -ErrorAction SilentlyContinue | Where-Object Name -in @('score_test','ringtone_test','uart_test'))
+foreach ($item in $targets) {
+    $resolved = (Resolve-Path -LiteralPath $item.FullName).Path
+    if (-not $resolved.StartsWith($projectRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw "Outside project: $resolved" }
+    Remove-Item -LiteralPath $resolved -Recurse -Force
 }
-
-foreach ($relativeTarget in @("transcript", "vsim.wlf", "sim/transcript")) {
-    $target = Join-Path $root $relativeTarget
-    if (Test-Path -LiteralPath $target -PathType Leaf) {
-        Remove-Item -LiteralPath $target -Force
-        Write-Output "Removed simulator scratch file: $relativeTarget"
-    }
-}
-
-Get-ChildItem (Join-Path $root "sim") -File |
-    Where-Object { $_.Name -like "*.vvp" -or $_.Name -like "*_pcm.txt" } |
-    ForEach-Object {
-        Remove-Item -LiteralPath $_.FullName -Force
-        Write-Output "Removed simulator scratch file: sim/$($_.Name)"
-    }
+# Preserve bitstreams, optional installed dependencies and SD backups.

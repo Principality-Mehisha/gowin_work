@@ -32,7 +32,7 @@ module sd_ringtone_case #(
     if(dispatched>=`RINGTONE_EVENTS-1 || dut.synth_event_note!==expected_events[dispatched][46:40] ||
        dut.synth_event_on !== (expected_events[dispatched][55:48]!=0) ||
        dut.synth_event_dynamics !== {expected_events[dispatched][54:48],1'b0} ||
-       dut.sequencer.elapsed_ms < expected_events[dispatched][31:0])
+       dut.elapsed_ms < expected_events[dispatched][31:0])
       $fatal(1,"SD event mismatch event=%0d note=%0d",dispatched,dut.synth_event_note);
     if(dut.synth_event_on) ons=ons+1;
     dispatched=dispatched+1;

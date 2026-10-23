@@ -21,7 +21,7 @@ def excerpt(name):
         struct.pack('<IBBBB', *e) for e in short)
 
 def main():
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(parents=True,exist_ok=True)
     # Independent literal note names from the existing documented 88-key list.
     with (ROOT/'screen/tjc_uart/piano_88_notes.csv').open(encoding='utf-8-sig',newline='') as f:
         names=[row['Note'] for row in csv.DictReader(f)]

@@ -52,8 +52,8 @@ module score_player_case #(
         if (frame != 0) nonzero = nonzero + 1;
     end
     always @(posedge clk) if (dut.triggers != 0) begin
-        if (dut.sequencer.elapsed_ms == 0) first_ons = first_ons + 1;
-        if (dut.sequencer.elapsed_ms == 50) repeated = repeated + 1;
+        if (dut.elapsed_ms == 0) first_ons = first_ons + 1;
+        if (dut.elapsed_ms == 50) repeated = repeated + 1;
     end
     always @(posedge clk) if (dut.manual_mode && dut.synth_event_valid &&
                               dut.synth_event_ready && dut.synth_event_on) begin

@@ -1,4 +1,4 @@
-"""Verify C2-F5 RTL audio, calibration, pitch and preservation of B2-F5."""
+"""Verify current C2-F5 RTL audio, calibration and pitch."""
 from __future__ import annotations
 import hashlib
 import json
@@ -29,9 +29,6 @@ def main():
     attacks = [int(x,16) for x in (ROOT/'src/rom/marimba_attack48.hex').read_text().split()]
     sine = [int(x,16) for x in (ROOT/'src/rom/sine256.hex').read_text().split()]
     sine = [x-65536 if x>=32768 else x for x in sine]
-    baseline = ROOT/'sim/marimba_before_low_extension'
-    old_words = [int(x,16) for x in (baseline/'marimba31.hex').read_text().split()]
-    old_attacks = [int(x,16) for x in (baseline/'marimba_attack31.hex').read_text().split()]
     notes = list(range(NOTE_FIRST, NOTE_LAST+1))
     assert fit['notes'][:42] == notes
     assert len(words) == len(attacks) == 48 and len(notes) == 42
@@ -64,11 +61,6 @@ def main():
         pitch=measured_pitch(audio,expected)
         pitch_error=1200*math.log2(pitch/expected)
         assert abs(pitch_error)<2,(midi,pitch_error)
-        if midi>=47:
-            old_index=midi-47
-            assert words[index]==old_words[old_index] and attacks[index]==old_attacks[old_index]
-            previous=render_note(decode_modes(old_words[old_index]),old_attacks[old_index],sine,old_index)
-            assert np.array_equal(audio,previous),('B2-F5 changed',midi)
         results.append(dict(midi=midi,pitch_hz=pitch,pitch_error_cents=pitch_error,peak_pcm=peak,
                             weighted_rms=level,target_error_db=error,enabled_modes=sum(m[1]>0 for m in modes)))
         print(f'MIDI {midi}: matched, pitch={pitch_error:.4f} cents, RMS={level:.2f}',flush=True)
@@ -77,12 +69,12 @@ def main():
     assert max(abs(adjacent))<.6,'Level discontinuity'
     report=dict(source='ModelSim RTL, checked against independent integer model',mode_rom_sha256=rom_hash,
                 matched_samples=len(rtl),first_midi=NOTE_FIRST,last_midi=NOTE_LAST,note_count=len(notes),
-                unchanged_B2_F5_samples=31*16276,max_adjacent_level_change_db=float(max(abs(adjacent))),
+                max_adjacent_level_change_db=float(max(abs(adjacent))),
                 max_pitch_error_cents=max(abs(x['pitch_error_cents']) for x in results),
                 max_target_error_db=max(abs(x['target_error_db']) for x in results),
                 peak_pcm=max(x['peak_pcm'] for x in results),notes=results)
-    (ROOT/'sim/marimba42_report.json').write_text(json.dumps(report,indent=2),encoding='ascii')
-    print(f'PASS: {len(notes)} notes, {len(rtl)} exact RTL samples, B2-F5 unchanged')
+    (ROOT/'sim/marimba_audio_report.json').write_text(json.dumps(report,indent=2),encoding='ascii')
+    print(f'PASS: {len(notes)} notes, {len(rtl)} exact RTL samples')
 
 if __name__=='__main__':
     main()

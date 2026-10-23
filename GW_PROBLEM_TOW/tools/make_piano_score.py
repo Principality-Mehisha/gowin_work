@@ -9,11 +9,9 @@ import struct
 from pathlib import Path
 
 from midi_notes import read_notes
-from fat_test_fixtures import build, save_hex, save_full_fat32
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "sd_card"
-TEST = ROOT / "output/score_test"
 VOICES = 8
 
 
@@ -72,7 +70,6 @@ def main():
     events, peak = compile_notes(notes, duration)
     data = pack_score(events)
     OUT.mkdir(parents=True, exist_ok=True)
-    TEST.mkdir(parents=True, exist_ok=True)
     (OUT / "PIANO.BIN").write_bytes(data)
     report = {
         "title": "Croatian Rhapsody - Aemisiya piano MIDI arrangement",
@@ -84,27 +81,6 @@ def main():
         "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
     }
     (OUT / "PIANO.json").write_text(json.dumps(report, indent=2) + "\n", encoding="ascii")
-    (TEST / "events.hex").write_text(
-        "\n".join(struct.pack("<IBBBB", *event)[::-1].hex() for event in events) + "\n",
-        encoding="ascii")
-    save_full_fat32(data, output=TEST / "full.img", filename=b"PIANO   BIN")
-    # Coincident chord, repeated pitch, signed end marker, and a partial sector.
-    short_events = [
-        (0, 0, 39, 127, 0), (0, 1, 43, 100, 0), (0, 2, 46, 80, 0),
-        (35, 0, 39, 0, 0), (35, 1, 43, 0, 0), (35, 2, 46, 0, 0),
-        (50, 0, 39, 110, 0), (80, 0, 39, 0, 0), (100, 255, 255, 0, 0),
-    ]
-    short = pack_score(short_events)
-    (TEST / "short.bin").write_bytes(short)
-    for fat32 in (False, True):
-        save_hex(TEST / ("fat32.hex" if fat32 else "fat16.hex"),
-                 build(fat32, short, filename=b"PIANO   BIN"))
-    save_hex(TEST / "missing.hex", build(False, short, filename=b"PIANO   BIN", missing=True))
-    bad = b"RIFF" + short[4:]
-    save_hex(TEST / "wrong_format.hex", build(False, bad, filename=b"PIANO   BIN"))
-    (TEST / "params.vh").write_text(
-        f"`define SCORE_EVENTS {len(events)}\n`define SCORE_BYTES {len(data)}\n",
-        encoding="ascii")
     print(json.dumps(report, indent=2))
 
 

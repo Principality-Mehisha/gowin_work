@@ -30,7 +30,7 @@ def main():
     parts = []
     names = ("C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B")
     notes = []
-    for midi in range(NOTE_FIRST + 1):
+    for midi in range(NOTE_FIRST, NOTE_LAST + 1):
         selected = rows[rows[:, 0] == midi]
         assert np.array_equal(selected[:, 1], np.arange(16276))
         audio = selected[:, 2]

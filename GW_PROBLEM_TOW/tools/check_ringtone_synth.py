@@ -10,8 +10,6 @@ def main():
     events=[struct.unpack_from('<IBBBB',data,i) for i in range(16,len(data),8)]
     words=[int(x,16) for x in (ROOT/'src/rom/marimba48.hex').read_text().split()]
     attacks=[int(x,16) for x in (ROOT/'src/rom/marimba_attack48.hex').read_text().split()]
-    assert words[:42]==[int(x,16) for x in (ROOT/'src/rom/marimba42.hex').read_text().split()]
-    assert attacks[:42]==[int(x,16) for x in (ROOT/'src/rom/marimba_attack42.hex').read_text().split()]
     modes=[decode_modes(w) for w in words]
     sine=[int(x,16) for x in (ROOT/'src/rom/sine256.hex').read_text().split()]
     sine=[x-65536 if x>=32768 else x for x in sine]
@@ -59,7 +57,7 @@ def main():
                 source='Full-score marimba_synth RTL, exact independent polyphonic integer model comparison',
                 matched_samples=len(rtl),note_on_count=sum(e[3]>0 for e in events[:-1]),
                 score_sha256=hashlib.sha256(data).hexdigest(),peak_pcm=int(max(abs(rtl))),
-                existing_42_note_rom_unchanged=True,exact_sample_rate=OUT_FS,
+                mode_rom_sha256=hashlib.sha256((ROOT/'src/rom/marimba48.hex').read_bytes()).hexdigest(),exact_sample_rate=OUT_FS,
                 duration_seconds=len(rtl)/OUT_FS,preview=str(output.relative_to(ROOT)))
     (ROOT/'sim/android_ringtone_sd_audio_report.json').write_text(json.dumps(report,indent=2),encoding='ascii')
     print(json.dumps(report,indent=2));print('PASS: complete polyphonic realtime ringtone audio')

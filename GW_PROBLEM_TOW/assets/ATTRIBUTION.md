@@ -1,90 +1,28 @@
-# Piano Recording Attribution
+# 当前素材来源与使用方式
 
-The source WAV files in `piano/` are from **tonejs-instruments**,
-maintained by Nicholaus P. Brosowsky:
+## 马林巴参数拟合
 
-https://github.com/nbrosowsky/tonejs-instruments
+`marimba/source/{pp,mf,ff}/` 的 AIFF 来自 University of Iowa Electronic Music Studios Musical Instrument Samples，录制者为 Lawrence Fritts 及贡献者。
+来源页面：[Iowa MIS](https://theremin.music.uiowa.edu/MIS.html)。项目原有来源记录说明其录音可下载用于项目。
+源文件为 yarn mallet，96 kHz、24 位、双声道，保留各力度的实际测量来源。
+`tools/fit_marimba_params.py` 从源录音拟合当前 MIDI 36～83 的模态和起音参数，并以 A4=440 Hz 校准。
+`marimba/fit_report.json` 保存测量及校准结果。FPGA 只读取参数 ROM，不播放这些录音。
 
-The upstream `sample-source-info.txt` identifies the piano source as VSCO2:
+## 苹果铃声音符转写
 
-http://vis.versilstudios.net/vsco-community.html
+`ringtone/apple_marimba_2007.mp3` 的原有下载地址：
+[Awesome Ringtone Apple Marimba](https://raw.githubusercontent.com/w3teal/awesome-ringtone/main/Apple/2007%20-%20Marimba.mp3)。
+`apple_marimba_pcm_board.wav` 为保留的离线转写输入，`tools/make_ringtone_score.py` 估计音符起音、音高和力度，生成 `sd_card/RINGTONE.BIN`。
+原录音及音乐权利仍归相应品牌或作者；公开收录不代表获得额外授权。当前 FPGA 用实时马林巴模型演奏转写事件。
 
-The upstream repository distributes the samples under **CC BY 3.0**:
+## 三星安卓主题
 
-https://creativecommons.org/licenses/by/3.0/
+`ringtone/android/samsung_over_the_horizon_s3.mid` 的原有来源：
+[Samsung GT-E1270 phone-tone archive](http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid)。
+`tools/make_android_ringtone.py` 仅提取 GM Marimba 声部，合并同刻同音，保留音符时序和力度。
+其他乐器、声像、通道音量和固定弯音偏移不重现。音乐和 MIDI 权利仍归原权利人。
 
-The upstream license and source information are preserved in `piano/`.
-Source sample names: C1, Fs1, C2, Fs2, C3, Fs3, C4, Fs4,
-C5, Fs5, C6, Fs6, C7, Fs7, C8.
+## 钢琴
 
-Changes made for this FPGA project: stereo-to-mono conversion, trimming,
-anti-alias filtering, resampling to 16276.041667 Hz, normalization,
-final fade to zero for one-shot playback, and 8-bit mu-law encoding.
-The FPGA transposes neighboring recording zones to cover A0 through C8.
-Audio previews are derived from the same mu-law bank and playback algorithm.
-
-# Marimba PCM Attribution
-
-The source AIFF files in `marimba/source/` are from the University of Iowa
-Electronic Music Studios Musical Instrument Samples (MIS), recorded by
-Lawrence Fritts and contributors. The MIS site says its recordings may be
-downloaded and used for projects without restrictions:
-
-https://theremin.music.uiowa.edu/MIS.html
-
-Marimba source set: yarn mallet, pp/mf/ff, files named
-`Marimba.yarn.{pp,mf,ff}.{C2B2,C3B3,C4B4,C5B5}.aif`. The COMM chunks declare
-96 kHz, 24-bit stereo AIFF; the former 44.1 kHz interpretation was an error.
-Measured fundamentals validate MIDI 47 through 77 (B2-F5). The fitter
-anti-alias resamples to 24 kHz for analysis, retains measured modal frequency
-ratios, and tunes the fundamental to equal temperament at A4=440 Hz.
-
-The FPGA does not contain or play these recordings. `tools/fit_marimba_params.py`
-fits modal amplitudes, decay per second and a short attack envelope, then
-converts decay to the actual output rate and writes compact parameter ROMs.
-The separate fixed body-coloration filter is retained and included in the
-integer per-note level calibration; its coefficients are not newly measured
-body-residual peaks. The coherent mf set drives the ROM; pp/ff measurements
-are retained separately, not averaged across unrelated peaks.
-`assets/marimba/fit_report.json` records measured values, detected onsets, and
-the tuning, disabled modes and complete-chain level calibration method.
-
-# Experimental Apple Marimba Reference
-
-The current KEY0 selection has moved to the Android/Samsung event arrangement
-documented in `ANDROID_RINGTONE.md`; the Apple data below remains a reference.
-
-`assets/ringtone/apple_marimba_2007.mp3` is a listening reference obtained from
-the Awesome Ringtone collection:
-
-https://raw.githubusercontent.com/w3teal/awesome-ringtone/main/Apple/2007%20-%20Marimba.mp3
-
-The collection states that its ringtone files are third-party copies and that
-copyright remains with the relevant brand or creator. This file is included
-only for an experimental comparison. Earlier versions stored an IMA ADPCM
-representation for KEY0 comparison. As of 2026-10-23 the board-level design
-instead reads RINGTONE.BIN note events from SD and performs real-time modal
-marimba synthesis. The old ADPCM source, ROM and independent diagnostic test
-remain historical references and are not instantiated by the board player.
-The spectral event transcription estimates timing, pitches, chords and
-velocity; it does not reproduce the original recording waveform.
-
-# Samsung Android Theme Arrangement
-
-`ringtone/android/samsung_over_the_horizon_s3.mid` was downloaded from the
-public phone-tone archive at:
-
-http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid
-
-Samsung's official history identifies Over the Horizon as the Galaxy theme
-and describes the 2012 Galaxy S III version:
-
-https://news.samsung.com/global/over-the-horizon-the-evolution-of-the-samsung-galaxy-brand-sound
-
-The MIDI comes from a feature-phone arrangement of the same theme. Only its
-GM Marimba part is used, with one simultaneous unison merged to its stronger
-velocity. Timing and note velocity are retained; other instruments, pan,
-channel volume and the small fixed pitchwheel offset are not reproduced.
-This project renders the part with its existing real-time modal marimba.
-The original ringtone and MIDI rights remain with their respective owners;
-availability in the public archive is not a claim of an official license.
+当前钢琴波形使用数学函数和人工音色参数，不依赖旧采样钢琴素材。
+乐谱 MIDI 来源及改编记录见 `source/ATTRIBUTION.md` 和 `sd_card/PIANO.json`。

@@ -74,7 +74,7 @@ module uart_player_case #(
    send_frame(30,'h10,1,0,0);wait(dut.playing);
    // Switch while playing; filename/format/synth must change as one operation.
    send_frame(31,'h10,3,0,0);wait(dut.selected_track==3);wait(dut.playing);
-   if(dut.marimba_mode || dut.decoder.marimba_format) $fatal(1,"Switch format wrong");
+   if(dut.marimba_mode || dut.score_stream.decoder.marimba_format) $fatal(1,"Switch format wrong");
    send_frame(32,'h11,0,0,0);repeat(20)@(negedge clk);
    if(!dut.manual_mode || dut.pcm!=0 || cs!==1) $fatal(1,"Stop not silent/reset");
    // Stop during loading and restart, physical keys, and board reset.

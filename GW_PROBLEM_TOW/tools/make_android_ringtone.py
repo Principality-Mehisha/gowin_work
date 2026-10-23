@@ -4,7 +4,6 @@ import hashlib,heapq,json,math,struct,sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent/'vendor'))
 import mido
-from fat_test_fixtures import build,save_hex
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/'assets/ringtone/android/samsung_over_the_horizon_s3.mid'
 SOURCE_URL='http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid'
@@ -65,13 +64,6 @@ def main():
         note_range=[min(n['midi'] for n in notes),max(n['midi'] for n in notes)],max_midi_overlap=peak,
         notes=notes,events=[dict(zip(('time_ms','slot','midi','velocity','reserved'),e)) for e in events])
     (out/'ANDROID.json').write_text(json.dumps(report,indent=2),encoding='utf8')
-    fixtures=ROOT/'output/ringtone_test';fixtures.mkdir(exist_ok=True)
-    for fat in (False,True):save_hex(fixtures/('fat32.hex' if fat else 'fat16.hex'),build(fat,payload,filename=b'ANDROID BIN'))
-    save_hex(fixtures/'missing.hex',build(False,payload,missing=True,filename=b'ANDROID BIN'))
-    wrong=bytearray(payload);wrong[:4]=b'P88S';save_hex(fixtures/'wrong_format.hex',build(False,bytes(wrong),filename=b'ANDROID BIN'))
-    bad=bytearray(payload);bad[21]=35;save_hex(fixtures/'bad_note.hex',build(False,bytes(bad),filename=b'ANDROID BIN'))
-    (fixtures/'params.vh').write_text(f'`define RINGTONE_EVENTS {len(events)}\n`define RINGTONE_NOTE_ONS {len(notes)}\n`define RINGTONE_FRAMES {(end*50000000+3072000-1)//3072000}\n',encoding='ascii')
-    (fixtures/'events.hex').write_text(''.join(f'{int.from_bytes(struct.pack("<IBBBB",*e),"little"):016x}\n' for e in events),encoding='ascii')
     print(json.dumps({k:v for k,v in report.items() if k not in ('notes','events')},indent=2))
     print([(n['time_ms'],n['midi'],n['velocity']) for n in notes])
 if __name__=='__main__':main()

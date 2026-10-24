@@ -1,0 +1,7 @@
+impl/
+*.gprj.user
+sim/work/
+sim/*.log
+sim/*.wlf
+sim/transcript
+sim/modelsim.ini

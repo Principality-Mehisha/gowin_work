@@ -1,0 +1,7 @@
+// Reuse the existing Tang Mega 60K / NEO Dock 3.3 V PMOD mapping.
+IO_LOC "sys_clk" V22;
+IO_PORT "sys_clk" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+// FPGA ball AB20 = existing projects' PMOD LEDs[0] signal.
+// Feed a 3.3 V -> 5 V logic buffer, then the first WS2812B-F5 DIN.
+IO_LOC "led_data" AB20;
+IO_PORT "led_data" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8 BANK_VCCIO=3.3;

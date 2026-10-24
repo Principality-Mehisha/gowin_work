@@ -17,7 +17,7 @@ module tb_waterfall;
         .frame_number(frame_number), .busy(busy), .overflow(overflow));
     reg [87:0] expected_keys [0:`SCORE_LOOP_FRAMES-1];
     reg [7:0] expected_count [0:`SCORE_LOOP_FRAMES-1];
-    reg [87:0] seen = 0;
+    reg [87:0] seen = 0, expected_seen = 0;
     integer frame, slot, count, cycles, max_cycles;
     initial begin
         $readmemh("sim/expected_keys.hex", expected_keys);
@@ -25,6 +25,8 @@ module tb_waterfall;
         repeat (3) @(negedge clk);
         reset_n = 1;
         max_cycles = 0;
+        for (frame=0; frame<`SCORE_LOOP_FRAMES; frame=frame+1)
+            expected_seen = expected_seen | expected_keys[frame];
         // Continue across loop wrap to catch reset/address/slot reuse errors.
         for (frame=1; frame<`SCORE_LOOP_FRAMES+250; frame=frame+1) begin
             tick = 1;
@@ -54,8 +56,8 @@ module tb_waterfall;
             seen = seen | lit;
             @(negedge clk);
         end
-        if (seen !== {88{1'b1}}) $fatal(1,"Not all 88 keys exercised");
-        $display("PASS: all 88 keys, chords, exact arrival/release, slot reuse, loop; max update %0d clocks",max_cycles);
+        if (seen !== expected_seen) $fatal(1,"Not all score pitches exercised");
+        $display("PASS: full score pitches, chords, exact arrival/release, slot reuse, loop; max update %0d clocks",max_cycles);
         passed = 1;
         $finish;
     end

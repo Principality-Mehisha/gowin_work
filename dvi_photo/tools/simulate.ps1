@@ -14,6 +14,8 @@ Push-Location $root
 try {
     & $PythonExe tools/generate_waterfall.py
     if ($LASTEXITCODE -ne 0) { throw "ROM/reference generation failed" }
+    & $PythonExe -m unittest discover -s sim -p test_score_bin.py -v
+    if ($LASTEXITCODE -ne 0) { throw "P88S decoding/audit failed" }
     & $PythonExe tools/render_waterfall.py --reference
     if ($LASTEXITCODE -ne 0) { throw "Pixel reference generation failed" }
     if ($IcarusBin) {

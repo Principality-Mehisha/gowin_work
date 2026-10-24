@@ -46,11 +46,13 @@ module tb_scene;
         repeat (3) @(negedge clk);
         reset_n = 1;
         while (dut.busy) @(negedge clk);
-        // Seed unobserved time before the first demo note expires (frame 228).
-        // Two real updates enqueue every due event, settle highlights and build
-        // the final bitmap. tb_waterfall separately checks the complete timeline.
-        dut.engine.frame_number = 16'd198;
-        for (frame=199; frame<=200; frame=frame+1) begin
+        // Seed only when all earlier notes remain visible at frame 198.
+        // Full start/loop timing is separately checked by tb_waterfall.
+        if (`SCORE_SEED_PREVIEW) begin
+            dut.engine.frame_number = 16'd198;
+            frame=199;
+        end else frame=1;
+        for (frame=frame; frame<=200; frame=frame+1) begin
             tick = 1;
             @(negedge clk); tick = 0;
             while (dut.busy) @(negedge clk);

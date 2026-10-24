@@ -1,75 +1,34 @@
 `timescale 1ns/1ps
+// VESA DMT 0x53: 1600x900 at 60 Hz, 108 MHz pixels, positive HS/VS.
 module video_source (
-    input wire pixel_clk,
-    input wire reset_n,
-    input wire test_pattern,
-    output wire [7:0] red,
-    output wire [7:0] green,
-    output wire [7:0] blue,
-    output reg hsync,
-    output reg vsync,
-    output reg de
+    input wire pixel_clk, input wire reset_n, input wire test_pattern,
+    output wire [7:0] red, green, blue,
+    output wire hsync, vsync, de
 );
-    // 640x480: 16/96/48 horizontal and 10/2/33 vertical blanking.
-    reg [9:0] x;
+    reg [10:0] x;
     reg [9:0] y;
-    wire active = (x < 640) && (y < 480);
-    wire photo_area = active && (x >= 112) && (x < 528);
-    wire [9:0] photo_x = x - 10'd112;
-    wire [15:0] row = {8'd0, y[8:1]};
-    wire [15:0] address = (row << 7) + (row << 6) + (row << 4)
-                        + {7'd0, photo_x[9:1]};
-    wire [15:0] rom_pixel;
-    photo_rom image_rom(.clk(pixel_clk), .address(address), .pixel(rom_pixel));
-
-    reg photo_valid;
-    reg pattern_valid;
-    reg [23:0] bars;
-    reg [23:0] bars_d;
-    always @* begin
-        if      (x < 80)  bars = 24'hffffff;
-        else if (x < 160) bars = 24'hffff00;
-        else if (x < 240) bars = 24'h00ffff;
-        else if (x < 320) bars = 24'h00ff00;
-        else if (x < 400) bars = 24'hff00ff;
-        else if (x < 480) bars = 24'hff0000;
-        else if (x < 560) bars = 24'h0000ff;
-        else             bars = 24'h000000;
-    end
-
-    // Delay all sideband signals by exactly the ROM's one clock latency.
+    reg [4:0] hs_pipe, vs_pipe, de_pipe;
+    reg frame_tick;
+    wire [23:0] rgb;
+    piano_scene scene(.clk(pixel_clk), .reset_n(reset_n), .frame_tick(frame_tick),
+        .x(x), .y(y), .test_pattern(test_pattern), .rgb(rgb));
     always @(posedge pixel_clk or negedge reset_n) begin
         if (!reset_n) begin
-            x <= 0;
-            y <= 0;
-            de <= 0;
-            hsync <= 1;
-            vsync <= 1;
-            photo_valid <= 0;
-            pattern_valid <= 0;
-            bars_d <= 0;
+            x <= 0; y <= 0;
+            hs_pipe <= 0; vs_pipe <= 0; de_pipe <= 0; frame_tick <= 0;
         end else begin
-            if (x == 799) begin
+            frame_tick <= (x == 1799 && y == 899);
+            if (x == 1799) begin
                 x <= 0;
-                y <= (y == 524) ? 10'd0 : y + 10'd1;
-            end else
-                x <= x + 10'd1;
-            de <= active;
-            hsync <= !((x >= 656) && (x < 752));
-            vsync <= !((y >= 490) && (y < 492));
-            photo_valid <= photo_area;
-            pattern_valid <= test_pattern;
-            bars_d <= bars;
+                y <= y == 999 ? 10'd0 : y + 1'b1;
+            end else x <= x + 1'b1;
+            hs_pipe <= {hs_pipe[3:0], (x >= 1624 && x < 1704)};
+            vs_pipe <= {vs_pipe[3:0], (y >= 901 && y < 904)};
+            de_pipe <= {de_pipe[3:0], (x < 1600 && y < 900)};
         end
     end
-
-    wire [23:0] photo_rgb = {
-        rom_pixel[15:11], rom_pixel[15:13],
-        rom_pixel[10:5], rom_pixel[10:9],
-        rom_pixel[4:0], rom_pixel[4:2]
-    };
-    wire [23:0] rgb = !de ? 24'h000000 :
-                       pattern_valid ? bars_d :
-                       photo_valid ? photo_rgb : 24'h000000;
-    assign {red, green, blue} = rgb;
+    assign hsync = hs_pipe[4];
+    assign vsync = vs_pipe[4];
+    assign de = de_pipe[4];
+    assign {red,green,blue} = rgb;
 endmodule

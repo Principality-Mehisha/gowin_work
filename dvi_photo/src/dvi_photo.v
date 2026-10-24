@@ -39,7 +39,7 @@ module dvi_photo (
         end else begin
             key_sync <= {key_sync[0], KEY0};
             // Update only during vertical blanking: no mid-frame mode tearing.
-            if (!vsync)
+            if (vsync)
                 pattern <= !key_sync[1];
         end
     end

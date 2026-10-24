@@ -1,68 +1,52 @@
 `timescale 1ns/1ps
 module tb_video;
-    reg clk = 0;
-    always #20 clk = ~clk;
-    reg reset_n = 0;
-    reg test_pattern = 0;
-    wire [7:0] r, g, b;
-    wire hs, vs, de;
-    video_source dut(.pixel_clk(clk), .reset_n(reset_n),
-        .test_pattern(test_pattern), .red(r), .green(g), .blue(b),
-        .hsync(hs), .vsync(vs), .de(de));
-    reg [15:0] pixels [0:49919];
-    integer x, y, pass, address, count, f;
-    reg [15:0] pixel;
+    reg clk=0;
+    always #4.629630 clk=~clk;
+    reg reset_n=0;
+    wire [7:0] r,g,b;
+    wire hs,vs,de;
+    reg passed=0;
+    video_source dut(.pixel_clk(clk),.reset_n(reset_n),.test_pattern(1'b1),
+        .red(r),.green(g),.blue(b),.hsync(hs),.vsync(vs),.de(de));
+    integer cycle,n,x,y,active_count=0,hs_count=0,vs_count=0;
     reg [23:0] expected;
     initial begin
-        $readmemh("src/photo_rgb565.hex", pixels);
-        f = $fopen("sim/frame.ppm", "w");
-        $fwrite(f, "P3\n640 480\n255\n");
-        repeat (3) @(negedge clk);
-        reset_n = 1;
-        count = 0;
-        for (pass = 0; pass < 2; pass = pass + 1) begin
-            for (y = 0; y < 525; y = y + 1) begin
-                for (x = 0; x < 800; x = x + 1) begin
-                    @(posedge clk);
-                    #1;
-                    if (de !== ((x < 640) && (y < 480)) ||
-                        hs !== !((x >= 656) && (x < 752)) ||
-                        vs !== !((y >= 490) && (y < 492)))
-                        $fatal(1, "Timing mismatch x=%0d y=%0d", x, y);
-                    expected = 0;
-                    if ((x < 640) && (y < 480)) begin
-                        if (pass == 0 && x >= 112 && x < 528) begin
-                            address = (y / 2) * 208 + (x - 112) / 2;
-                            pixel = pixels[address];
-                            expected = {pixel[15:11], pixel[15:13],
-                                pixel[10:5], pixel[10:9], pixel[4:0], pixel[4:2]};
-                        end else if (pass == 1) begin
-                            case (x / 80)
-                                0: expected = 24'hffffff;
-                                1: expected = 24'hffff00;
-                                2: expected = 24'h00ffff;
-                                3: expected = 24'h00ff00;
-                                4: expected = 24'hff00ff;
-                                5: expected = 24'hff0000;
-                                6: expected = 24'h0000ff;
-                                7: expected = 24'h000000;
-                            endcase
-                        end
-                        if (pass == 0) begin
-                            $fwrite(f, "%0d %0d %0d\n", r, g, b);
-                            count = count + 1;
-                        end
-                    end
-                    if ({r,g,b} !== expected)
-                        $fatal(1, "Pixel mismatch pass=%0d x=%0d y=%0d", pass,x,y);
+        repeat(3) @(negedge clk);
+        reset_n=1;
+        for(cycle=0;cycle<1800004;cycle=cycle+1) begin
+            @(posedge clk); #1;
+            n=cycle-4;
+            if(n>=0) begin
+                x=n%1800; y=n/1800;
+                if(de !== (x<1600 && y<900) || hs !== (x>=1624 && x<1704)
+                   || vs !== (y>=901 && y<904))
+                    $fatal(1,"Timing mismatch at x=%0d y=%0d",x,y);
+                if(de) active_count=active_count+1;
+                if(hs) hs_count=hs_count+1;
+                if(vs) vs_count=vs_count+1;
+                expected=0;
+                if(x<1600 && y<900) begin
+                    case(x/200)
+                        0:expected=24'hffffff;
+                        1:expected=24'hffff00;
+                        2:expected=24'h00ffff;
+                        3:expected=24'h00ff00;
+                        4:expected=24'hff00ff;
+                        5:expected=24'hff0000;
+                        6:expected=24'h0000ff;
+                        7:expected=24'h000000;
+                    endcase
                 end
+                if({r,g,b} !== expected)
+                    $fatal(1,"Color/blanking mismatch x=%0d y=%0d got=%h",x,y,{r,g,b});
             end
             @(negedge clk);
-            test_pattern = 1;
         end
-        $fclose(f);
-        if (count != 307200) $fatal(1, "Incorrect frame size");
-        $display("PASS: photo pixels, 2x scaling, black bars, color bars, two 800x525 frames");
+        if(active_count!=1440000 || hs_count!=80000 || vs_count!=5400)
+            $fatal(1,"Frame/sync pulse size mismatch");
+        if(dut.scene.overflow || dut.scene.bitmap_overflow || dut.scene.busy) $fatal(1,"Scheduler overran real vertical blanking");
+        $display("PASS: 1800x1000 raster, 1600x900 active, +HS/+VS, 108MHz, RGB/control alignment");
+        passed=1;
         $finish;
     end
 endmodule

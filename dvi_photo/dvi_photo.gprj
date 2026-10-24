@@ -9,7 +9,11 @@
         <File path="src/video_clock.v" type="file.verilog" enable="1"/>
         <File path="src/pll_init.v" type="file.verilog" enable="1"/>
         <File path="src/video_source.v" type="file.verilog" enable="1"/>
-        <File path="src/photo_rom.v" type="file.verilog" enable="1"/>
+        <File path="src/piano_roll_bitmap.v" type="file.verilog" enable="1"/>
+        <File path="src/piano_scene.v" type="file.verilog" enable="1"/>
+        <File path="src/waterfall_engine.v" type="file.verilog" enable="1"/>
+        <File path="src/piano_keymap.v" type="file.verilog" enable="1"/>
+        <File path="src/piano_score_rom.v" type="file.verilog" enable="1"/>
         <File path="src/tmds_encoder.v" type="file.verilog" enable="1"/>
         <File path="src/dvi_tx.v" type="file.verilog" enable="1"/>
         <File path="src/dvi_photo.cst" type="file.cst" enable="1"/>

@@ -1,13 +1,12 @@
 `timescale 1ns/1ps
-module tb_uart_protocol;
- localparam UART_TICKS=5208;
+module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  reg clk=0,rst_n=0,rx=1,passed=0;
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
  wire note_previous,note_next,note_play;
- wire select_piano,select_marimba;
- reg marimba_selected=0;
- integer piano_count=0,marimba_count=0;
+ wire select_piano,select_marimba,select_clarinet;
+ reg marimba_selected=0,clarinet_selected=0;
+ integer piano_count=0,marimba_count=0,clarinet_count=0;
  integer previous_count=0,next_count=0,note_count=0;
  wire [7:0] track;
  reg [7:0] state=0,selected=0,error=0;
@@ -17,11 +16,12 @@ module tb_uart_protocol;
  integer results[0:255],commands[0:255],states[0:255],tracks[0:255];
  reg seen[0:255];
  reg overflow_reported=0;
- uart_score_control #(.TIMEOUT_CYCLES(150000)) dut (
+ uart_score_control #(.CLK_HZ(UART_TICKS*9600),.TIMEOUT_CYCLES(150000)) dut (
   .clk(clk),.rst_n(rst_n),.rx(rx),.tx(tx),.player_state(state),
   .player_track(selected),.player_error(error),.play_request(play),
   .selected_note(note_selected),
   .selected_marimba(marimba_selected),.note_select_piano(select_piano),.note_select_marimba(select_marimba),
+  .selected_clarinet(clarinet_selected),.note_select_clarinet(select_clarinet),
   .stop_request(stop),.requested_track(track),.overflow(overflow),
   .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
@@ -31,8 +31,9 @@ module tb_uart_protocol;
   if(note_previous) begin previous_count=previous_count+1;note_selected<=(note_selected==0)?87:note_selected-1'b1;end
   if(note_next) begin next_count=next_count+1;note_selected<=(note_selected==87)?0:note_selected+1'b1;end
   if(note_play) note_count=note_count+1;
-  if(select_piano) begin piano_count=piano_count+1;marimba_selected<=0;end
-  if(select_marimba) begin marimba_count=marimba_count+1;marimba_selected<=1;end
+  if(select_piano) begin piano_count=piano_count+1;marimba_selected<=0;clarinet_selected<=0;end
+  if(select_marimba) begin marimba_count=marimba_count+1;marimba_selected<=1;clarinet_selected<=0;end
+  if(select_clarinet) begin clarinet_count=clarinet_count+1;marimba_selected<=0;clarinet_selected<=1;end
  end
  // Decode physical TX independently of the transmitter/formatter internals.
  reg [7:0] c;
@@ -63,7 +64,8 @@ module tb_uart_protocol;
      field=7;
     end else if(field==7) begin
      if(text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""} &&
-        text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""})
+        text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""} &&
+        text_command!={"every.tInstrument.txt=\"",48'hb5a5bbc9b9dc,"\""})
       $fatal(1,"Native instrument command invalid: %h",text_command);
      if(fields[4]==20 && fields[5]=='h44 &&
         text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""})
@@ -71,6 +73,9 @@ module tb_uart_protocol;
      if(fields[4]==21 && fields[5]=='h43 &&
         text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""})
       $fatal(1,"Piano reply snapshot precedes execution");
+     if(fields[4]==25 && fields[5]=='h45 &&
+        text_command!={"every.tInstrument.txt=\"",48'hb5a5bbc9b9dc,"\""})
+      $fatal(1,"Clarinet reply snapshot precedes execution");
      if(fields[2]=='h60) overflow_reported=1;
      snapshots=snapshots+1;
      if(fields[5]!=8'h81) begin
@@ -110,7 +115,7 @@ module tb_uart_protocol;
   wait(snapshots==1);
   send_frame(1,'h10,1,0,0);expect_reply(1,0,'h10);
   if(starts!=1 || states[1]!=1 || tracks[1]!=1) $fatal(1,"Play snapshot precedes command execution");
-  send_frame(2,'h10,4,0,0);expect_reply(2,1,'h10);
+  send_frame(2,'h10,5,0,0);expect_reply(2,1,'h10);
   send_frame(3,'h10,2,1,0);expect_reply(3,1,'h10);
   send_frame(4,'h99,0,0,0);expect_reply(4,2,'h99);
   if(starts!=1) $fatal(1,"Invalid request changed player");
@@ -133,7 +138,7 @@ module tb_uart_protocol;
   // Bad stop bit/break and a short low glitch must recover cleanly.
   @(negedge clk);rx=0;repeat(UART_TICKS*12) @(negedge clk);
   rx=1;repeat(UART_TICKS*2) @(negedge clk);
-  rx=0;repeat(20) @(negedge clk);rx=1;repeat(UART_TICKS*2) @(negedge clk);
+  rx=0;repeat(UART_TICKS/260>0 ? UART_TICKS/260 : 1) @(negedge clk);rx=1;repeat(UART_TICKS*2) @(negedge clk);
   send_frame(11,'h10,3,0,0);expect_reply(11,0,'h10);
   if(starts!=2 || selected!=3) $fatal(1,"RX did not recover after framing error");
   // Queue several replies while the long native return is still in flight.
@@ -157,6 +162,14 @@ module tb_uart_protocol;
   send_frame(24,'h44,0,0,1);expect_reply(24,1,'h44);
   if(piano_count!=1 || marimba_count!=1 || marimba_selected)
    $fatal(1,"Instrument commands accepted invalid parameters");
+  send_frame(25,'h45,0,0,0);expect_reply(25,0,'h45);
+  send_frame(26,'h45,1,0,0);expect_reply(26,1,'h45);
+  send_frame(27,'h45,0,1,0);expect_reply(27,1,'h45);
+  send_frame(28,'h45,0,0,1);expect_reply(28,1,'h45);
+  if(clarinet_count!=1 || !clarinet_selected || marimba_selected)
+   $fatal(1,"Clarinet command/parameters");
+  send_frame(29,'h10,4,0,0);expect_reply(29,0,'h10);
+  if(starts!=3 || selected!=4 || tracks[29]!=4)$fatal(1,"Fourth SD track command failed");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

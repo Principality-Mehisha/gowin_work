@@ -1,16 +1,18 @@
 `timescale 1ns/1ps
 module tb_note_audition;
  reg clk=0,rst_n=0,prev=0,next=0,play=0,cancel=0,ready=0,passed=0;
- reg piano_request=0,marimba_request=0;
+ reg piano_request=0,marimba_request=0,clarinet_request=0;
  always #10 clk=~clk;
  wire valid,on,busy,clear;
  wire marimba;
+ wire clarinet;
  wire [6:0] selected,note;
  wire [7:0] dynamics;
  integer i,ons=0,offs=0;
  uart_note_audition #(.GATE_CYCLES(8),.TAIL_CYCLES(8)) dut (
   .clk(clk),.rst_n(rst_n),.previous_request(prev),.next_request(next),.play_request(play),
   .select_piano_request(piano_request),.select_marimba_request(marimba_request),.selected_marimba(marimba),
+  .select_clarinet_request(clarinet_request),.selected_clarinet(clarinet),
   .cancel(cancel),.event_ready(ready),.selected_note(selected),.event_valid(valid),
   .event_on(on),.event_note(note),.event_dynamics(dynamics),.busy(busy),.clear(clear));
  always @(posedge clk) if(valid && ready) begin
@@ -26,12 +28,12 @@ module tb_note_audition;
   begin @(negedge clk);play=1;@(negedge clk);play=0;end
  endtask
  task select_instrument;
-  input which;
+  input [1:0] which;
   begin
-   @(negedge clk);piano_request=!which;marimba_request=which;
+   @(negedge clk);piano_request=(which==0);marimba_request=(which==1);clarinet_request=(which==2);
    #1;if(valid) $fatal(1,"Instrument switch leaked an event");
-   @(negedge clk);piano_request=0;marimba_request=0;
-   if(busy || valid || marimba!==which) $fatal(1,"Instrument switch did not cancel audition");
+   @(negedge clk);piano_request=0;marimba_request=0;clarinet_request=0;
+   if(busy || valid || marimba!==(which==1) || clarinet!==(which==2)) $fatal(1,"Instrument switch did not cancel audition");
   end
  endtask
  initial begin
@@ -87,7 +89,31 @@ module tb_note_audition;
   trigger();select_instrument(0);if(selected!=1) $fatal(1,"Reselection lost pitch");
   select_instrument(1);step_next();@(negedge clk);rst_n=0;@(negedge clk);rst_n=1;
   if(selected || busy || marimba || dut.marimba_note!=15) $fatal(1,"Reset must restore both instruments");
-  passed=1;$display("PASS audition: all 88 piano/48 marimba notes, MIDI mapping, wraps, memory, backpressure, held pitch, switch in every state, retrigger/cancel/reset");$finish;
+  ready=0;select_instrument(2);
+  for(i=0;i<45;i=i+1) begin
+   if(selected!=i+29 || busy || valid) $fatal(1,"Clarinet selection/order %0d",i);
+   trigger();repeat(3)@(negedge clk);
+   if(!valid || !on || note!=i+50) $fatal(1,"Clarinet MIDI on %0d",i);
+   ready=1;@(negedge clk);ready=0;
+   wait(valid && !on);repeat(3)@(negedge clk);
+   if(!valid || on || note!=i+50) $fatal(1,"Clarinet MIDI off %0d",i);
+   ready=1;@(negedge clk);ready=0;wait(!busy);
+   if(!clear) $fatal(1,"Clarinet tail clear missing");
+   step_next();
+  end
+  if(selected!=29) $fatal(1,"Bb6 next must wrap to D3");
+  step_previous();if(selected!=73) $fatal(1,"D3 previous must wrap to Bb6");
+  trigger();step_next();if(note!=94 || selected!=29) $fatal(1,"Clarinet held pitch changed");
+  select_instrument(0);if(selected!=0) $fatal(1,"Piano memory lost");
+  select_instrument(1);if(selected!=15) $fatal(1,"Marimba memory lost");
+  select_instrument(2);if(selected!=29) $fatal(1,"Clarinet memory lost");
+  ready=1;trigger();wait(dut.state==2);select_instrument(1);
+  select_instrument(2);trigger();wait(dut.state==2);@(negedge clk);ready=0;
+  wait(valid && !on);select_instrument(0);
+  ready=1;select_instrument(2);trigger();wait(dut.state==4);select_instrument(2);
+  step_next();@(negedge clk);rst_n=0;@(negedge clk);rst_n=1;
+  if(clarinet || marimba || selected || busy || dut.clarinet_note!=29) $fatal(1,"Three-instrument reset");
+  passed=1;$display("PASS audition: all 88 piano/48 marimba/45 clarinet notes, MIDI mapping, wraps, memory, backpressure and switching");$finish;
  end
  initial begin #10000000;$fatal(1,"Note audition timeout");end
 endmodule

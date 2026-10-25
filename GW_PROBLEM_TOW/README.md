@@ -1,7 +1,7 @@
-# Tang Mega 60K 实时马林巴与钢琴播放器
+# Tang Mega 60K 实时钢琴、马林巴与单簧管播放器
 
 工程入口：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`，板载时钟 50 MHz。
-SD 卡保存音符事件，FPGA 实时计算钢琴或马林巴波形，通过 PT8211 输出。
+SD 卡保存音符事件，FPGA 实时计算钢琴、马林巴或单簧管波形，通过 PT8211 输出。
 
 ## 当前功能
 
@@ -10,10 +10,10 @@ SD 卡保存音符事件，FPGA 实时计算钢琴或马林巴波形，通过 PT
 | KEY0 | 从 SD 根目录播放 ANDROID.BIN，再按停止；结束返回手动试听 |
 | KEY1 | 马林巴 C2～F5 的 42 音逐音试听，F5 后回到 C2 |
 | KEY2 | 低有效复位，恢复默认模式及音符选择 |
-| 串口选曲 | 1=ANDROID.BIN，2=RINGTONE.BIN，3=PIANO.BIN |
-| 串口单音 | 40=上一个，41=下一个，42=播放；43=选择钢琴，44=选择马林巴，命令均为十六进制 |
+| 串口选曲 | 1=ANDROID.BIN，2=RINGTONE.BIN，3=PIANO.BIN，4=CLARINET.BIN |
+| 串口单音 | 40=上一个，41=下一个，42=播放；43=选择钢琴，44=选择马林巴，45=选择单簧管，命令均为十六进制 |
 
-串口单音支持钢琴 A0～C8 共 88 音及马林巴 C2～B5 共 48 音，分别记忆选择；复位选中钢琴 A0，马林巴初始 C2。
+串口单音支持钢琴 A0～C8 共 88 音、马林巴 C2～B5 共 48 音及单簧管 D3～B♭6 共 45 音，分别记忆选择；复位选中钢琴 A0，马林巴初始 C2，单簧管初始 D3。
 选音不发声，切换乐器清音；播放约 0.5 秒后发送释放，再保留约 1 秒尾音窗口。
 音名和所选试听乐器自动回传至串口屏 `every.tNote`、`every.tInstrument`。单音试听不需要 SD 卡。
 
@@ -24,12 +24,12 @@ src/
   board/       引脚入口、系统集成、复位、CST/SDC
   control/     播放控制、按键、UART、单音试听、屏幕反馈
   storage/     SD SPI、FAT、乐谱解码和事件调度
-  audio/       钢琴/马林巴合成、包络、琴体滤波、限幅、PT8211
-  rom/         当前五个函数/参数 ROM
+  audio/       钢琴/马林巴/单簧管合成、包络、琴体滤波、限幅、PT8211
+  rom/         当前六个函数/参数 ROM
 tools/         构建、结构/时序检查、乐谱和音色生成工具
 sim/           当前功能的测试平台和仿真入口
 screen/        可复制到串口屏工程的事件脚本
-sd_card/       三首 BIN、转换说明 JSON 和写卡记录
+sd_card/       四首 BIN、转换说明 JSON 和写卡记录
 assets/        当前参数拟合及乐谱转写所需素材、来源说明
 source/        钢琴 MIDI 及来源说明
 docs/          架构、串口、音频/存储说明；reference/ 为设计参考资料
@@ -52,9 +52,12 @@ GW_PROBLEM_TOW
    ├─ key_audition：实体按键试听
    ├─ sd_score_stream
    │  └─ SD SPI → FAT → 乐谱校验 → FIFO/定时事件
-   ├─ piano_synth / marimba_synth：实时合成
+   ├─ piano_synth / marimba_synth / clarinet_synth：实时合成
    └─ pt8211_score_tx：输出采样节拍和 DAC 串行数据
 ```
+
+单簧管为单声部实时加法合成，ROM 只存参数；接入与验证见 [单簧管说明](docs/CLARINET.md)。
+第 4 首 SD 曲目为肖邦《夜曲》Op.9 No.2 单簧管独奏，文件和播放方法见 [夜曲说明](docs/NOCTURNE_CLARINET.md)。
 
 详见 [架构说明](docs/ARCHITECTURE.md)、[音频与乐谱](docs/AUDIO_AND_SD.md)。
 马林巴同步 RAM 优化及音频等价性验证见 [存储优化说明](docs/MARIMBA_STORAGE.md)。
@@ -74,7 +77,7 @@ GW_PROBLEM_TOW
 UART 波特率由 `piano_score_player.UART_BAUD` 决定，当前默认 115200/8N1；屏幕 TX 接 FPGA RX=B17，屏幕 RX 接 FPGA TX=B18，共地。
 屏幕配置脚本和主机工具默认已对齐为 115200；沿用旧 9600 屏幕工程时须同步修改波特率。
 串口屏供电按其规格独立提供。球位不能直接当作排针脚号。
-屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，五键与音名/乐器显示见 [双乐器逐音试听](docs/UART_THREE_KEYS.md)。
+屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，五键与音名/乐器显示见 [三乐器逐音试听](docs/UART_THREE_KEYS.md)。
 
 ## 构建与验证
 
@@ -97,6 +100,8 @@ python -m pip install --target output/marimba_tools numpy scipy
 单项入口：`sim/run.ps1`、`run_uart.ps1`、`run_score.ps1`、`run_ringtone.ps1`。
 `sim/demo.ps1` 生成钢琴试听，`sim/gui.ps1` 打开合成器波形。
 `sim/run_marimba_audio.ps1` 可额外渲染、核对并导出 42 音马林巴试听（不在默认回归中）。
+`sim/run_clarinet.ps1` 可独立验证三乐器控制，并将 45 音单簧管 RTL 输出与整数模型逐样本核对、导出试听 WAV。
+`sim/run_nocturne.ps1` 检查完整夜曲事件、SD 读卡与第 4 首命令；加 `-RenderAudio` 可导出全曲 RTL 试听并逐样本对照。
 验证覆盖范围和本次实际结果见 [VERIFICATION.md](VERIFICATION.md)。
 
 ## 参数与维护
@@ -105,8 +110,8 @@ python -m pip install --target output/marimba_tools numpy scipy
 `SD_SCORE_ENABLE` 控制上电钢琴乐谱模式；设为 0 时，KEY0 和 UART 仍可启动 SD 播放。
 系统集成层保留原参数接口，测试可以加速复位、串口和谱面时间。
 
-当前合成器支持钢琴 88 音及马林巴 C2～B5 共 48 音；实体 KEY1 仅循环其中的 C2～F5。
-钢琴事件使用 0～87 索引，马林巴使用 MIDI 36～83，不能混用。
+当前合成器支持钢琴 88 音、马林巴 C2～B5 共 48 音及单簧管 D3～B♭6 共 45 音；实体 KEY1 仅循环马林巴的 C2～F5。
+钢琴事件使用 0～87 索引，马林巴使用 MIDI 36～83，单簧管使用 MIDI 50～94，不能混用。
 
 清理可重建的仿真缓存、日志、音频和测试夹具：
 

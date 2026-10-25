@@ -24,6 +24,7 @@
         <File path="src/audio/adsr_pipeline.v" type="file.verilog" enable="1"/>
         <File path="src/audio/piano_synth.v" type="file.verilog" enable="1"/>
         <File path="src/audio/marimba_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/clarinet_synth.v" type="file.verilog" enable="1"/>
         <File path="src/audio/marimba_body_filter.v" type="file.verilog" enable="1"/>
         <File path="src/audio/output_limiter.v" type="file.verilog" enable="1"/>
         <File path="src/board/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>

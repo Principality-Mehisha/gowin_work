@@ -41,7 +41,8 @@ module sd_score_stream #(
     wire [31:0] file_size;
     fat_file_reader #(.DYNAMIC_FILE_NAME(1)) file_reader (
         .requested_file_name(selected_track==1 ? "ANDROID BIN" :
-                             selected_track==2 ? "RINGTONEBIN" : "PIANO   BIN"),
+                             selected_track==2 ? "RINGTONEBIN" :
+                             selected_track==4 ? "CLARINETBIN" : "PIANO   BIN"),
         .clk(clk), .rst_n(rst_n), .sd_ready(sd_ready),
         .sd_start(sd_start), .sd_lba(sd_lba), .sd_data(sd_data), .sd_index(sd_index),
         .sd_valid(sd_valid), .sd_done(sd_done), .sd_error(sd_error),
@@ -52,7 +53,8 @@ module sd_score_stream #(
     wire [63:0] event_data;
     wire event_valid, event_ready, format_ok, complete;
     piano_score_reader #(.DYNAMIC_FORMAT(1)) decoder (
-        .marimba_format(selected_track!=3),
+        .marimba_format(selected_track==1 || selected_track==2),
+        .clarinet_format(selected_track==4),
         .clk(clk), .rst_n(rst_n),
         .data(file_data), .valid(file_valid),
         .ready(file_ready), .file_found(file_found), .file_size(file_size),

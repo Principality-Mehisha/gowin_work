@@ -16,9 +16,9 @@
 
 `uart_score_control.v` 负责固定帧接收、参数校验、反馈排队；`tjc_status_tx.v` 格式化原生屏幕命令。
 `uart_note_audition.v` 分离所选音与发声音，保证 ready/valid 反压下的音符事件不丢失。
-虚拟试听分别保存钢琴 0～87 和马林巴 15～62 的音名索引；马林巴发声时加 21 转为 MIDI 36～83。
+虚拟试听分别保存钢琴 0～87、马林巴 15～62、单簧管 29～73 的音名索引；后两种乐器发声时加 21 转为实际 MIDI 音高。
 乐器切换请求经 `playback_control` 停止 SD、清除旧音，下一次播放按所选乐器路由。实体 KEY1 和 SD 曲目的原有音源选择独立保留。
-`tjc_status_tx` 每次锁存 56 位反馈快照，依次输出六个数字字段、音名和 GB2312 乐器名。
+`tjc_status_tx` 每次锁存 57 位反馈快照，依次输出六个数字字段、音名和 GB2312 乐器名。
 `key_control.v` 内含按键同步与逐音试听模块，`dynamics_fixed.v` 提供固定力度 192，并作为后续力度传感器替换接口。
 
 ## 存储与调度
@@ -28,7 +28,7 @@
 1. `sd_spi_byte`：单字节 SPI 传输。
 2. `sd_spi_reader`：SD 初始化、扇区读取、CRC 和超时。
 3. `fat_file_reader`：FAT16/FAT32 挂载、8.3 文件定位及簇链遍历。
-4. `piano_score_reader`：文件头、事件范围、时间顺序和结束记录校验，同时支持 P88S/M42S。
+4. `piano_score_reader`：文件头、事件范围、时间顺序和结束记录校验，同时支持 P88S/M42S/C45S；C45S 限定实际 MIDI 50～94 和 slot=0。
 5. `piano_score_sequencer`：256 项 FIFO、预填充和毫秒时间调度，通过 ready/valid 交付音符事件。
 
 ## 合成与输出
@@ -39,7 +39,8 @@
 模态相位/幅度打包进同步 RAM，噪声幅度/LFSR 打包进另一块同步 RAM；下一模态提前读取，噪声在 NOTE_START 读取，读延迟被现有状态机周期覆盖。
 复位和停止只清除有效标志，旧 RAM 数据在无效时不会进入计算。小型力度表保留现有事件写入方式。
 该存储调整不改变状态机周期、合成运算、定点精度或出样时刻，验证方法见 [马林巴存储优化](MARIMBA_STORAGE.md)。
-两种音源各自经过 `output_limiter.v`，系统选择其中一路送入 `pt8211_score_tx.v`。
+`clarinet_synth.v` 为 D3～B♭6 的 45 音单声部实时加法合成器，共享八分音计算通路，具备分区音色、气息噪声和持续/释放包络，详见 [单簧管说明](CLARINET.md)。
+三种音源各自经过 `output_limiter.v`，系统选择其中一路送入 `pt8211_score_tx.v`。
 两声道当前输出相同样本，属于单声道复制。
 
 ## 时钟与实时预算
@@ -55,5 +56,5 @@ UART RX 仅将异步输入到第一级同步寄存器的路径排除时序，其
 ## 开发入口
 
 新增或删除 RTL 时修改 `.gprj`，仿真从相同清单读取；`tools/check_project.py` 检查源码与清单一致。
-`tools/make_test_fixtures.py` 从提交的三首 BIN 生成仿真夹具，无须重新下载或转写原始音乐。
+`tools/make_test_fixtures.py` 从提交的四首 BIN 生成仿真夹具，无须重新下载或转写原始音乐。
 `sim/` 中报告、WAV 和编译库属于生成文件，不作为音源输入。

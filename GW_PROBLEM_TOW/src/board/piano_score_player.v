@@ -22,6 +22,7 @@ module piano_score_player #(
     parameter VOICING_FILE = "src/rom/voicing88.hex",
     parameter MARIMBA_MODE_FILE = "src/rom/marimba48.hex",
     parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack48.hex",
+    parameter CLARINET_VOICING_FILE = "src/rom/clarinet45.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
     // 50 MHz / BCK_HALF_DIV audio sample rate.
     parameter [17:0] DDS_PITCH_RATIO = 18'd193274
@@ -52,9 +53,9 @@ module piano_score_player #(
     wire [7:0] selected_track, last_error;
     wire uart_play, uart_stop;
     wire uart_note_previous, uart_note_next, uart_note_play;
-    wire uart_select_piano, uart_select_marimba;
-    wire selected_marimba;
-    wire instrument_request=uart_select_piano || uart_select_marimba;
+    wire uart_select_piano, uart_select_marimba, uart_select_clarinet;
+    wire selected_marimba, selected_clarinet;
+    wire instrument_request=uart_select_piano || uart_select_marimba || uart_select_clarinet;
     wire note_busy, note_clear;
     wire [6:0] selected_note;
     wire [7:0] uart_track;
@@ -63,7 +64,7 @@ module piano_score_player #(
     wire failed;
     wire [3:0] sd_error_code, fat_error, score_error;
     wire manual_mode, uart_start, control_restart, play_rst_n;
-    wire marimba_mode, ringtone_error, storage_enable, storage_rst_n;
+    wire marimba_mode, clarinet_mode, ringtone_error, storage_enable, storage_rst_n;
     wire [7:0] player_state;
     playback_control #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE),
                        .DEFAULT_MARIMBA(DEFAULT_MARIMBA)) control (
@@ -71,6 +72,7 @@ module piano_score_player #(
         .ringtone_press(ringtone_press), .replay_press(replay_press),
         .uart_play(uart_play), .uart_stop(uart_stop), .uart_note_play(uart_note_play),
         .instrument_request(instrument_request), .audition_marimba(selected_marimba),
+        .audition_clarinet(selected_clarinet),
         .note_busy(note_busy), .playing(playing), .finished(finished),
         .failed(failed), .sequence_error(sequence_error), .uart_track(uart_track),
         .sd_error_code(sd_error_code), .fat_error(fat_error), .score_error(score_error),
@@ -78,7 +80,7 @@ module piano_score_player #(
         .selected_track(selected_track), .last_error(last_error),
         .manual_mode(manual_mode), .uart_start(uart_start),
         .control_restart(control_restart), .play_rst_n(play_rst_n),
-        .marimba_mode(marimba_mode), .storage_enable(storage_enable),
+        .marimba_mode(marimba_mode), .clarinet_mode(clarinet_mode), .storage_enable(storage_enable),
         .storage_rst_n(storage_rst_n), .player_state(player_state)
     );
     generate if (UART_ENABLE != 0) begin: uart_control
@@ -88,9 +90,11 @@ module piano_score_player #(
             .player_state(player_state),.player_track(selected_track),
             .selected_note(selected_note),
             .selected_marimba(selected_marimba),
+            .selected_clarinet(selected_clarinet),
             .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
+            .note_select_clarinet(uart_select_clarinet),
             .requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;
@@ -98,6 +102,7 @@ module piano_score_player #(
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
         assign uart_select_piano=0; assign uart_select_marimba=0;
+        assign uart_select_clarinet=0;
     end endgenerate
     wire initialized, file_found;
     wire [55:0] notes, velocities;
@@ -123,9 +128,10 @@ module piano_score_player #(
         .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers),
         .elapsed_ms(elapsed_ms)
     );
-    wire piano_event_ready, marimba_event_ready;
+    wire piano_event_ready, marimba_event_ready, clarinet_event_ready;
     wire synth_event_ready = !control_restart &&
-                            (marimba_mode ? marimba_event_ready : piano_event_ready);
+                            (clarinet_mode ? clarinet_event_ready :
+                             (marimba_mode ? marimba_event_ready : piano_event_ready));
     wire audition_event_valid, audition_event_on;
     wire [6:0] audition_event_note;
     wire [7:0] audition_event_dynamics;
@@ -136,9 +142,11 @@ module piano_score_player #(
         .clk(sys_clk),.rst_n(rst_n),.previous_request(uart_note_previous),
         .next_request(uart_note_next),.play_request(uart_note_play),
         .select_piano_request(uart_select_piano),.select_marimba_request(uart_select_marimba),
+        .select_clarinet_request(uart_select_clarinet),
         .cancel(ringtone_press || uart_start || uart_stop || (replay_press && note_busy)),
         .event_ready(manual_mode && note_busy && synth_event_ready),
         .selected_note(selected_note),.selected_marimba(selected_marimba),
+        .selected_clarinet(selected_clarinet),
         .event_valid(note_event_valid),.event_on(note_event_on),
         .event_note(note_event_note),.event_dynamics(note_event_dynamics),
         .busy(note_busy),.clear(note_clear));
@@ -148,8 +156,9 @@ module piano_score_player #(
     wire synth_event_on = manual_mode ? (note_busy ? note_event_on : audition_event_on) : dds_event_on;
     wire [6:0] synth_event_note = manual_mode ? (note_busy ? note_event_note : audition_event_note) : dds_event_note;
     wire [7:0] synth_event_dynamics = manual_mode ? (note_busy ? note_event_dynamics : audition_event_dynamics) : dds_event_dynamics;
-    wire piano_deadline_error, marimba_deadline_error;
-    wire deadline_error = marimba_mode ? marimba_deadline_error : piano_deadline_error;
+    wire piano_deadline_error, marimba_deadline_error, clarinet_deadline_error;
+    wire deadline_error = clarinet_mode ? clarinet_deadline_error :
+                          (marimba_mode ? marimba_deadline_error : piano_deadline_error);
     // Stop and mute on any failed storage, format, sequence or compute check.
     wire stream_error = storage_enable &&
                         (sd_error_code != 0 || fat_error != 0 || score_error != 0);
@@ -171,11 +180,11 @@ module piano_score_player #(
     );
     assign dds_event_ready = !manual_mode && synth_event_ready;
     wire sample_tick;
-    wire signed [15:0] piano_pcm, marimba_pcm;
+    wire signed [15:0] piano_pcm, marimba_pcm, clarinet_pcm;
     wire piano_pcm_valid, piano_limiting, piano_saturated;
     wire marimba_pcm_valid, marimba_limiting, marimba_saturated;
     wire signed [31:0] piano_mix_sample, marimba_mix_sample;
-    wire signed [15:0] selected_pcm = marimba_mode ? marimba_pcm : piano_pcm;
+    wire signed [15:0] selected_pcm = clarinet_mode ? clarinet_pcm : (marimba_mode ? marimba_pcm : piano_pcm);
     wire signed [15:0] pcm = audio_silence ? 16'sd0 : selected_pcm;
     wire signed [15:0] pcm_right = pcm;
     wire dds_sample_tick = sample_tick;
@@ -185,7 +194,7 @@ module piano_score_player #(
     ) synth (
         .clk(sys_clk), .reset_n(play_rst_n),
         .sample_tick(dds_sample_tick), .stop_all(synth_stop),
-        .event_valid(synth_event_valid && !marimba_mode), .event_on(synth_event_on),
+        .event_valid(synth_event_valid && !marimba_mode && !clarinet_mode), .event_on(synth_event_on),
         .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
         .pitch_ratio(DDS_PITCH_RATIO), .event_ready(piano_event_ready),
         .mix_sample(piano_mix_sample), .mix_valid(), .pcm(piano_pcm),
@@ -210,12 +219,21 @@ module piano_score_player #(
     ) marimba (
         .clk(sys_clk), .reset_n(play_rst_n),
         .sample_tick(dds_sample_tick), .stop_all(synth_stop),
-        .event_valid(synth_event_valid && marimba_mode), .event_on(synth_event_on),
+        .event_valid(synth_event_valid && marimba_mode && !clarinet_mode), .event_on(synth_event_on),
         .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
         .event_ready(marimba_event_ready),
         .mix_sample(marimba_mix_sample), .mix_valid(), .pcm(marimba_pcm),
         .pcm_valid(marimba_pcm_valid), .limiting(marimba_limiting),
         .saturated(marimba_saturated), .deadline_error(marimba_deadline_error)
+    );
+    clarinet_synth #(.SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE),
+                     .VOICING_FILE(CLARINET_VOICING_FILE)) clarinet (
+        .clk(sys_clk), .reset_n(play_rst_n), .sample_tick(dds_sample_tick), .stop_all(synth_stop),
+        .event_valid(synth_event_valid && clarinet_mode), .event_on(synth_event_on),
+        .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
+        .pitch_ratio(DDS_PITCH_RATIO), .event_ready(clarinet_event_ready),
+        .mix_sample(), .mix_valid(), .pcm(clarinet_pcm), .pcm_valid(),
+        .limiting(), .saturated(), .deadline_error(clarinet_deadline_error)
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (

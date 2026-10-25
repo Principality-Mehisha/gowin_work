@@ -23,7 +23,7 @@ module tb_score_full;
         .error_code(fat_error)
     );
     piano_score_reader decoder (
-        .marimba_format(1'b0),
+        .marimba_format(1'b0), .clarinet_format(1'b0),
         .clk(clk), .rst_n(rst_n), .data(data), .valid(valid), .ready(ready),
         .file_found(found), .file_size(file_size), .file_done(done),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),

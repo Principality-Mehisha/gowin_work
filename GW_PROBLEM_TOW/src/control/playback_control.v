@@ -5,14 +5,14 @@ module playback_control #(
 ) (
     input wire clk, rst_n,
     input wire ringtone_press, replay_press, uart_play, uart_stop, uart_note_play,
-    input wire instrument_request, audition_marimba,
+    input wire instrument_request, audition_marimba, audition_clarinet,
     input wire note_busy, playing, finished, failed, sequence_error,
     input wire [7:0] uart_track,
     input wire [3:0] sd_error_code, fat_error, score_error,
     output reg ringtone_active, ringtone_error,
     output reg [7:0] selected_track, last_error,
     output wire manual_mode, uart_start, control_restart, play_rst_n,
-    output wire marimba_mode, storage_enable, storage_rst_n,
+    output wire marimba_mode, clarinet_mode, storage_enable, storage_rst_n,
     output wire [7:0] player_state
 );
     reg legacy_autoplay;
@@ -23,8 +23,9 @@ module playback_control #(
                            (note_busy && replay_press) ||
                            (replay_press && SD_SCORE_ENABLE && ringtone_active);
     assign play_rst_n = rst_n && !control_restart;
-    assign marimba_mode = ringtone_active ? (selected_track!=3) :
+    assign marimba_mode = ringtone_active ? (selected_track==1 || selected_track==2) :
                        (note_busy ? audition_marimba : (DEFAULT_MARIMBA!=0));
+    assign clarinet_mode = ringtone_active ? (selected_track==4) : (note_busy && audition_clarinet);
     assign storage_enable = ringtone_active;
     assign storage_rst_n = play_rst_n && storage_enable && !storage_restart;
     // Error category occupies the high nibble: SD=1, FAT=2, score=3,

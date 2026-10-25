@@ -1,9 +1,9 @@
 // Native TJC commands, recmod=0. Each snapshot updates page0.n0..n5:
 // state, track, error, result, sequence, command; then note/instrument text.
-// payload: {marimba,selected_note[6:0],state,track,error,result,sequence,command}.
+// payload: {clarinet,marimba,selected_note[6:0],state,track,error,result,sequence,command}.
 module tjc_status_tx (
     input wire clk, rst_n,
-    input wire [55:0] snapshot,
+    input wire [56:0] snapshot,
     input wire valid,
     output wire ready,
     output reg [7:0] byte_data,
@@ -11,7 +11,7 @@ module tjc_status_tx (
     input wire byte_ready
 );
     reg busy;
-    reg [55:0] saved;
+    reg [56:0] saved;
     reg [2:0] field;
     reg [1:0] fence;
     reg [5:0] pos;
@@ -21,7 +21,7 @@ module tjc_status_tx (
     reg [7:0] semitones, pitch_class, octave, note_letter;
     reg sharp;
     reg [4:0] note_length;
-    wire [5:0] instrument_length=saved[55] ? 6'd8 : 6'd4;
+    wire [5:0] instrument_length=saved[56] ? 6'd6 : (saved[55] ? 6'd8 : 6'd4);
     assign ready = !busy;
     assign byte_valid = busy;
     always @* begin
@@ -77,7 +77,7 @@ module tjc_status_tx (
             endcase
         end
         if (field==7) begin
-            // Native screen text uses GB2312: piano / marimba (Chinese).
+            // Native screen text uses GB2312: piano / marimba / clarinet.
             case(pos)
                 0: byte_data="e"; 1: byte_data="v"; 2: byte_data="e";
                 3: byte_data="r"; 4: byte_data="y"; 5: byte_data=".";
@@ -98,6 +98,15 @@ module tjc_status_tx (
                 31: byte_data=8'h22;
                 default: byte_data=8'hff;
             endcase
+            if (saved[56] && pos>=23) begin
+                case(pos)
+                    23: byte_data=8'hb5; 24: byte_data=8'ha5;
+                    25: byte_data=8'hbb; 26: byte_data=8'hc9;
+                    27: byte_data=8'hb9; 28: byte_data=8'hdc;
+                    29: byte_data=8'h22;
+                    default: byte_data=8'hff;
+                endcase
+            end
         end
         // Discard any partial screen command left by an FPGA reset mid-TX.
         if (fence!=0) byte_data=8'hff;

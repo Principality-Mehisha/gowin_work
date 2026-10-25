@@ -13,11 +13,14 @@
 | src/rom/voicing88.hex | 每键分音权重、增益、衰减及弦刚度参数 |
 | src/rom/marimba48.hex | 每音四组模态频率、幅度和衰减参数 |
 | src/rom/marimba_attack48.hex | 每音短起音噪声参数 |
+| src/rom/clarinet45.hex | 单簧管每音八分音权重，无录音数据 |
 
 这些表保存函数和参数，不是逐音录音。当前综合路径不含 PCM/ADPCM 录音播放器。
 `assets/` 的录音仅供离线拟合或乐谱转写；`sim/` 的 WAV 是仿真结果。
 
-## 三首 SD 文件
+单簧管覆盖 D3～B♭6 共 45 音，使用实际 MIDI 50～94。单声部实时计算八分音、气息噪声、持续/释放包络，参数为手工设计；可通过 UART 单音试听或第 4 首 SD 曲目播放使用。详见 [单簧管说明](CLARINET.md)。
+
+## 四首 SD 文件
 
 文件放在开发板 SD 卡根目录，使用 FAT16/FAT32，文件名保持 ASCII 8.3 格式。
 
@@ -26,13 +29,14 @@
 | 1 | ANDROID.BIN | M42S／马林巴，三星主题的马林巴声部改编 |
 | 2 | RINGTONE.BIN | M42S／马林巴，苹果 Marimba 参考铃声的音符转写 |
 | 3 | PIANO.BIN | P88S／钢琴，Croatian Rhapsody MIDI 改编 |
+| 4 | CLARINET.BIN | C45S／单簧管，肖邦《夜曲》Op.9 No.2 主旋律改编 |
 
-两种格式均为小端序：16 字节头，后接每条 8 字节事件。
+三种格式均为小端序：16 字节头，后接每条 8 字节事件。
 头部为 `magic[4], version=1, event_bytes=8, slots=8, reserved=0, ticks_per_second=1000(u32), event_count(u32)`。
 事件为 `time_ms(u32), slot(u8), note(u8), velocity(u8), reserved=0(u8)`。
 slot 为 0～7，velocity 为 1～127 表示 note-on，0 表示 note-off。
 结束记录使用 slot=255、note=255、velocity=0。时间戳必须非递减。
-P88S 音符为钢琴索引 0～87，M42S 为 MIDI 36～83。内部力度由 velocity 左移一位转换。
+P88S 音符为钢琴索引 0～87，M42S 为 MIDI 36～83；C45S 为 MIDI 50～94，仅使用 slot=0 的单声部。内部力度由 velocity 左移一位转换。
 
 SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
 错误分类：1x=SD，2x=FAT，3x=乐谱，40=调度，50=合成超时，60=UART 反馈溢出；数值均为十六进制。
@@ -40,6 +44,7 @@ SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
 
 ## 生成与分析工具
 
+- `generate_clarinet_tables.py`：生成 45 音单簧管参数；`check_clarinet_audio.py`：逐样本对照独立模型并测音准、导出试听。
 - `generate_tables.py`：生成当前钢琴正弦、频率及音色表。
 - `fit_marimba_params.py`：从 Iowa AIFF 拟合当前 48 音模态及起音参数；需要 NumPy/SciPy。
 - `make_piano_score.py`：从 `source/` 的 MIDI 生成钢琴 BIN；使用 `tools/vendor` 中的 mido。

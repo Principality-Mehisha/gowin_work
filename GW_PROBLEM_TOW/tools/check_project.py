@@ -11,7 +11,8 @@ assert all((ROOT/p).is_file() for p in entries), 'Missing project input'
 rtl = {p for p in entries if p.endswith('.v')}
 assert rtl == {p.relative_to(ROOT).as_posix() for p in (ROOT/'src').rglob('*.v')}, 'Unlisted or obsolete RTL'
 expected = {'sine256.hex':(256,4), 'frequency88.hex':(88,8), 'voicing88.hex':(88,35),
-            'marimba48.hex':(48,64), 'marimba_attack48.hex':(48,8), 'clarinet45.hex':(45,32)}
+            'marimba48.hex':(48,64), 'marimba_attack48.hex':(48,8),
+            'clarinet45.hex':(4320,10), 'clarinet45_env.hex':(135,24)}
 assert {p.name for p in (ROOT/'src/rom').iterdir()} == set(expected), 'Unexpected ROM'
 for name,(count,width) in expected.items():
     rows = (ROOT/'src/rom'/name).read_text().split()
@@ -40,6 +41,10 @@ for name,magic,low,high in [('ANDROID.BIN',b'M42S',36,83),('RINGTONE.BIN',b'M42S
         assert active is None, 'Unreleased clarinet note'
 cst = (ROOT/'src/board/GW_PROBLEM_TOW.cst').read_text()
 assert 'IO_LOC "uart_rx" B17;' in cst and 'IO_LOC "uart_tx" B18;' in cst
-for row in (ROOT/'src/rom/clarinet45.hex').read_text().split():
-    assert sum((int(row,16) >> (16*i)) & 65535 for i in range(8)) == 32768, 'Clarinet gain'
-print(f'PASS: {len(rtl)} active RTL files, six ROMs, four scores and current UART pins')
+clarinet = [int(row,16) for row in (ROOT/'src/rom/clarinet45.hex').read_text().split()]
+for i in range(135):
+    for shift in (0,16):
+        assert sum((word>>shift)&65535 for word in clarinet[i*32:(i+1)*32]) == 32760, 'Clarinet normalization'
+for row in (ROOT/'src/rom/clarinet45_env.hex').read_text().split():
+    assert all(0<((int(row,16)>>(i*16))&65535)<32768 for i in range(4)), 'Clarinet envelope/gain'
+print(f'PASS: {len(rtl)} active RTL files, seven ROMs, four scores and current UART pins')

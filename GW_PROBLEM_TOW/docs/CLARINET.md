@@ -4,15 +4,24 @@
 
 ## 合成方法
 
-`src/audio/clarinet_synth.v` 是单声部 DDS 加法合成器。每帧实时计算最多八个分音，低音以奇次分音为主，随音区平滑改变各次分音的权重，再加入少量确定性气息噪声。
+`src/audio/clarinet_synth.v` 是单声部 DDS 加法合成器。每帧实时计算最多 32 个分音，分别使用 pp、mf、ff 三档实测音色，在力度层之间插值；起音频谱逐步过渡到持续段频谱，再加入经过滤波的确定性气息噪声。
 
-`src/rom/clarinet45.hex` 仅保存 45 行、每行八个 Q1.15 分音权重，总权重为 32768。它是手工设计的音色参数，不是录音、逐音 PCM 或拟合实测值。`sine256.hex` 是共享正弦函数表，`frequency88.hex` 是共享频率参数表。没有新增 WAV/PCM/ADPCM 播放路径；仿真生成的 WAV 只用于试听。
+参数来自 [Iowa MIS 单簧管录音](https://theremin.music.uiowa.edu/MISBbclarinet.html) 的离线分析：12 个原始音阶文件、45 个实际音高、三档力度，共 135 组。来源、哈希与测量结果保存在 `assets/clarinet/`。实测频谱参数与下面的演奏动态是两部分：动态曲线是听感调整后的设计值，不是对真实演奏逐时刻的完整复刻。
+
+| ROM | 排列与字段 |
+| --- | --- |
+| `clarinet45.hex` | 4320 行 × 40 位；profile=`dynamic*45+MIDI-50`，每组 32 行；高至低为相对相位 8 位、持续权重 16 位、起音权重 16 位 |
+| `clarinet45_env.hex` | 135 行 × 96 位；低至高每 16 位为起音步进、释放步进、频谱过渡步进、Q12 增益、起音噪声 Q15、持续噪声 Q15 |
+
+两组权重均归一化为 32760。三档力度共用 mf 相对相位，避免力度插值引入相位跳变。内部力度 64、160、240 对应三个测量层，中间线性插值，低于/高于端点使用端点音色并继续缩放音量。`sine256.hex` 是共享正弦函数表，`frequency88.hex` 是共享频率参数表。FPGA 只读取这些参数，继续逐样本合成；没有 WAV/PCM/ADPCM 录音播放路径。
 
 相位累加器为 32 位，正弦函数使用线性插值。每个分音的频率增量以 36 位检查，超过 0.46875 倍采样率的分音不参与计算，避免谐波越过 Nyquist 后折返。上部音域因此使用更少的分音。
 
-单声部采用后到音符优先；新的 note-on 重新开始相位和起音包络，其他音高的 note-off 不会截断当前音。力度为零等同 note-off。保持 gate 时包络达到持续电平并保持，松键后逐步释放。默认采样率下起音约 15.7 ms、释放约 31.5 ms。
+单声部采用后到音符优先；每个新的 note-on 都重新开始相位、起音包络和频谱过渡，其他音高的 note-off 不会截断当前音。力度为零等同 note-off。取消自动连奏，避免相邻音听起来连成一条拖长的持续音；原乐谱时间戳和音符时长不改动。包络进度采用平方曲线，起音步进至少 81、释放至少 51，默认采样率下分别不超过约 25 ms 和 40 ms。
 
-频率沿用系统 `DDS_PITCH_RATIO` 换算，采样节拍仍由 PT8211 提供，所有逻辑使用 50 MHz 时钟。调整 DAC 分频时需要同时检查频率换算和包络时间。合成器保留 ready/valid 反压、停止清音和超时检测，随后使用独立 `output_limiter`。
+保持 gate 后仍持续计算演奏起伏：每音约前 126 ms 的表情增益从 0.75 渐至 1，之后渐缓至约 0.781；平滑的低频气息扰动同时影响增益与频率。起音有约 -3 音分的短暂偏移，约 31 ms 内回到标准音高附近；之后只有微小、不规则的音高浮动，不做明显的规则颤音。气息状态跨音保留，停止/复位清零。音龄计数在 65535 帧（约 4.03 s）饱和，之后保留当时的气息值；当前曲目与 0.5 s 单音试听不触及此限制。
+
+频率沿用系统 `DDS_PITCH_RATIO=193274` 换算，PT8211 提供的实际采样率为 `50 MHz / 3072 = 16276.041667 Hz`，所有逻辑使用 50 MHz 时钟。分音的力度/起音/持续插值、包络和表情增益分时复用乘法器。频谱收敛后缓存系数，频率与表情仍逐帧更新。仿真最大输出等待 554 个时钟，低于每帧 3072 个时钟预算。调整 DAC 分频时需要同时检查频率换算和包络时间。保留 ready/valid 反压、停止清音、超时检测及独立 `output_limiter`。
 
 ## 串口屏操作
 
@@ -37,13 +46,20 @@ KEY0/KEY1/KEY2 及原三首 SD 乐谱保留原有行为。另增加第 4 首 `CL
 从工程根目录运行：
 
 ```powershell
-python tools/generate_clarinet_tables.py
+python tools/fit_clarinet_params.py --reuse-measurements
 python tools/check_project.py
 powershell -ExecutionPolicy Bypass -File sim/run_clarinet.ps1
+powershell -ExecutionPolicy Bypass -File sim/run_nocturne.ps1 -RenderAudio
 ```
 
-专用回归会编译 `.gprj` 清单中的 RTL，覆盖全部 45 音、包络、力度、无关音符释放、反压、各计算状态的清音/复位，以及三乐器独立记忆、真实 UART、中文和音名反馈、SD/实体按键仲裁。
+整曲也可用 `sim/run_clarinet_segments.ps1` 分四段并行渲染。分段点选在新音符起音前，只恢复跨音保留的气息和限幅峰值；各段结束时 RTL 检查下一段的初始状态，再对拼接后的全部样本进行独立模型核对。会话中断后，使用 `-Prepared -Resume` 复用未变更输入下已经通过的段。
 
-`tools/check_clarinet_audio.py` 将全部 45 音的 184320 个 RTL 样本与独立整数模型精确对照，同时检查实际音高、直流偏置、音量、削波和释放后的静音。它需要 NumPy，可复用 `output/marimba_tools` 中的依赖。输出在 `output/clarinet/`：`clarinet45_realtime.wav`、`audio_report.json` 和仿真日志。
+如需从 AIFF 重新测量，运行 `python tools/fit_clarinet_params.py`；兼容入口 `generate_clarinet_tables.py` 调用同一拟合器。这些工具需要 NumPy/SciPy，可复用 `output/marimba_tools` 中的依赖。
 
-通用 `sim/run_all.ps1` 也包含单簧管 RTL 测试；完整音频模型对照通过上述专用入口执行。参数与音准的数值验证不能替代音色听感评价，当前音色为手工参数初版，尚待开发板和扬声器试听。
+专用回归会编译 `.gprj` 清单中的 RTL，覆盖全部 45 音、135 档音色组合及 18 个插值边界、长音动态、包络、无关音符释放、反压、各计算状态的清音/复位，以及三乐器独立记忆、真实 UART、中文和音名反馈、SD/实体按键仲裁。
+
+`check_clarinet_audio.py` 精确对照 45 音的 276480 个 RTL 样本及 22000 个长音样本，检查音高、直流、音量、削波、释放静音以及长音的响度/音高变化。`check_clarinet_layers.py` 再精确对照 78336 个多力度样本。整曲检查对照《夜曲》的全部 3300342 个 RTL 样本。
+
+输出在 `output/clarinet_calibration/`：`clarinet45_expressive_realtime.wav`、`tone_report.json`、`layer_report.json`、`Chopin_Nocturne_Op9_No2_Clarinet_Expressive_Realtime.wav`、`audio_report.json` 和日志。
+
+通用 `sim/run_all.ps1` 也包含单簧管 RTL 测试；完整音频模型对照通过上述专用入口执行。早期“实测频谱 + 自动连奏”版本虽改善频谱误差，用户试听认为变差；当前版本以用户认可“起伏更自然了”的逐音动态原型为实现目标。频谱拟合、音准和整数模型一致性都不能替代音色听感或开发板扬声器试听。

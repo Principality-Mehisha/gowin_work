@@ -1,74 +1,59 @@
-"""Measure real RTL output for every pitch and export an audition WAV."""
+"""Verify measured clarinet RTL against an independent model and export tones."""
 from pathlib import Path
-import json
-import math
-import sys
-import wave
-
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT/'output/marimba_tools'))
+import argparse,json,math,sys,wave
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'output/marimba_tools'))
 import numpy as np
+from clarinet_reference import ClarinetReference,OUT_FS
 
-FS = 50_000_000 / 3072
-out = ROOT/'output/clarinet'
-samples = np.loadtxt(out/'clarinet45_pcm.txt', dtype=np.int16)
-assert len(samples) == 45*4096
-sine = [int(row,16) for row in (ROOT/'src/rom/sine256.hex').read_text().split()]
-sine = [value-65536 if value>=32768 else value for value in sine]
-frequency = [int(row,16) for row in (ROOT/'src/rom/frequency88.hex').read_text().split()]
-profiles = [int(row,16) for row in (ROOT/'src/rom/clarinet45.hex').read_text().split()]
-
-
-def reference(midi):
-    """Independent integer additive model, including release and output rounding."""
-    step = (frequency[midi-21]*193274) >> 16
-    weights = [(profiles[midi-50] >> (16*i)) & 65535 for i in range(8)]
-    phase = envelope = 0
-    lfsr = 0x1ace+midi
-    for frame in range(4096):
-        envelope = min(32767,envelope+128) if frame<3072 else max(0,envelope-64)
-        mixed = 2*((lfsr & 255)-128)
-        for harmonic, weight in enumerate(weights,1):
-            if step*harmonic >= 0x78000000:
-                continue
-            position = (phase*harmonic) & 0xffffffff
-            address, fraction = position >> 24, (position >> 16) & 255
-            value = sine[address] + ((sine[(address+1)%256]-sine[address])*fraction >> 8)
-            mixed += value*weight >> 15
-        value = ((mixed*envelope >> 15)*192) >> 8
-        yield (value+(0 if value<0 else 1)) >> 1
-        phase = (phase+step) & 0xffffffff
-        feedback = ((lfsr >> 15) ^ (lfsr >> 13) ^ (lfsr >> 12) ^ (lfsr >> 10)) & 1
-        lfsr = ((lfsr << 1) | feedback) & 65535
-
-
-report = []
-for index, midi in enumerate(range(50, 95)):
-    segment = samples[index*4096:(index+1)*4096].astype(float)
-    expected_pcm = np.fromiter(reference(midi),dtype=np.int16,count=4096)
-    assert np.array_equal(segment,expected_pcm), (midi,'RTL differs from independent integer model')
-    steady = segment[1024:3072]
-    spectrum = np.abs(np.fft.rfft((steady-steady.mean())*np.hanning(len(steady)), n=65536))
-    peak = int(np.argmax(spectrum[1:])+1)
-    # Log-parabolic interpolation of the zero-padded Hann spectrum.
-    a, b, c = np.log(np.maximum(spectrum[peak-1:peak+2], 1e-12))
-    measured = (peak + 0.5*(a-c)/(a-2*b+c))*FS/65536
-    expected = 440*2**((midi-69)/12)
-    cents = 1200*math.log2(measured/expected)
-    rms = float(np.sqrt(np.mean(steady**2)))
-    assert abs(cents)<3, (midi, measured, cents)
-    assert 500<rms<15000, (midi, rms)
-    assert abs(float(steady.mean()))<100, (midi, 'DC bias')
-    assert np.max(np.abs(segment[-400:]))==0, (midi, 'release not silent')
-    assert np.max(np.abs(segment))<30000, (midi, 'clipping')
-    report.append(dict(midi=midi, expected_hz=expected, measured_hz=measured,
-                       error_cents=cents, rms=rms, peak=int(np.max(np.abs(segment)))))
-wav_path=out/'clarinet45_realtime.wav'
-with wave.open(str(wav_path), 'wb') as wav:
-    wav.setnchannels(1);wav.setsampwidth(2);wav.setframerate(round(FS))
-    wav.writeframes(samples.astype('<i2').tobytes())
-result=dict(sample_rate_exact=FS, wav_sample_rate=round(FS), samples=len(samples),
-            exact_reference_samples=len(samples), pitches=report,
-            max_abs_cents=max(abs(row['error_cents']) for row in report))
-(out/'audio_report.json').write_text(json.dumps(result,indent=2)+'\n', encoding='utf-8')
-print(f'PASS: 45 real-time synthesized pitches, max error {result["max_abs_cents"]:.3f} cents; {wav_path}')
+def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--smoke',action='store_true');args=parser.parse_args()
+    out=ROOT/'output/clarinet_calibration';samples=np.loadtxt(out/'tone_pcm.txt',dtype=np.int16)
+    count=len(samples)//6144
+    assert len(samples)==count*6144 and (count==45 or args.smoke)
+    report=[]
+    for index,midi in enumerate(range(50,50+count)):
+        segment=samples[index*6144:(index+1)*6144].astype(float)
+        model=ClarinetReference();model.event(True,midi,192);expected=[]
+        for frame in range(6144):
+            if frame==4096:model.event(False,midi,192)
+            expected.append(model.frame())
+        mismatch=np.flatnonzero(segment!=expected)
+        assert not len(mismatch),(midi,'RTL/model mismatch',mismatch[:10].tolist(),segment[mismatch[:5]].tolist(),np.array(expected)[mismatch[:5]].tolist())
+        steady=segment[3072:4096];window=np.hanning(len(steady))
+        spectrum=abs(np.fft.rfft((steady-steady.mean())*window,n=131072))
+        nominal=440*2**((midi-69)/12);freq=np.fft.rfftfreq(131072,1/OUT_FS)
+        band=np.flatnonzero(abs(freq-nominal)<nominal*.03)
+        peak=int(band[np.argmax(spectrum[band])]);a,b,c=np.log(np.maximum(spectrum[peak-1:peak+2],1e-12))
+        measured=(peak+.5*(a-c)/(a-2*b+c))*OUT_FS/131072
+        cents=1200*math.log2(measured/nominal);rms=float(np.sqrt(np.mean(steady**2)))
+        assert abs(cents)<4,(midi,measured,cents)
+        assert 500<rms<15000,(midi,rms)
+        assert abs(steady.mean())<500,(midi,'DC')
+        assert np.max(abs(segment[-64:]))==0,(midi,'release not silent')
+        assert np.max(abs(segment))<30000,(midi,'clipping')
+        report.append(dict(midi=midi,measured_hz=measured,error_cents=cents,rms=rms,peak=int(max(abs(segment)))))
+    # This held gate must keep moving after the attack, without replaying PCM.
+    held=np.loadtxt(out/'long_tone_pcm.txt',dtype=np.int16)
+    assert len(held)==22000
+    model=ClarinetReference();model.event(True,69,192);expected=[];steps=[]
+    for frame in range(len(held)):
+        expected.append(model.frame());steps.append(model.step)
+    assert np.array_equal(held,expected),'Held-note RTL/model mismatch'
+    early_rms=float(np.sqrt(np.mean(held[2200:4200].astype(float)**2)))
+    late_rms=float(np.sqrt(np.mean(held[18000:20000].astype(float)**2)))
+    assert 0<late_rms<early_rms*math.sqrt(.9),'Held-note level did not relax'
+    pitch_cents=1200*np.log2(np.array(steps,dtype=float)*OUT_FS/(2**32*440))
+    assert np.max(abs(pitch_cents))<20 and np.ptp(pitch_cents[2048:])>.01,'Pitch movement missing or excessive'
+    held_report=dict(exact_reference_samples=len(held),early_rms=early_rms,late_rms=late_rms,
+        late_to_early_db=20*math.log10(late_rms/early_rms),
+        pitch_min_cents=float(min(pitch_cents)),pitch_max_cents=float(max(pitch_cents)),
+        settled_pitch_span_cents=float(np.ptp(pitch_cents[2048:])))
+    wav_path=out/'clarinet45_expressive_realtime.wav'
+    with wave.open(str(wav_path),'wb') as w:
+        w.setnchannels(1);w.setsampwidth(2);w.setframerate(round(OUT_FS));w.writeframes(samples.astype('<i2').tobytes())
+    result=dict(notes_checked=count,exact_reference_samples=len(samples),sample_rate=OUT_FS,
+                max_abs_cents=max(abs(r['error_cents']) for r in report),held_note=held_report,pitches=report)
+    (out/'tone_report.json').write_text(json.dumps(result,indent=2)+'\n')
+    print(f'PASS: {count} measured-profile pitches, {len(samples)} exact samples, max pitch error {result["max_abs_cents"]:.3f} cents')
+if __name__=='__main__':main()

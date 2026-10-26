@@ -9,7 +9,7 @@ module tb_uart_notes;
  integer displayed_instrument=-1,instrument_displays=0,prior_ons;
  reg [6:0] expected_note=0;
  piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
-  .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),.NOTE_GATE_CYCLES(30000),.NOTE_TAIL_CYCLES(40000)) dut (
+  .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),.NOTE_GATE_CYCLES(30000),.NOTE_TAIL_CYCLES(250000)) dut (
   .sys_clk(clk),.KEY0(k0),.KEY1(k1),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(),.sd_sck(),.sd_mosi(),.sd_miso(1'b1),.LEDs());
  `include "uart_test_tasks.vh"
@@ -85,7 +85,7 @@ module tb_uart_notes;
    send_frame(0,'h42,0,0,0);wait(dut.note_busy);wait(!dut.note_busy);
    settle();repeat(3)@(posedge dut.sample_tick);
    if(ons!=initial_ons+1 || offs!=initial_offs+1 || !heard || dut.pcm!=0)
-    $fatal(1,"One press must emit exactly one on/off with audio and finish silent pitch=%0d",pitch);
+    $fatal(1,"One press must emit exactly one on/off with audio and finish silent pitch=%0d on=%0d off=%0d heard=%0d pcm=%0d",pitch,ons-initial_ons,offs-initial_offs,heard,dut.pcm);
   end
  endtask
  initial begin
@@ -194,5 +194,5 @@ module tb_uart_notes;
   if(dut.selected_clarinet || dut.uart_notes.clarinet_note!=29)$fatal(1,"Clarinet reset");
   passed=1;$display("PASS UART audition: piano/marimba/clarinet real audio, MIDI mapping, GB2312 screen, memory, switches, query, reset, SD/KEY0/KEY1 arbitration");$finish;
  end
- initial begin #100000000;$fatal(1,"UART notes timeout");end
+ initial begin #200000000;$fatal(1,"UART notes timeout");end
 endmodule

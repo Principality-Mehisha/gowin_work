@@ -25,7 +25,7 @@ src/
   control/     播放控制、按键、UART、单音试听、屏幕反馈
   storage/     SD SPI、FAT、乐谱解码和事件调度
   audio/       钢琴/马林巴/单簧管合成、包络、琴体滤波、限幅、PT8211
-  rom/         当前六个函数/参数 ROM
+  rom/         当前七个函数/参数 ROM
 tools/         构建、结构/时序检查、乐谱和音色生成工具
 sim/           当前功能的测试平台和仿真入口
 screen/        可复制到串口屏工程的事件脚本
@@ -56,7 +56,7 @@ GW_PROBLEM_TOW
    └─ pt8211_score_tx：输出采样节拍和 DAC 串行数据
 ```
 
-单簧管为单声部实时加法合成，ROM 只存参数；接入与验证见 [单簧管说明](docs/CLARINET.md)。
+单簧管为单声部 32 分音实时加法合成，采用 Iowa 实测的三档力度与起音/持续参数，并逐帧计算响度和轻微音高起伏；ROM 只存参数。接入与验证见 [单簧管说明](docs/CLARINET.md)。
 第 4 首 SD 曲目为肖邦《夜曲》Op.9 No.2 单簧管独奏，文件和播放方法见 [夜曲说明](docs/NOCTURNE_CLARINET.md)。
 
 详见 [架构说明](docs/ARCHITECTURE.md)、[音频与乐谱](docs/AUDIO_AND_SD.md)。

@@ -13,12 +13,13 @@
 | src/rom/voicing88.hex | 每键分音权重、增益、衰减及弦刚度参数 |
 | src/rom/marimba48.hex | 每音四组模态频率、幅度和衰减参数 |
 | src/rom/marimba_attack48.hex | 每音短起音噪声参数 |
-| src/rom/clarinet45.hex | 单簧管每音八分音权重，无录音数据 |
+| src/rom/clarinet45.hex | 单簧管 45 音 × 三力度 × 32 分音的起音/持续权重及相对相位 |
+| src/rom/clarinet45_env.hex | 135 组包络、频谱过渡、增益及噪声参数，无录音数据 |
 
 这些表保存函数和参数，不是逐音录音。当前综合路径不含 PCM/ADPCM 录音播放器。
 `assets/` 的录音仅供离线拟合或乐谱转写；`sim/` 的 WAV 是仿真结果。
 
-单簧管覆盖 D3～B♭6 共 45 音，使用实际 MIDI 50～94。单声部实时计算八分音、气息噪声、持续/释放包络，参数为手工设计；可通过 UART 单音试听或第 4 首 SD 曲目播放使用。详见 [单簧管说明](CLARINET.md)。
+单簧管覆盖 D3～B♭6 共 45 音，使用实际 MIDI 50～94。单声部实时计算 32 分音、气息噪声、逐音响度及轻微音高变化；音色参数来自 Iowa 录音的离线拟合，动态曲线另行设计。每音重新起音，可通过 UART 单音试听或第 4 首 SD 曲目播放使用。详见 [单簧管说明](CLARINET.md)。
 
 ## 四首 SD 文件
 
@@ -44,7 +45,7 @@ SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
 
 ## 生成与分析工具
 
-- `generate_clarinet_tables.py`：生成 45 音单簧管参数；`check_clarinet_audio.py`：逐样本对照独立模型并测音准、导出试听。
+- `fit_clarinet_params.py`（兼容入口 `generate_clarinet_tables.py`）：拟合 135 组单簧管参数；加 `--reuse-measurements` 可复用测量结果。`check_clarinet_audio.py`、`check_clarinet_layers.py`：逐样本对照独立模型，验证音准、力度插值、长音起伏并导出试听。
 - `generate_tables.py`：生成当前钢琴正弦、频率及音色表。
 - `fit_marimba_params.py`：从 Iowa AIFF 拟合当前 48 音模态及起音参数；需要 NumPy/SciPy。
 - `make_piano_score.py`：从 `source/` 的 MIDI 生成钢琴 BIN；使用 `tools/vendor` 中的 mido。

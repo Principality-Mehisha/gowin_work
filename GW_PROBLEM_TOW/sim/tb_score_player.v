@@ -22,7 +22,8 @@ module score_player_case #(
         .VOICING_FILE("../src/rom/voicing88.hex"),
         .MARIMBA_MODE_FILE("../src/rom/marimba48.hex"),
         .MARIMBA_ATTACK_FILE("../src/rom/marimba_attack48.hex"),
-        .CLARINET_VOICING_FILE("../src/rom/clarinet45.hex")
+        .CLARINET_VOICING_FILE("../src/rom/clarinet45.hex"),
+        .CLARINET_ENVELOPE_FILE("../src/rom/clarinet45_env.hex")
 
     ) dut (
         .sys_clk(clk), .KEY0(key0), .KEY1(key1), .KEY2(key2),

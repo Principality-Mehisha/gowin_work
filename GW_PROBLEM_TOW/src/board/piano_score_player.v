@@ -23,6 +23,7 @@ module piano_score_player #(
     parameter MARIMBA_MODE_FILE = "src/rom/marimba48.hex",
     parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack48.hex",
     parameter CLARINET_VOICING_FILE = "src/rom/clarinet45.hex",
+    parameter CLARINET_ENVELOPE_FILE = "src/rom/clarinet45_env.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
     // 50 MHz / BCK_HALF_DIV audio sample rate.
     parameter [17:0] DDS_PITCH_RATIO = 18'd193274
@@ -160,9 +161,17 @@ module piano_score_player #(
     wire deadline_error = clarinet_mode ? clarinet_deadline_error :
                           (marimba_mode ? marimba_deadline_error : piano_deadline_error);
     // Stop and mute on any failed storage, format, sequence or compute check.
-    wire stream_error = storage_enable &&
-                        (sd_error_code != 0 || fat_error != 0 || score_error != 0);
-    assign failed = stream_error || sequence_error || deadline_error;
+    // Decode storage errors once before distributing stop to all voices.
+    // One 50 MHz cycle of detection latency avoids a decoder/high-fanout
+    // combinational path into every synth register. Codes remain latched by
+    // playback_control before it resets the storage stream.
+    reg stream_error;
+    always @(posedge sys_clk or negedge rst_n) begin
+        if (!rst_n) stream_error <= 0;
+        else if (control_restart || !storage_enable) stream_error <= 0;
+        else stream_error <= (sd_error_code != 0 || fat_error != 0 || score_error != 0);
+    end
+    assign failed = (storage_enable && stream_error) || sequence_error || deadline_error;
     wire synth_stop = control_restart || note_clear ||
                       (manual_mode ? deadline_error : (failed || finished));
     wire audio_silence = manual_mode ? deadline_error :
@@ -227,7 +236,8 @@ module piano_score_player #(
         .saturated(marimba_saturated), .deadline_error(marimba_deadline_error)
     );
     clarinet_synth #(.SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE),
-                     .VOICING_FILE(CLARINET_VOICING_FILE)) clarinet (
+                     .VOICING_FILE(CLARINET_VOICING_FILE),
+                     .ENVELOPE_FILE(CLARINET_ENVELOPE_FILE)) clarinet (
         .clk(sys_clk), .reset_n(play_rst_n), .sample_tick(dds_sample_tick), .stop_all(synth_stop),
         .event_valid(synth_event_valid && clarinet_mode), .event_on(synth_event_on),
         .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),

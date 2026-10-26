@@ -10,6 +10,8 @@
 
 原 MIDI 按固定的八分音符 132 拍/分钟播放；本文件保留它的机械节奏，没有额外模拟钢琴家的自由速度或呼吸分句。源 MIDI 所有音符力度为 90，本改编如实保留，内部力度为 180。
 
+2026-10-26 音源更新在 FPGA 内加入每音响度轮廓、轻微气息/音高变化并恢复逐音起音，不修改此 BIN 的时间戳、音高或力度。已有夜曲播放成功的 SD 卡无需重写，只需更新固件。音源的实时动态不等于对乐谱增加自由速度或呼吸休止。
+
 共 421 个单音、843 条记录（含一个结束记录）、6760 字节。最后一个音于 202273 ms 释放，保留 500 ms 释放窗口，文件结束于 202773 ms，约 3 分 23 秒。全部音符严格单声部，note-off 与 note-on 同时出现时先发送释放。
 
 原始版本及衍生音乐资产使用 CC BY-SA 3.0，署名和修改说明见 `source/chopin_nocturne_op9_no2/ATTRIBUTION.md`、`sd_card/CLARINET_LICENSE.md`。转换脚本、CSV 和 MIDI 便于检查和继续编辑。
@@ -41,6 +43,6 @@ powershell -ExecutionPolicy Bypass -File sim/run_nocturne.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_nocturne.ps1 -RenderAudio
 ```
 
-转换只需项目已有 mido；完整音频整数模型检查需要 NumPy。普通测试核对完整 843 条记录、FIFO/反压、FAT16/FAT32、第 4 曲命令及错误文件。`-RenderAudio` 额外运行全曲真实 RTL，并与独立整数模型逐样本对照，输出 `output/nocturne/Chopin_Nocturne_Op9_No2_Clarinet_Realtime.wav` 和 `audio_report.json`。WAV 为检查/试听结果，不是板卡播放输入。
+转换只需项目已有 mido；完整音频整数模型检查需要 NumPy。普通测试核对完整 843 条记录、FIFO/反压、FAT16/FAT32、第 4 曲命令及错误文件。`-RenderAudio` 额外运行全曲真实 RTL，并与独立整数模型逐样本对照，当前动态音源输出为 `output/clarinet_calibration/Chopin_Nocturne_Op9_No2_Clarinet_Expressive_Realtime.wav` 和同目录 `audio_report.json`。原初版 WAV 保存在 `output/clarinet_calibration/before/`。WAV 为检查/试听结果，不是板卡播放输入。
 
 本轮不自动写卡、连接串口或下载开发板。

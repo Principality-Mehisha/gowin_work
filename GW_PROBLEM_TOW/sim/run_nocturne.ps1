@@ -8,6 +8,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'Project check failed'}
     & python tools/make_nocturne_fixtures.py
     if($LASTEXITCODE -ne 0){throw 'Nocturne fixtures failed'}
+    New-Item -ItemType Directory -Force output/clarinet_calibration | Out-Null
     if(-not(Test-Path sim/nocturne_work)){
         & vlib sim/nocturne_work
         if($LASTEXITCODE -ne 0){throw 'vlib failed'}

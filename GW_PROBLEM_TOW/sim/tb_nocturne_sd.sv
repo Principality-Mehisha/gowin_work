@@ -10,7 +10,7 @@ module nocturne_sd_case #(
  integer ons=0,offs=0,heard=0,starts=0,saved;
  piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
   .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),
-  .SD_POWER_WAIT_CYCLES(16),.SD_INIT_HALF_DIV(3),.SD_READ_HALF_DIV(3),.CLOCKS_PER_MS(128)) dut (
+  .SD_POWER_WAIT_CYCLES(16),.SD_INIT_HALF_DIV(3),.SD_READ_HALF_DIV(3),.CLOCKS_PER_MS(1024)) dut (
   .sys_clk(clk),.KEY0(1'b1),.KEY1(1'b1),.KEY2(k2),.uart_rx(rx),.uart_tx(),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(cs),.sd_sck(sck),.sd_mosi(mosi),.sd_miso(miso),.LEDs());
  sd_card_model #(.IMAGE_FILE(IMAGE),.IMAGE_BYTES(600000)) card (

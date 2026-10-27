@@ -12,10 +12,10 @@ def main():
     inputs = [ROOT/'GW_PROBLEM_TOW.gprj'] + [ROOT/f.attrib['path']
         for f in project.findall('./FileList/File') if f.attrib.get('enable') == '1']
     inputs += sorted((ROOT/'src/rom').glob('*.hex'))
+    inputs += [ROOT/'src/video/score_metadata.json', ROOT/'sd_card/PIANO.BIN']
     bitstream = ROOT/'impl/pnr/GW_PROBLEM_TOW.fs'
     timing = json.loads((ROOT/'sim/timing_report.json').read_text())
-    assert timing['Numbers of Setup Violated Endpoints'] == 0
-    assert timing['Numbers of Hold Violated Endpoints'] == 0
+    assert all(c.get('setup_violations') == c.get('hold_violations') == 0 for c in timing['clocks'].values())
     assert timing['fmax_mhz'] >= timing['target_mhz']
     manifest = dict(created_at=datetime.now(timezone(timedelta(hours=8))).isoformat(),
         timing=timing, bitstream=bitstream.relative_to(ROOT).as_posix(),

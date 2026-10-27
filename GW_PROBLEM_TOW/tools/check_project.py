@@ -3,6 +3,8 @@ from pathlib import Path
 import re
 import struct
 import xml.etree.ElementTree as ET
+import subprocess
+import sys
 ROOT = Path(__file__).resolve().parents[1]
 project = ET.parse(ROOT/'GW_PROBLEM_TOW.gprj')
 entries = [f.attrib['path'] for f in project.findall('./FileList/File') if f.attrib.get('enable') == '1']
@@ -47,4 +49,5 @@ for i in range(135):
         assert sum((word>>shift)&65535 for word in clarinet[i*32:(i+1)*32]) == 32760, 'Clarinet normalization'
 for row in (ROOT/'src/rom/clarinet45_env.hex').read_text().split():
     assert all(0<((int(row,16)>>(i*16))&65535)<32768 for i in range(4)), 'Clarinet envelope/gain'
-print(f'PASS: {len(rtl)} active RTL files, seven ROMs, four scores and current UART pins')
+subprocess.run([sys.executable, str(ROOT/'tools/generate_video_score.py'), '--check'], check=True)
+print(f'PASS: {len(rtl)} active RTL files, seven audio ROMs, piano video ROM, four scores and current UART pins')

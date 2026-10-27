@@ -34,10 +34,14 @@ module piano_score_player #(
     output wire HP_BCK, HP_WS, HP_DIN, PA_EN,
     output wire sd_cs_n, sd_sck, sd_mosi,
     input wire sd_miso,
-    output wire [3:0] LEDs
+    output wire [3:0] LEDs,
+    output wire player_reset_n, video_active,
+    output wire [31:0] video_elapsed_ms,
+    output reg [87:0] video_keys
 );
     GSR GSR_INST (.GSRI(1'b1));
     wire rst_n;
+    assign player_reset_n = rst_n;
     board_reset #(.POWER_ON_CYCLES(POWER_ON_CYCLES)) reset_controller (
         .clk(sys_clk), .key_reset_n(KEY2), .rst_n(rst_n)
     );
@@ -252,6 +256,16 @@ module piano_score_player #(
         .sample_tick(sample_tick),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
+    // Display observes the same accepted events/time used by the piano synth.
+    assign video_active = storage_enable && selected_track==3 && playing &&
+                          !finished && !failed && !control_restart;
+    assign video_elapsed_ms = elapsed_ms;
+    always @(posedge sys_clk or negedge rst_n) begin
+        if (!rst_n) video_keys <= 0;
+        else if (!video_active || synth_stop) video_keys <= 0;
+        else if (synth_event_valid && synth_event_ready && synth_event_note<88)
+            video_keys[synth_event_note] <= synth_event_on;
+    end
     assign LEDs = ~{(ringtone_error || (manual_mode ? deadline_error : failed)), (mode_active || ringtone_active),
                     file_found, initialized};
 endmodule

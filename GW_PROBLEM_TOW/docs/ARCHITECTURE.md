@@ -1,8 +1,12 @@
 # 当前架构与模块边界
 
+## 钢琴视频显示
+
+板级顶层额外连接 `src/video/piano_video.v`，音频集成层输出钢琴 SD 播放有效标志、实际毫秒时间和已接收事件的 88 位亮键状态。显示通过请求/确认快照跨域，在垂直消隐期按音频时间重建落块；没有独立动画计时器。逐行掩码替代原 dvi_photo 的整幅位图，减少 BSRAM 占用。模块、同步精度、ROM 与 SD 文件一致性及视频引脚见 [钢琴视频说明](PIANO_HDMI.md)。
+
 ## 板级与系统集成
 
-`src/board/GW_PROBLEM_TOW.v` 仅声明引脚并实例化 `piano_score_player`。
+`src/board/GW_PROBLEM_TOW.v` 声明引脚，连接 `piano_score_player` 与独立视频输出子系统。
 `piano_score_player.v` 保留原模块名和参数接口，负责子模块连接、三种事件来源的互斥选择、错误静音和 DAC 路由。
 `board_reset.v` 保存上电计数，KEY2 异步断言复位，两级寄存器同步释放。
 `GSR` 是 Gowin 原语；集成测试提供行为占位模块，不作为综合输入。

@@ -1,0 +1,11 @@
+impl/*
+!impl/ddr3_test_process_config.json
+output/*.fs
+sim/work/
+sim/native_work/
+sim/native_generated/
+sim/transcript
+sim/*.wlf
+src/ip/**/temp/
+*.user
+*.gws

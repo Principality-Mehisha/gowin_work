@@ -1,0 +1,26 @@
+# vsim -c -voptargs="+acc" -lib work tb_ddr3_bist -do "onfinish stop; onerror {quit -code 1 -f}; run -all; if {[examine -radix unsigned /tb_ddr3_bist/simulation_passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l tb_ddr3_bist.log 
+# Start time: 20:02:25 on Oct 27,2026
+# Loading sv_std.std
+# Loading work.tb_ddr3_bist
+# Loading work.ddr3_bist
+# onfinish stop
+#  onerror {quit -code 1 -f}
+#  Warning: onerror command for use within macro
+#  run -all
+# PASS six patterns, two passes, paired writes and backpressure
+# PASS fault scenario 1 code 1 addr 00000018
+# PASS fault scenario 2 code 2 addr 00000000
+# PASS fault scenario 3 code 3 addr 00000000
+# PASS fault scenario 4 code 4 addr 00000000
+# PASS fault scenario 5 code 5 addr 00000018
+# PASS fault scenario 6 code 6 addr 00000000
+# PASS fault scenario 7 code 1 addr 00000000
+# ALL BIST TESTS PASSED
+# ** Note: $finish    : tb_ddr3_bist.sv(133)
+#    Time: 472290 ns  Iteration: 2  Instance: /tb_ddr3_bist
+# Break in Module tb_ddr3_bist at tb_ddr3_bist.sv line 133
+# Stopped at tb_ddr3_bist.sv line 133
+#  if {[examine -radix unsigned /tb_ddr3_bist/simulation_passed] != 1} {quit -code 1 -f}
+#  quit -code 0 -f
+# End time: 20:02:25 on Oct 27,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

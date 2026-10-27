@@ -32,5 +32,17 @@
         <File path="src/board/board_reset.v" type="file.verilog" enable="1"/>
         <File path="src/control/playback_control.v" type="file.verilog" enable="1"/>
         <File path="src/storage/sd_score_stream.v" type="file.verilog" enable="1"/>
+        <File path="src/video/dvi_tx.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_keymap.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_roll_line.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_scene.v" type="file.verilog" enable="1"/>
+        <File path="src/video/playback_video_cdc.v" type="file.verilog" enable="1"/>
+        <File path="src/video/pll_init.v" type="file.verilog" enable="1"/>
+        <File path="src/video/tmds_encoder.v" type="file.verilog" enable="1"/>
+        <File path="src/video/video_clock.v" type="file.verilog" enable="1"/>
+        <File path="src/video/video_source.v" type="file.verilog" enable="1"/>
+        <File path="src/video/waterfall_engine.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
     </FileList>
 </Project>

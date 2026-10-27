@@ -1,0 +1,6 @@
+*** GOWIN Tcl Command Line Console  *** 
+Open project C:/Users/30415/Desktop/gowin_work/ddr3_test/ddr3_test.gprj finished
+generate ipc C:/Users/30415/Desktop/gowin_work/ddr3_test/src/ip/ddr3/ddr3_memory_interface/ddr3_memory_interface.ipc
+Parsing netlist file "C:/Users/30415/Desktop/gowin_work/ddr3_test/src/ip/ddr3/ddr3_memory_interface/temp/DDR3/ddr3_memory_interface.vg" completed
+Generate file "C:/Users/30415/Desktop/gowin_work/ddr3_test/src/ip/ddr3/ddr3_memory_interface/ddr3_memory_interface.vo" completed
+generate ipc C:/Users/30415/Desktop/gowin_work/ddr3_test/src/ip/pll/ddr3_pll/ddr3_pll.ipc

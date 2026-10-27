@@ -1,0 +1,12 @@
+{
+  "format": "P88S v1",
+  "sha256": "81f10ba6dcd06f2af75f02d276c1f1e057ded1bfc5c80793e9b7790e93a0f663",
+  "bytes": 29784,
+  "event_count": 3721,
+  "note_count": 1860,
+  "duration_ms": 202706,
+  "peak_polyphony": 6,
+  "used_keys": 63,
+  "max_quantization_error_ms": 0.0,
+  "rom_sha256": "8574cf17d8137c729f866b64daf8347dd44260416dca70a9b46687c4a53ed7db"
+}

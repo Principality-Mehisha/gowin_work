@@ -1,0 +1,43 @@
+Reading F:/Quartus/modelsim_ase/tcl/vsim/pref.tcl
+
+# 10.5b
+
+# vsim -c -voptargs="+acc" -lib native_work tb_native_large -do "onfinish stop; run -all; quit -code 0 -f" -l native_large_old.log 
+# Start time: 20:00:37 on Oct 27,2026
+# Loading sv_std.std
+# Loading native_work.tb_native_large
+# Loading native_work.native_mc_probe
+# Loading native_work.GSR
+# Loading native_work.LUT3
+# Loading native_work.MUX8
+# Loading native_work.MUX4
+# Loading native_work.MUX2
+# Loading native_work.LUT2
+# Loading native_work.DFFCE
+# Loading native_work.LUT4
+# Loading native_work.MUX16
+# Loading native_work.DFFPE
+# Loading native_work.DFFRE
+# Loading native_work.ALU
+# Loading native_work.MUX2_LUT5
+# Loading native_work.MUX2_LUT6
+# Loading native_work.INV
+# Loading native_work.LUT1
+# Loading native_work.SDPX9B
+# Loading native_work.ddr3_bist
+# Loading native_work.mux2
+# ** Warning: Design size of 18123 instances exceeds ModelSim - Intel FPGA Starter Edition recommended capacity.
+# This may because you are loading cell libraries which are not recommended with
+# the ModelSim - Intel FPGA Edition. Expect performance to be adversely affected.
+# onfinish stop
+#  run -all
+# NATIVE MC RESULT: failed=1 code= 3 commands=      16412 beats=      16411 physical_writes=      16554 cycles=      22791 addr=000200d8
+# ** Fatal: Native controller write path failed
+#    Time: 228010 ns  Scope: tb_native_large File: tb_native_large.sv Line: 33
+# ** Note: $finish    : tb_native_large.sv(33)
+#    Time: 228010 ns  Iteration: 1  Instance: /tb_native_large
+# Break in Module tb_native_large at tb_native_large.sv line 33
+# Stopped at tb_native_large.sv line 33
+#  quit -code 0 -f
+# End time: 20:01:02 on Oct 27,2026, Elapsed time: 0:00:25
+# Errors: 1, Warnings: 1

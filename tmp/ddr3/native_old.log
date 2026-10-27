@@ -1,0 +1,39 @@
+# vsim -c -voptargs="+acc" -lib native_work tb_native_mc -do "onfinish stop; run -all; if {[examine -radix unsigned /tb_native_mc/simulation_passed] != 1} {quit -code 1 -f}; quit -code 0 -f" -l native_old.log 
+# Start time: 19:58:58 on Oct 27,2026
+# Loading sv_std.std
+# Loading native_work.tb_native_mc
+# Loading native_work.native_mc_probe
+# Loading native_work.GSR
+# Loading native_work.LUT3
+# Loading native_work.MUX8
+# Loading native_work.MUX4
+# Loading native_work.MUX2
+# Loading native_work.LUT2
+# Loading native_work.DFFCE
+# Loading native_work.LUT4
+# Loading native_work.MUX16
+# Loading native_work.DFFPE
+# Loading native_work.DFFRE
+# Loading native_work.ALU
+# Loading native_work.MUX2_LUT5
+# Loading native_work.MUX2_LUT6
+# Loading native_work.INV
+# Loading native_work.LUT1
+# Loading native_work.SDPX9B
+# Loading native_work.ddr3_bist
+# Loading native_work.mux2
+# ** Warning: Design size of 18123 instances exceeds ModelSim - Intel FPGA Starter Edition recommended capacity.
+# This may because you are loading cell libraries which are not recommended with
+# the ModelSim - Intel FPGA Edition. Expect performance to be adversely affected.
+# onfinish stop
+#  run -all
+# NATIVE MC RESULT: failed=0 code= 0 commands=       1024 beats=       1024 physical_writes=       1025 cycles=       1248 addr=00000000
+# ** Fatal: Native controller write path failed
+#    Time: 12580 ns  Scope: tb_native_mc File: tb_native_mc.sv Line: 33
+# ** Note: $finish    : tb_native_mc.sv(33)
+#    Time: 12580 ns  Iteration: 1  Instance: /tb_native_mc
+# Break in Module tb_native_mc at tb_native_mc.sv line 33
+# Stopped at tb_native_mc.sv line 33
+#  if {[examine -radix unsigned /tb_native_mc/simulation_passed] != 1} {quit -code 1 -f}
+# End time: 19:59:00 on Oct 27,2026, Elapsed time: 0:00:02
+# Errors: 1, Warnings: 1

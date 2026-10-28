@@ -44,5 +44,13 @@
         <File path="src/video/waterfall_engine.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/audio_ddr3.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ddr3_status.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ddr_asset_service.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ip/memory/ddr3_memory_interface.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ip/pll/ddr3_pll.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ip/pll/ddr3_pll_mod.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/pll_mDRP_intf.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr/ddr_asset_seed.v" type="file.verilog" enable="1"/>
     </FileList>
 </Project>

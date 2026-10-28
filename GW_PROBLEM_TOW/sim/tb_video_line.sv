@@ -9,10 +9,10 @@ module tb_video_line;
     reg [1023:0] top_y=0,bottom_y=0;
     reg [6:0] read_pitch=0;
     wire [1:0] pixel;
-    wire overflow;
+    wire overflow,busy;
     piano_roll_line dut(.clk(clk),.reset_n(rst),.x(x),.y(y),.valid(valid),
         .pitch_bus(pitch),.top_bus(top_y),.bottom_bus(bottom_y),
-        .read_pitch(read_pitch),.pixel(pixel),.overflow(overflow));
+        .read_pitch(read_pitch),.pixel(pixel),.overflow(overflow),.busy(busy));
     integer pass,row,n,s,lo,hi,p;
     reg [1:0] expected;
     initial begin
@@ -27,7 +27,7 @@ module tb_video_line;
                 @(negedge clk);x=1600;y=row==0 ? 999 : row-1;
                 @(negedge clk);x=1601;
                 repeat(130)@(negedge clk);
-                if(dut.state!=0 || overflow)$fatal(1,"Line missed horizontal blank");
+                if(busy || overflow)$fatal(1,"Line missed horizontal blank");
                 for(n=0;n<88;n=n+1) begin
                     expected=0;
                     for(s=0;s<64;s=s+1) begin

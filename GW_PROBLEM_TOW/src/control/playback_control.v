@@ -6,7 +6,7 @@ module playback_control #(
     input wire clk, rst_n,
     input wire ringtone_press, replay_press, uart_play, uart_stop, uart_note_play,
     input wire instrument_request, audition_marimba, audition_clarinet,
-    input wire note_busy, playing, finished, failed, sequence_error,
+    input wire note_busy, playing, finished, failed, sequence_error, memory_failure,
     input wire [7:0] uart_track,
     input wire [3:0] sd_error_code, fat_error, score_error,
     output reg ringtone_active, ringtone_error,
@@ -33,7 +33,7 @@ module playback_control #(
     wire [7:0] failure_code = sd_error_code!=0 ? {4'h1,sd_error_code} :
                               fat_error!=0 ? {4'h2,fat_error} :
                               score_error!=0 ? {4'h3,score_error} :
-                              sequence_error ? 8'h40 : 8'h50;
+                              sequence_error ? 8'h40 : (memory_failure ? 8'h70 : 8'h50);
     assign player_state = ringtone_error ? 8'd3 :
                             (ringtone_active ? (playing ? 8'd2 : 8'd1) :
                              (note_busy ? 8'd4 : 8'd0));

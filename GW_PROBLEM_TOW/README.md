@@ -3,6 +3,10 @@
 工程入口：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`，板载时钟 50 MHz。
 SD 卡保存音符事件，FPGA 实时计算钢琴、马林巴或单簧管波形，通过 PT8211 输出。
 
+主工程已默认启用板载 DDR3：单簧管全音域三力度频谱与包络参数存放在外存，
+上电自动装载并读回校验，单音试听无需 SD 卡。DDR 初始化、参数布局、保留的
+实时工作集和回归入口见 [DDR3 说明](docs/DDR3.md)。
+
 已集成 1600×900 / 60 Hz HDMI/DVI 钢琴瀑布流：播放第 3 首 `PIANO.BIN` 时，画面跟随音频播放器时间，琴键按实际合成事件点亮；停止、结束或切换其他曲目后清除落块。声音继续由 PT8211 输出。接线、替换谱面、同步机制与验证入口见 [钢琴视频说明](docs/PIANO_HDMI.md)。
 
 ## 当前功能
@@ -28,6 +32,7 @@ src/
   storage/     SD SPI、FAT、乐谱解码和事件调度
   audio/       钢琴/马林巴/单簧管合成、包络、琴体滤波、限幅、PT8211
   rom/         当前七个函数/参数 ROM
+  ddr/         板载 DDR3、参数装载/校验、跨域请求和已验证的厂商 IP
   video/       同步钢琴瀑布流、视频时钟、逐行缓存、TMDS 和显示谱面 ROM
 tools/         构建、结构/时序检查、乐谱和音色生成工具
 sim/           当前功能的测试平台和仿真入口
@@ -105,11 +110,14 @@ python -m pip install --target output/marimba_tools numpy scipy
 `sim/run_marimba_audio.ps1` 可额外渲染、核对并导出 42 音马林巴试听（不在默认回归中）。
 `sim/run_clarinet.ps1` 可独立验证三乐器控制，并将 45 音单簧管 RTL 输出与整数模型逐样本核对、导出试听 WAV。
 `sim/run_nocturne.ps1` 检查完整夜曲事件、SD 读卡与第 4 首命令；加 `-RenderAudio` 可导出全曲 RTL 试听并逐样本对照。
+`sim/run_ddr.ps1` 验证参数读回、DDR/ROM 音频逐样本一致和真实 SD 播放器；
+`sim/run_ddr_native.ps1` 使用 Gowin 实际 MC 网表验证初始化写 FIFO。
 验证覆盖范围和本次实际结果见 [VERIFICATION.md](VERIFICATION.md)。
 
 ## 参数与维护
 
 默认 `DEFAULT_MARIMBA=1`、`SD_SCORE_ENABLE=0`，实体 KEY1 上电试听马林巴；串口虚拟试听键独立默认选择钢琴 A0。
+板级默认 `DDR_ENABLE=1`，完整单簧管大表从 DDR 读取，小型函数表和实时工作集留在片上。
 `SD_SCORE_ENABLE` 控制上电钢琴乐谱模式；设为 0 时，KEY0 和 UART 仍可启动 SD 播放。
 系统集成层保留原参数接口，测试可以加速复位、串口和谱面时间。
 

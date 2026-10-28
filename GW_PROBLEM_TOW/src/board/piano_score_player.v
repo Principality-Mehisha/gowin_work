@@ -4,6 +4,7 @@ module piano_score_player #(
     parameter integer SD_SCORE_ENABLE = 0,
     parameter integer DEFAULT_MARIMBA = 1,
     parameter integer UART_ENABLE = 1,
+    parameter integer EXTERNAL_CLARINET_TABLES = 0,
     parameter integer UART_CLK_HZ = 50000000,
     parameter integer UART_BAUD = 115200,//
     parameter integer UART_TIMEOUT_CYCLES = UART_CLK_HZ/50,
@@ -37,7 +38,12 @@ module piano_score_player #(
     output wire [3:0] LEDs,
     output wire player_reset_n, video_active,
     output wire [31:0] video_elapsed_ms,
-    output reg [87:0] video_keys
+    output reg [87:0] video_keys,
+    input wire ddr_ready, ddr_fault,
+    output wire ddr_request, ddr_cancel,
+    output wire [10:0] ddr_address,
+    input wire ddr_request_ready, ddr_response_valid,
+    input wire [127:0] ddr_response_data
 );
     GSR GSR_INST (.GSRI(1'b1));
     wire rst_n;
@@ -70,6 +76,7 @@ module piano_score_player #(
     wire [3:0] sd_error_code, fat_error, score_error;
     wire manual_mode, uart_start, control_restart, play_rst_n;
     wire marimba_mode, clarinet_mode, ringtone_error, storage_enable, storage_rst_n;
+    wire memory_failure;
     wire [7:0] player_state;
     playback_control #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE),
                        .DEFAULT_MARIMBA(DEFAULT_MARIMBA)) control (
@@ -79,7 +86,7 @@ module piano_score_player #(
         .instrument_request(instrument_request), .audition_marimba(selected_marimba),
         .audition_clarinet(selected_clarinet),
         .note_busy(note_busy), .playing(playing), .finished(finished),
-        .failed(failed), .sequence_error(sequence_error), .uart_track(uart_track),
+        .failed(failed), .sequence_error(sequence_error), .memory_failure(memory_failure), .uart_track(uart_track),
         .sd_error_code(sd_error_code), .fat_error(fat_error), .score_error(score_error),
         .ringtone_active(ringtone_active), .ringtone_error(ringtone_error),
         .selected_track(selected_track), .last_error(last_error),
@@ -96,7 +103,7 @@ module piano_score_player #(
             .selected_note(selected_note),
             .selected_marimba(selected_marimba),
             .selected_clarinet(selected_clarinet),
-            .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
+            .player_error(memory_failure ? 8'h70 : last_error),.play_request(uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
             .note_select_clarinet(uart_select_clarinet),
@@ -121,7 +128,9 @@ module piano_score_player #(
         .SD_INIT_HALF_DIV(SD_INIT_HALF_DIV), .SD_READ_HALF_DIV(SD_READ_HALF_DIV),
         .CLOCKS_PER_MS(CLOCKS_PER_MS)
     ) score_stream (
-        .clk(sys_clk), .rst_n(storage_rst_n), .paused(manual_mode || control_restart),
+        .clk(sys_clk), .rst_n(storage_rst_n),
+        .paused(manual_mode || control_restart ||
+                (EXTERNAL_CLARINET_TABLES!=0 && clarinet_mode && !ddr_ready)),
         .selected_track(selected_track),
         .sd_cs_n(sd_cs_n), .sd_sck(sd_sck), .sd_mosi(sd_mosi), .sd_miso(sd_miso),
         .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),
@@ -175,11 +184,13 @@ module piano_score_player #(
         else if (control_restart || !storage_enable) stream_error <= 0;
         else stream_error <= (sd_error_code != 0 || fat_error != 0 || score_error != 0);
     end
-    assign failed = (storage_enable && stream_error) || sequence_error || deadline_error;
-    wire synth_stop = control_restart || note_clear ||
+    assign memory_failure=EXTERNAL_CLARINET_TABLES!=0 && clarinet_mode && ddr_fault;
+    assign failed = (storage_enable && stream_error) || sequence_error || deadline_error || memory_failure;
+    wire synth_stop = control_restart || note_clear || memory_failure ||
                       (manual_mode ? deadline_error : (failed || finished));
-    wire audio_silence = manual_mode ? deadline_error :
-                         (failed || finished || !playing);
+    assign ddr_cancel=!play_rst_n || synth_stop;
+    wire audio_silence = memory_failure || (manual_mode ? deadline_error :
+                         (failed || finished || !playing));
     wire mode_active = manual_mode || (playing && !finished);
     key_audition #(.DEBOUNCE_CYCLES(DEBOUNCE_CYCLES)) audition (
         .clk(sys_clk), .reset_n(play_rst_n && manual_mode && !ringtone_active && !note_busy),
@@ -241,13 +252,17 @@ module piano_score_player #(
     );
     clarinet_synth #(.SINE_FILE(SINE_FILE), .FREQ_FILE(FREQ_FILE),
                      .VOICING_FILE(CLARINET_VOICING_FILE),
-                     .ENVELOPE_FILE(CLARINET_ENVELOPE_FILE)) clarinet (
+                     .ENVELOPE_FILE(CLARINET_ENVELOPE_FILE),
+                     .EXTERNAL_TABLES(EXTERNAL_CLARINET_TABLES)) clarinet (
         .clk(sys_clk), .reset_n(play_rst_n), .sample_tick(dds_sample_tick), .stop_all(synth_stop),
         .event_valid(synth_event_valid && clarinet_mode), .event_on(synth_event_on),
         .event_note(synth_event_note), .event_dynamics(synth_event_dynamics),
         .pitch_ratio(DDS_PITCH_RATIO), .event_ready(clarinet_event_ready),
         .mix_sample(), .mix_valid(), .pcm(clarinet_pcm), .pcm_valid(),
-        .limiting(), .saturated(), .deadline_error(clarinet_deadline_error)
+        .limiting(), .saturated(), .deadline_error(clarinet_deadline_error),
+        .tables_ready(ddr_ready),.table_request(ddr_request),.table_address(ddr_address),
+        .table_request_ready(ddr_request_ready),.table_response_valid(ddr_response_valid),
+        .table_response_data(ddr_response_data)
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (
@@ -266,6 +281,6 @@ module piano_score_player #(
         else if (synth_event_valid && synth_event_ready && synth_event_note<88)
             video_keys[synth_event_note] <= synth_event_on;
     end
-    assign LEDs = ~{(ringtone_error || (manual_mode ? deadline_error : failed)), (mode_active || ringtone_active),
+    assign LEDs = ~{(memory_failure || ringtone_error || (manual_mode ? deadline_error : failed)), (mode_active || ringtone_active),
                     file_found, initialized};
 endmodule

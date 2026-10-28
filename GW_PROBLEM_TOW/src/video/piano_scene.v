@@ -26,7 +26,7 @@ module piano_scene (
     wire [1:0] roll_pixel;
     piano_roll_line line_builder(.clk(clk),.reset_n(reset_n),.x(x),.y(y),
         .valid(valid),.pitch_bus(pitch_bus),.top_bus(top_bus),.bottom_bus(bottom_bus),
-        .read_pitch(column[22:16]),.pixel(roll_pixel),.overflow(line_overflow));
+        .read_pitch(column[22:16]),.pixel(roll_pixel),.overflow(line_overflow),.busy());
     reg [23:0] color;
     always @* begin
         color = 24'h0b1020;

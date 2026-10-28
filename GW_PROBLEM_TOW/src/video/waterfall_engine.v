@@ -22,14 +22,15 @@ module waterfall_engine (
     wire quotient_bit=trial>=50;
     wire [31:0] quotient_next={time_product[30:0],quotient_bit};
     reg [15:0] now_frame;
+    reg [16:0] lookahead_frame;
     reg [6:0] used;
     reg [2:0] state;
     localparam IDLE=0, TIME=1, WAIT_ROM=2, LATCH=3, EVAL=4, GEOMETRY=5, STORE=6;
     reg [31:0] event_data;
     reg visible,done;
     reg signed [17:0] bottom_work,top_work;
-    wire [16:0] end_frame={3'b0,event_data[31:18]}+{6'b0,event_data[17:7]};
-    wire signed [17:0] delta=$signed({2'b0,now_frame})-$signed({4'b0,event_data[31:18]});
+    reg [16:0] end_frame;
+    reg signed [17:0] delta;
     wire signed [17:0] bottom=18'sd720+(delta<<<2);
     assign busy=state!=IDLE;
     genvar g;
@@ -55,6 +56,7 @@ module waterfall_engine (
         if(!reset_n) begin
             state<=IDLE; overflow<=0; address<=0; used<=0;
             time_product<=0; now_frame<=0; remainder<=0; divide_bit<=0;
+            lookahead_frame<=0;end_frame<=0;delta<=0;
             event_data<=0;visible<=0;done<=0;top_work<=0;bottom_work<=0;
         end else if(update) begin
             if(busy) overflow<=1;
@@ -68,12 +70,21 @@ module waterfall_engine (
                 time_product<=quotient_next;
                 remainder<=quotient_bit ? trial-7'd50 : trial;
                 divide_bit<=divide_bit+1'b1;
-                if(divide_bit==31) begin now_frame<=quotient_next[15:0]; state<=WAIT_ROM; end
+                if(divide_bit==31) begin
+                    now_frame<=quotient_next[15:0];
+                    lookahead_frame<={1'b0,quotient_next[15:0]}+17'd180;
+                    state<=WAIT_ROM;
+                end
             end
             WAIT_ROM: state<=LATCH;
-            LATCH: begin event_data<=data; state<=EVAL; end
+            LATCH: begin
+                event_data<=data;
+                end_frame<={3'b0,data[31:18]}+{6'b0,data[17:7]};
+                delta<=$signed({2'b0,now_frame})-$signed({4'b0,data[31:18]});
+                state<=EVAL;
+            end
             EVAL: begin
-                done<=address>=count || {3'b0,event_data[31:18]}>{1'b0,now_frame}+17'd180;
+                done<=address>=count || {3'b0,event_data[31:18]}>lookahead_frame;
                 visible<=end_frame>{1'b0,now_frame};
                 bottom_work<=bottom;
                 state<=GEOMETRY;

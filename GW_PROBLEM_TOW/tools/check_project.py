@@ -50,4 +50,5 @@ for i in range(135):
 for row in (ROOT/'src/rom/clarinet45_env.hex').read_text().split():
     assert all(0<((int(row,16)>>(i*16))&65535)<32768 for i in range(4)), 'Clarinet envelope/gain'
 subprocess.run([sys.executable, str(ROOT/'tools/generate_video_score.py'), '--check'], check=True)
+subprocess.run([sys.executable, str(ROOT/'tools/generate_ddr_assets.py'), '--check'], check=True)
 print(f'PASS: {len(rtl)} active RTL files, seven audio ROMs, piano video ROM, four scores and current UART pins')

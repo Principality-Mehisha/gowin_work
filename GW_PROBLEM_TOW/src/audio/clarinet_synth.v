@@ -5,7 +5,8 @@ module clarinet_synth #(
     parameter SINE_FILE="src/rom/sine256.hex",
     parameter FREQ_FILE="src/rom/frequency88.hex",
     parameter VOICING_FILE="src/rom/clarinet45.hex",
-    parameter ENVELOPE_FILE="src/rom/clarinet45_env.hex"
+    parameter ENVELOPE_FILE="src/rom/clarinet45_env.hex",
+    parameter integer EXTERNAL_TABLES=0
 ) (
     input wire clk,reset_n,sample_tick,stop_all,
     input wire event_valid,event_on,
@@ -17,7 +18,12 @@ module clarinet_synth #(
     output reg mix_valid,
     output wire signed [15:0] pcm,
     output wire pcm_valid,limiting,saturated,
-    output reg deadline_error
+    output reg deadline_error,
+    input wire tables_ready,
+    output wire table_request,
+    output wire [10:0] table_address,
+    input wire table_request_ready, table_response_valid,
+    input wire [127:0] table_response_data
 );
     localparam IDLE=0,META_READ0=1,META_GET0=2,META_READ1=3,META_GET1=4,
         META_BLEND=5,META_USE=6,PREP=7,ENV_CURVE=8,ENV_CURVE_USE=9,
@@ -27,7 +33,7 @@ module clarinet_synth #(
         WEIGHT=25,WEIGHT_USE=26,ADVANCE=27,NOISE_BLEND=28,NOISE_USE=29,
         NOISE_MUL=30,NOISE_USE2=31,ENVELOPE=32,ENV_USE=33,GAIN=34,GAIN_USE=35,
         DYNAMICS=36,OUTPUT=37,CACHED_READ=38,CACHED_USE=39,
-        PITCH_MOD=40,PITCH_USE=41,EXPRESSION=42,EXPR_USE=43;
+        PITCH_MOD=40,PITCH_USE=41,EXPRESSION=42,EXPR_USE=43,MULTIPLY=44;
     reg [5:0] state;
     reg [4:0] harmonic;
     reg [2:0] meta_field;
@@ -47,8 +53,6 @@ module clarinet_synth #(
     reg [7:0] phase_offset,fraction;
     reg signed [15:0] sine_rom[0:255];
     reg [31:0] frequency_rom[0:87];
-    reg [39:0] voicing_rom[0:4319]; // {relative_phase8,sustain16,attack16}
-    reg [95:0] env_rom[0:134]; // {noiseS,noiseA,gainQ12,colorStep,releaseStep,attackStep}
     reg [39:0] param_q,param_lo,param_hi;
     reg [95:0] meta_q,meta_lo,meta_hi;
     reg [23:0] coeff_ram[0:31]; // {weight16,phase8}; validity is reset, RAM is not.
@@ -59,6 +63,13 @@ module clarinet_synth #(
     reg signed [31:0] mult_a;
     reg signed [17:0] mult_b;
     reg signed [49:0] product;
+    reg signed [31:0] operand_a;
+    reg signed [17:0] operand_b;
+    reg [5:0] multiply_return;
+    wire multiply_start=state==META_BLEND || state==ENV_CURVE || state==ATTACK_BLEND || state==SUSTAIN_BLEND ||
+           state==COLOR_BLEND || state==INTERP || state==WEIGHT || state==NOISE_BLEND ||
+           state==NOISE_MUL || state==ENVELOPE || state==GAIN || state==DYNAMICS ||
+           state==PITCH_MOD || state==EXPRESSION;
     reg [49:0] tuning_product;
     reg [15:0] lfsr;
     reg signed [17:0] noise_fast,noise_slow,noise_centered;
@@ -102,11 +113,42 @@ module clarinet_synth #(
     endfunction
     wire [15:0] chosen_weight=coeff_valid ? smooth_weight(coeff_q[23:8],target_weight) : target_weight;
     wire [7:0] chosen_phase=coeff_valid ? smooth_phase(coeff_q[7:0],param_lo[39:32]) : param_lo[39:32];
-    assign event_ready=reset_n && !stop_all && state==IDLE && !sample_tick;
+    assign event_ready=reset_n && !stop_all && state==IDLE && !sample_tick &&
+                       (EXTERNAL_TABLES==0 || tables_ready);
+    // One DDR burst contains all three dynamics for one pitch/harmonic.
+    // Fetch both interpolation endpoints together, halving runtime requests.
+    assign table_request=EXTERNAL_TABLES!=0 && reset_n && !stop_all &&
+        (state==META_READ0 || state==META_READ1 || state==PARAM_READ0);
+    wire [5:0] incoming_held_index=held_note-7'd50;
+    assign table_address=state==PARAM_READ0 ? {incoming_held_index,harmonic} :
+        11'd1440+{3'd0,(state==META_READ1 ? profile_hi : profile_lo)};
+    function [39:0] layer;
+        input [127:0] row;
+        input [7:0] profile_index;
+        begin
+            if(profile_index>=90)layer=row[119:80];
+            else if(profile_index>=45)layer=row[79:40];
+            else layer=row[39:0];
+        end
+    endfunction
     initial begin
         $readmemh(SINE_FILE,sine_rom);$readmemh(FREQ_FILE,frequency_rom);
-        $readmemh(VOICING_FILE,voicing_rom);$readmemh(ENVELOPE_FILE,env_rom);
     end
+    generate if(EXTERNAL_TABLES==0) begin: internal_tables
+        reg [39:0] voicing_rom[0:4319];
+        reg [95:0] env_rom[0:134];
+        initial begin
+            $readmemh(VOICING_FILE,voicing_rom);$readmemh(ENVELOPE_FILE,env_rom);
+        end
+        always @(posedge clk) begin
+            if(state==META_READ0)meta_q<=env_rom[profile_lo];
+            if(state==META_READ1)meta_q<=env_rom[profile_hi];
+            if(state==PARAM_READ0)param_q<=voicing_rom[{profile_lo,harmonic}];
+            if(state==PARAM_READ1)param_q<=voicing_rom[{profile_hi,harmonic}];
+        end
+    end else begin: external_tables
+        always @* begin meta_q=0;param_q=0;end
+    end endgenerate
     always @* begin
         mult_a=0;mult_b=0;
         case(state)
@@ -135,16 +177,13 @@ module clarinet_synth #(
         endcase
     end
     always @(posedge clk) begin
-        if(state==META_READ0)meta_q<=env_rom[profile_lo];
-        if(state==META_READ1)meta_q<=env_rom[profile_hi];
-        if(state==PARAM_READ0)param_q<=voicing_rom[{profile_lo,harmonic}];
-        if(state==PARAM_READ1)param_q<=voicing_rom[{profile_hi,harmonic}];
         if(state==COLOR_BLEND || state==CACHED_READ)coeff_q<=coeff_ram[harmonic];
         if(state==TUNE)tuning_product<=pitch_word*frame_pitch_ratio;
-        if(state==META_BLEND || state==ENV_CURVE || state==ATTACK_BLEND || state==SUSTAIN_BLEND ||
-           state==COLOR_BLEND || state==INTERP || state==WEIGHT || state==NOISE_BLEND ||
-           state==NOISE_MUL || state==ENVELOPE || state==GAIN || state==DYNAMICS ||
-           state==PITCH_MOD || state==EXPRESSION)product<=mult_a*mult_b;
+        // Register the DDR configuration's operands before the DSP, separating
+        // the state/operand mux from the multiply's input setup requirement.
+        if(EXTERNAL_TABLES!=0 && multiply_start)begin operand_a<=mult_a;operand_b<=mult_b;end
+        if(EXTERNAL_TABLES==0 && multiply_start)product<=mult_a*mult_b;
+        if(EXTERNAL_TABLES!=0 && state==MULTIPLY)product<=operand_a*operand_b;
         if(state==SINE_READ)begin
             sine_value<=sine_rom[read_phase[31:24]];
             sine_next<=sine_rom[read_phase[31:24]+8'd1];fraction<=read_phase[23:16];
@@ -156,6 +195,7 @@ module clarinet_synth #(
     always @(posedge clk or negedge reset_n) begin
         if(!reset_n)begin
             state<=IDLE;harmonic<=0;meta_field<=0;gate<=0;coeff_valid<=0;held_note<=50;frame_cached<=0;settle_age<=0;
+            multiply_return<=IDLE;
             dynamics<=0;profile_lo<=0;profile_hi<=0;blend<=0;envelope<=0;envelope_work<=0;
             note_age<=0;frame_expression<=32767;breath_control<=0;frame_pitch_delta<=0;frame_pitch_ratio<=193274;
             frame_envelope<=0;color<=0;frame_color<=0;release_age<=0;
@@ -203,10 +243,12 @@ module clarinet_synth #(
                         state<=(coeff_valid && color==32767 && settle_age==128) ? PREP : META_READ0;
                     end
                 end
-                META_READ0:state<=META_GET0;
-                META_GET0:begin meta_lo<=meta_q;state<=META_READ1;end
-                META_READ1:state<=META_GET1;
-                META_GET1:begin meta_hi<=meta_q;state<=META_BLEND;end
+                META_READ0:if(EXTERNAL_TABLES==0 || table_request_ready)state<=META_GET0;
+                META_GET0:if(EXTERNAL_TABLES==0 || table_response_valid)begin
+                    meta_lo<=EXTERNAL_TABLES!=0 ? table_response_data[95:0] : meta_q;state<=META_READ1;end
+                META_READ1:if(EXTERNAL_TABLES==0 || table_request_ready)state<=META_GET1;
+                META_GET1:if(EXTERNAL_TABLES==0 || table_response_valid)begin
+                    meta_hi<=EXTERNAL_TABLES!=0 ? table_response_data[95:0] : meta_q;state<=META_BLEND;end
                 META_BLEND:state<=META_USE;
                 META_USE:begin
                     case(meta_field)
@@ -247,13 +289,18 @@ module clarinet_synth #(
                     pitch_step<=tuning_product[47:16];harmonic_step<={4'd0,tuning_product[47:16]};
                     harmonic_phase<=frame_phase;phase<=frame_phase+tuning_product[47:16];state<=frame_cached ? CACHED_READ : PARAM_READ0;
                 end
-                PARAM_READ0:state<=PARAM_GET0;
+                PARAM_READ0:if(EXTERNAL_TABLES==0 || table_request_ready)state<=PARAM_GET0;
                 CACHED_READ:state<=CACHED_USE;
                 CACHED_USE:begin
                     weight<=coeff_q[23:8];phase_offset<=coeff_q[7:0];
                     state<=harmonic_step>=36'h078000000 ? ADVANCE : SINE_READ;
                 end
-                PARAM_GET0:begin param_lo<=param_q;state<=PARAM_READ1;end
+                PARAM_GET0:if(EXTERNAL_TABLES==0 || table_response_valid)begin
+                    if(EXTERNAL_TABLES!=0)begin
+                        param_lo<=layer(table_response_data,profile_lo);
+                        param_hi<=layer(table_response_data,profile_hi);state<=ATTACK_BLEND;
+                    end else begin param_lo<=param_q;state<=PARAM_READ1;end
+                end
                 PARAM_READ1:state<=PARAM_GET1;
                 PARAM_GET1:begin param_hi<=param_q;state<=ATTACK_BLEND;end
                 ATTACK_BLEND:state<=ATTACK_USE;
@@ -294,8 +341,13 @@ module clarinet_synth #(
                     mix_sample<=$signed(product[39:8]);mix_valid<=1;state<=IDLE;
                     if(note_age!=65535)note_age<=note_age+1'b1;
                 end
+                MULTIPLY:state<=multiply_return;
                 default:state<=IDLE;
             endcase
+            if(EXTERNAL_TABLES!=0 && multiply_start)begin
+                // Every arithmetic launch state is followed by its use state.
+                multiply_return<=state+1'b1;state<=MULTIPLY;
+            end
         end
     end
 endmodule

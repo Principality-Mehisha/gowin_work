@@ -6,7 +6,6 @@
     <Device name="GW5AT-60B" pn="GW5AT-LV60PG484AC1/I0">gw5at60b-002</Device>
     <FileList>
         <File path="src/board/GW_PROBLEM_TOW.v" type="file.verilog" enable="1"/>
-        <File path="src/control/button_debounce.v" type="file.verilog" enable="1"/>
         <File path="src/control/uart_rx.v" type="file.verilog" enable="1"/>
         <File path="src/control/uart_tx.v" type="file.verilog" enable="1"/>
         <File path="src/control/tjc_status_tx.v" type="file.verilog" enable="1"/>
@@ -19,12 +18,9 @@
         <File path="src/storage/piano_score_sequencer.v" type="file.verilog" enable="1"/>
         <File path="src/board/piano_score_player.v" type="file.verilog" enable="1"/>
         <File path="src/audio/pt8211_score_tx.v" type="file.verilog" enable="1"/>
-        <File path="src/control/dynamics_fixed.v" type="file.verilog" enable="1"/>
-        <File path="src/control/key_control.v" type="file.verilog" enable="1"/>
         <File path="src/audio/adsr_pipeline.v" type="file.verilog" enable="1"/>
         <File path="src/audio/piano_synth.v" type="file.verilog" enable="1"/>
         <File path="src/audio/marimba_synth.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/clarinet_synth.v" type="file.verilog" enable="1"/>
         <File path="src/audio/marimba_body_filter.v" type="file.verilog" enable="1"/>
         <File path="src/audio/output_limiter.v" type="file.verilog" enable="1"/>
         <File path="src/board/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>
@@ -44,13 +40,7 @@
         <File path="src/video/waterfall_engine.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/audio_ddr3.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ddr3_status.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ddr_asset_service.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ip/memory/ddr3_memory_interface.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ip/pll/ddr3_pll.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ip/pll/ddr3_pll_mod.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/pll_mDRP_intf.v" type="file.verilog" enable="1"/>
-        <File path="src/ddr/ddr_asset_seed.v" type="file.verilog" enable="1"/>
+        <File path="src/system/instrument_system.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/instrument_voice_bank.v" type="file.verilog" enable="1"/>
     </FileList>
 </Project>

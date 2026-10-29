@@ -10,7 +10,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'vlib failed' }
     }
     $rtlSources = Get-ProjectSources $projectRoot
-    & vlog -sv +incdir+src -work sim/work @rtlSources sim/sd_card_model.v sim/tb_sd_ringtone.sv sim/tb_ringtone_synth.sv
+    & vlog -sv +incdir+src +incdir+sim -work sim/work @rtlSources sim/sd_card_model.v sim/tb_sd_ringtone.sv sim/tb_ringtone_synth.sv
     if ($LASTEXITCODE -ne 0) { throw 'vlog failed' }
     foreach ($bench in @('tb_sd_ringtone', 'tb_ringtone_synth')) {
         $commands = 'onfinish stop; run -all; if {[examine -radix unsigned /' +

@@ -8,7 +8,7 @@ from fit_marimba_params import NOTE_FIRST, loudness_metric
 import numpy as np
 from marimba_reference import OUT_FS, decode_modes, render_note
 ROOT = Path(__file__).resolve().parents[1]
-NOTE_LAST = 77  # KEY1 audition remains C2-F5.
+NOTE_LAST = 77  # This offline audio sweep covers C2-F5.
 
 def measured_pitch(samples, expected):
     part = samples[round(.025 * OUT_FS):round(.45 * OUT_FS)]

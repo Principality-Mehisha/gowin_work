@@ -3,7 +3,6 @@ from pathlib import Path
 import struct
 from fat_test_fixtures import build, save_hex, save_full_fat32
 from make_uart_fixtures import main as make_uart
-from make_nocturne_fixtures import main as make_nocturne
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,8 +37,7 @@ def main():
     (out/'params.vh').write_text(f'`define RINGTONE_EVENTS {len(events)}\n`define RINGTONE_NOTE_ONS {sum(e[3]>0 for e in events)}\n`define RINGTONE_FRAMES {frames}\n')
     (out/'events.hex').write_text(''.join(f'{int.from_bytes(struct.pack("<IBBBB",*e),"little"):016x}\n' for e in events))
     make_uart()
-    make_nocturne()
-    print('PASS: piano, ringtone, clarinet and UART fixtures generated from current SD scores')
+    print('PASS: piano, ringtone and UART fixtures generated from current SD scores')
 
 if __name__ == '__main__':
     main()

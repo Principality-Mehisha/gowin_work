@@ -1,6 +1,7 @@
 // 88 independent note states, one shared time-multiplexed 8-partial datapath.
 // event_note=0..87 means A0..C8; note-off addresses the original note.
 module piano_synth #(
+    parameter integer EXTERNAL_LIMITER=0,
     parameter SINE_FILE="src/rom/sine256.hex",
     parameter FREQ_FILE="src/rom/frequency88.hex",
     parameter VOICING_FILE="src/rom/voicing88.hex",
@@ -264,11 +265,18 @@ module piano_synth #(
     assign debug_env_state=env_state_reg;
     assign debug_envelope=voice_env;
     assign debug_phase=base_phase;
+    generate if (EXTERNAL_LIMITER == 0) begin: internal_output
     output_limiter limiter (
         .clk(clk), .reset_n(reset_n), .clear(stop_all),
         .in_valid(mix_valid), .in_sample(mix_sample),
         .out_valid(pcm_valid), .out_sample(pcm),
         .limiting(limiting), .saturated(saturated));
+    end else begin: external_output
+        assign pcm=16'sd0;
+        assign pcm_valid=1'b0;
+        assign limiting=1'b0;
+        assign saturated=1'b0;
+    end endgenerate
     always @(posedge clk) begin
         if (state==FETCH) begin
             voice_data<=voice_ram[voice];

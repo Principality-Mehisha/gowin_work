@@ -1,9 +1,5 @@
 # 当前素材来源与使用方式
 
-## 单簧管参数拟合
-
-`clarinet/source/{pp,mf,ff}/` 保存 Iowa 大学三个力度、四个音区的 12 份 44.1 kHz/16-bit/mono AIFF。`fit_clarinet_params.py` 离线分割并测量 D3～B♭6 共 135 组音高/力度参数，生成 32 分音起音/持续权重、相对相位、包络和噪声参数。来源、使用说明及指纹见 `clarinet/ATTRIBUTION.md`、`clarinet/source_manifest.json`；测量与拟合结果见 `clarinet/measurements.json`、`clarinet/fit_report.json`。逐音表情及轻微音高变化为另行设计的动态控制。FPGA 只读取参数，继续实时合成。
-
 ## 马林巴参数拟合
 
 `marimba/source/{pp,mf,ff}/` 的 AIFF 来自 University of Iowa Electronic Music Studios Musical Instrument Samples，录制者为 Lawrence Fritts 及贡献者。

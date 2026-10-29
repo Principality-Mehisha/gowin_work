@@ -2,6 +2,7 @@
 // mallet transient and a separate body/tube resonator.
 // MIDI notes 36..83 map to the fitted C2..B5 range.
 module marimba_synth #(
+    parameter integer EXTERNAL_LIMITER=0,
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter MODE_FILE = "src/rom/marimba48.hex",
     parameter ATTACK_FILE = "src/rom/marimba_attack48.hex"
@@ -15,6 +16,8 @@ module marimba_synth #(
     output reg mix_valid,
     output wire signed [15:0] pcm,
     output wire pcm_valid, limiting, saturated,
+    output wire signed [31:0] output_mix,
+    output wire output_mix_valid,
     output reg deadline_error
 );
     localparam NOTE_FIRST = 7'd36;
@@ -177,12 +180,21 @@ module marimba_synth #(
         .out_valid(filtered_valid), .out_sample(filtered_sample)
     );
 
+    assign output_mix=filtered_sample;
+    assign output_mix_valid=filtered_valid;
+    generate if (EXTERNAL_LIMITER == 0) begin: internal_output
     output_limiter limiter (
         .clk(clk), .reset_n(reset_n), .clear(stop_all),
         .in_valid(filtered_valid), .in_sample(filtered_sample),
         .out_valid(pcm_valid), .out_sample(pcm),
         .limiting(limiting), .saturated(saturated)
     );
+    end else begin: external_output
+        assign pcm=16'sd0;
+        assign pcm_valid=1'b0;
+        assign limiting=1'b0;
+        assign saturated=1'b0;
+    end endgenerate
 
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin

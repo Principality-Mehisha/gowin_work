@@ -3,7 +3,7 @@ cd $project_dir
 puts [exec python tools/check_project.py 2>@1]
 open_project [file join $project_dir GW_PROBLEM_TOW.gprj]
 set_option -top_module GW_PROBLEM_TOW
-# DDR's distributed boot ROM and pipelined display add high-fanout data nets.
+# Keep the validated placement/routing settings for the pipelined display.
 # SUG100/SUG1220: routability-first placement, timing-driven route, wider
 # routing fanout allowance and resource replication avoid local congestion.
 set_option -place_option 1
@@ -13,9 +13,8 @@ set_option -replicate_resources 1
 run all
 if {![file exists impl/pnr/GW_PROBLEM_TOW.fs]} {error "No bitstream produced"}
 puts [exec python tools/check_timing.py 2>@1]
-puts [exec python tools/check_ddr_resources.py 2>@1]
 puts [exec python tools/write_build_manifest.py 2>@1]
 file mkdir output
-file copy -force impl/pnr/GW_PROBLEM_TOW.fs output/GW_PROBLEM_TOW_ddr3.fs
-puts "DDR3 bitstream: [file join $project_dir output GW_PROBLEM_TOW_ddr3.fs]"
+file copy -force impl/pnr/GW_PROBLEM_TOW.fs output/GW_PROBLEM_TOW.fs
+puts "Bitstream: [file join $project_dir output GW_PROBLEM_TOW.fs]"
 exit

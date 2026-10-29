@@ -335,7 +335,7 @@ def main():
         "decay_method": "fit log amplitude per second, exp(-1/(output_rate*tau)), Q15",
         "dynamics_method": "mf modes; existing linear fundamental/quadratic brightness",
         "body_filter": "existing fixed 385/727 Hz coloration, included in calibration",
-        "apple_reference_calibration": "KEY0 reference retained; no four-note attack offsets",
+        "apple_reference_calibration": "Android ringtone reference retained; no four-note attack offsets",
         "loudness_calibration": {
             "dynamics": CALIBRATION_DYNAMICS, "target": LOUDNESS_TARGET,
             "bass_boost": {

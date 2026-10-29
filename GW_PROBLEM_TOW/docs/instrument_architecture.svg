@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="980" viewBox="0 0 1280 980" role="img" aria-labelledby="title description">
+ <title id="title">GW_PROBLEM_TOW 优化后的工程结构</title>
+ <desc id="description">板级接口连接演奏系统和视频显示；钢琴与马林巴全局选择一种，经过公共限幅器输出。</desc>
+ <defs>
+  <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0L10 4L0 8" fill="#5a7396"/></marker>
+  <style>text{font-family:'Microsoft YaHei','Noto Sans CJK SC',Arial,sans-serif;fill:#18314e} .title{font-size:27px;font-weight:700}.head{font-size:19px;font-weight:700}.label{font-size:16px}.small{font-size:14px;fill:#526b87}.box{fill:white;stroke:#c4d3e6;stroke-width:1.5}.flow{fill:none;stroke:#5a7396;stroke-width:2;marker-end:url(#arrow)}</style>
+ </defs>
+ <rect width="1280" height="980" fill="#f2f6fb"/>
+ <text x="48" y="52" class="title">GW_PROBLEM_TOW · 优化后的工程结构</text>
+ <text x="48" y="81" class="small">板级接口与演奏系统分离 · 全局选择一种音色 · 共用输出限幅器</text>
+ <rect x="48" y="108" width="1184" height="96" rx="14" fill="#18314e"/>
+ <text x="78" y="145" class="head" style="fill:white">FPGA 顶层 GW_PROBLEM_TOW</text>
+ <text x="78" y="177" class="label" style="fill:#d6e7ff">50 MHz 系统时钟 / KEY2 复位　　KEY0、KEY1 仅保留引脚</text>
+ <path d="M640 204V235" class="flow"/>
+ <rect x="48" y="238" width="810" height="150" rx="14" class="box"/>
+ <text x="72" y="270" class="head">板级接口层 piano_score_player</text>
+ <rect x="72" y="291" width="174" height="70" rx="8" fill="#e9f2ff"/><text x="89" y="318" class="label">UART 串口屏</text><text x="89" y="343" class="small">协议 / 状态反馈</text>
+ <rect x="263" y="291" width="174" height="70" rx="8" fill="#e9f2ff"/><text x="281" y="318" class="label">SD 卡接口</text><text x="281" y="343" class="small">SPI / FAT / 乐谱流</text>
+ <rect x="454" y="291" width="174" height="70" rx="8" fill="#e9f2ff"/><text x="471" y="318" class="label">PT8211 输出</text><text x="471" y="343" class="small">采样节拍 / DAC 串行</text>
+ <rect x="645" y="291" width="189" height="70" rx="8" fill="#e9f2ff"/><text x="662" y="318" class="label">复位与视频状态</text><text x="662" y="343" class="small">同步释放 / 音画时间</text>
+ <path d="M453 388V424" class="flow"/>
+ <rect x="48" y="428" width="810" height="430" rx="14" fill="#fff" stroke="#4e83c5" stroke-width="2"/>
+ <text x="72" y="464" class="head">instrument_system · 演奏与合成系统</text>
+ <rect x="72" y="484" width="367" height="74" rx="8" fill="#edf7f2"/><text x="90" y="513" class="label">playback_control</text><text x="90" y="540" class="small">曲目 / 全局乐器 / 停止 / 错误管理</text>
+ <rect x="462" y="484" width="372" height="74" rx="8" fill="#edf7f2"/><text x="480" y="513" class="label">uart_note_audition</text><text x="480" y="540" class="small">选音记忆 / 音符开关 / 释放与尾音</text>
+ <path d="M255 558V578H453V594M648 558V578H453" class="flow"/>
+ <rect x="174" y="597" width="558" height="53" rx="8" fill="#e9f2ff"/><text x="204" y="630" class="label">演奏事件选择：SD 乐谱 / UART 单音 · ready / valid</text>
+ <path d="M453 650V674" class="flow"/>
+ <rect x="72" y="679" width="762" height="82" rx="8" fill="#f2edff"/><text x="92" y="707" class="label">instrument_voice_bank · 音色引擎与声部状态</text><text x="92" y="738" class="label">钢琴：88音 / 8分音　　　马林巴：48音 / 4模态</text>
+ <path d="M453 761V782" class="flow"/>
+ <rect x="174" y="788" width="558" height="46" rx="8" fill="#ffeecf"/><text x="213" y="817" class="label">选中音源 / 马林巴琴体滤波 → 共用限幅器 → PCM</text>
+ <rect x="885" y="428" width="347" height="214" rx="14" class="box"/>
+ <text x="909" y="464" class="head">piano_video · 独立视频域</text><text x="909" y="500" class="label">播放器时间 / 实际接收的亮键事件</text><text x="909" y="535" class="label">快照跨域 → 瀑布流 / 琴键场景</text><text x="909" y="570" class="label">TMDS → HDMI / DVI</text><text x="909" y="611" class="small">1600 × 900 / 60 Hz</text>
+ <path d="M858 476H880" class="flow"/>
+ <text x="48" y="904" class="label">当前保留两种实时音色及一个共用限幅器，全部参数与工作状态存于片上。</text>
+ <text x="48" y="935" class="small">ADC 与压力键盘尚未接入。不同乐器保留各自声部与包络算法，避免本次结构调整改变音色。</text>
+</svg>

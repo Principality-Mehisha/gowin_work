@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('Android', 'Apple', 'Piano', 'Clarinet', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'InstrumentClarinet')]
+    [ValidateSet('Android', 'Apple', 'Piano', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
     [string]$Port,
@@ -12,7 +12,6 @@ switch ($Command) {
     'Android' { $track = 1 }
     'Apple' { $track = 2 }
     'Piano' { $track = 3 }
-    'Clarinet' { $track = 4 }
     'Stop' { $commandByte = 0x11 }
     'Query' { $commandByte = 0x01 }
     'NotePrevious' { $commandByte = 0x40 }
@@ -20,7 +19,6 @@ switch ($Command) {
     'NotePlay' { $commandByte = 0x42 }
     'InstrumentPiano' { $commandByte = 0x43 }
     'InstrumentMarimba' { $commandByte = 0x44 }
-    'InstrumentClarinet' { $commandByte = 0x45 }
 }
 $checksum = (1 + $Sequence + $commandByte + $track) -band 255
 [byte[]]$frame = 0xA5,0x5A,1,$Sequence,$commandByte,$track,0,0,$checksum,0x0D

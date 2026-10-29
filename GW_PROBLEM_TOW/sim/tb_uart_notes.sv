@@ -1,16 +1,16 @@
 `timescale 1ns/1ps
 module tb_uart_notes;
  localparam UART_TICKS=8;
- reg clk=0,rx=1,k0=1,k1=1,k2=1,passed=0;
+ reg clk=0,rx=1,k2=1,passed=0;
  always #10 clk=~clk;
  integer ons=0,offs=0,heard=0;
  wire tx;
  integer displayed_note=-1,display_count=0;
  integer displayed_instrument=-1,instrument_displays=0,prior_ons;
  reg [6:0] expected_note=0;
- piano_score_player #(.POWER_ON_CYCLES(8),.DEBOUNCE_CYCLES(8),.AUDIO_START_CYCLES(32),
+ piano_score_player #(.POWER_ON_CYCLES(8),.AUDIO_START_CYCLES(32),
   .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),.NOTE_GATE_CYCLES(30000),.NOTE_TAIL_CYCLES(250000)) dut (
-  .sys_clk(clk),.KEY0(k0),.KEY1(k1),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
+  .sys_clk(clk),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(),.sd_sck(),.sd_mosi(),.sd_miso(1'b1),.LEDs());
  `include "uart_test_tasks.vh"
  // Simulate the screen receiving real UART bytes, independently of DUT TX.
@@ -47,9 +47,6 @@ module tb_uart_notes;
       {"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""}: begin
        displayed_instrument=1;instrument_displays=instrument_displays+1;
       end
-      {"every.tInstrument.txt=\"",48'hb5a5bbc9b9dc,"\""}: begin
-       displayed_instrument=2;instrument_displays=instrument_displays+1;
-      end
       default: $fatal(1,"Wrong text sent to screen: %s",screen_command);
      endcase
      display_count=display_count+1;
@@ -63,15 +60,14 @@ module tb_uart_notes;
   end
  end
  always @(posedge clk) if(dut.rst_n) begin
-  if(dut.deadline_error) $fatal(1,"Virtual note compute deadline");
+  if(dut.system.deadline_error) $fatal(1,"Virtual note compute deadline");
   if(dut.pcm!=0) heard=heard+1;
-  if(dut.note_busy && (!dut.manual_mode || dut.marimba_mode!==dut.selected_marimba ||
-     dut.clarinet_mode!==dut.selected_clarinet || dut.storage_enable))
+  if(dut.system.note_busy && (!dut.system.manual_mode || dut.system.marimba_mode!==dut.selected_marimba || dut.system.storage_enable))
    $fatal(1,"Single note routed to wrong instrument/SD");
-  if(dut.note_busy && dut.synth_event_valid && dut.synth_event_ready) begin
-   if(dut.synth_event_note!==expected_note || dut.synth_event_dynamics!=192)
+  if(dut.system.note_busy && dut.system.synth_event_valid && dut.system.synth_event_ready) begin
+   if(dut.system.synth_event_note!==expected_note || dut.system.synth_event_dynamics!=192)
     $fatal(1,"Wrong selected note/velocity");
-   if(dut.synth_event_on) ons=ons+1;else offs=offs+1;
+   if(dut.system.synth_event_on) ons=ons+1;else offs=offs+1;
   end
  end
  task settle;
@@ -82,7 +78,7 @@ module tb_uart_notes;
   integer initial_ons,initial_offs;
   begin
    expected_note=pitch;initial_ons=ons;initial_offs=offs;heard=0;
-   send_frame(0,'h42,0,0,0);wait(dut.note_busy);wait(!dut.note_busy);
+   send_frame(0,'h42,0,0,0);wait(dut.system.note_busy);wait(!dut.system.note_busy);
    settle();repeat(3)@(posedge dut.sample_tick);
    if(ons!=initial_ons+1 || offs!=initial_offs+1 || !heard || dut.pcm!=0)
     $fatal(1,"One press must emit exactly one on/off with audio and finish silent pitch=%0d on=%0d off=%0d heard=%0d pcm=%0d",pitch,ons-initial_ons,offs-initial_offs,heard,dut.pcm);
@@ -102,28 +98,28 @@ module tb_uart_notes;
   send_frame(0,'h41,0,0,0);settle();
   expected_note=1;send_frame(0,'h42,0,0,0);wait(ons==3);
   send_frame(0,'h41,0,0,0);settle();
-  if(dut.selected_note!=2 || dut.note_event_note!=1) $fatal(1,"Choosing next changed active pitch");
+  if(dut.selected_note!=2 || dut.system.note_event_note!=1) $fatal(1,"Choosing next changed active pitch");
   if(displayed_note!=2) $fatal(1,"Screen must show selected B0, not the sounding A#0");
   expected_note=2;send_frame(0,'h42,0,0,0);wait(ons==4);
   send_frame(0,'h11,0,0,0);settle();
-  if(dut.note_busy || dut.selected_note!=2 || dut.pcm!=0) $fatal(1,"Stop must silence and preserve selection");
+  if(dut.system.note_busy || dut.selected_note!=2 || dut.pcm!=0) $fatal(1,"Stop must silence and preserve selection");
   displayed_note=-1;send_frame(0,'h01,0,0,0);settle();
   if(displayed_note!=2) $fatal(1,"Query did not refresh unchanged screen note");
-  // Single note playback takes over a loading SD song, then KEY0 returns to SD.
-  send_frame(0,'h10,1,0,0);wait(dut.ringtone_active);
+  // Single note playback takes over a loading SD song, then UART returns to SD.
+  send_frame(0,'h10,1,0,0);wait(dut.system.ringtone_active);
   send_frame(0,'h42,0,0,0);wait(ons==5);
-  if(dut.ringtone_active || dut.last_error) $fatal(1,"Single note failed to cancel SD loading");
-  @(negedge clk);k0=0;repeat(32)@(negedge clk);k0=1;repeat(32)@(negedge clk);
-  if(dut.note_busy || !dut.ringtone_active) $fatal(1,"KEY0 failed to preempt single note");
+  if(dut.system.ringtone_active || dut.last_error) $fatal(1,"Single note failed to cancel SD loading");
+  send_frame(0,'h10,1,0,0);
+  if(dut.system.note_busy || !dut.system.ringtone_active) $fatal(1,"UART track failed to preempt single note");
   send_frame(0,'h11,0,0,0);settle();
   @(negedge clk);k2=0;repeat(4)@(negedge clk);k2=1;wait(dut.rst_n);
-  if(dut.selected_note || dut.note_busy) $fatal(1,"KEY2 must reset selection");
+  if(dut.selected_note || dut.system.note_busy) $fatal(1,"KEY2 must reset selection");
   wait(displayed_note==0);settle();
   if(displayed_instrument!=0) $fatal(1,"Reset must display piano");
   // Selecting an instrument cancels a loading song and never emits a note.
-  send_frame(0,'h10,1,0,0);wait(dut.ringtone_active);
+  send_frame(0,'h10,1,0,0);wait(dut.system.ringtone_active);
   prior_ons=ons;send_frame(0,'h44,0,0,0);settle();
-  if(dut.ringtone_active || dut.note_busy || ons!=prior_ons || dut.pcm!=0 ||
+  if(dut.system.ringtone_active || dut.system.note_busy || ons!=prior_ons || dut.pcm!=0 ||
      !dut.selected_marimba || displayed_instrument!=1 || displayed_note!=15)
    $fatal(1,"Marimba selection/SD cancellation/screen synchronization");
   send_frame(0,'h40,0,0,0);settle();
@@ -132,67 +128,24 @@ module tb_uart_notes;
   send_frame(0,'h41,0,0,0);settle();
   if(displayed_note!=15) $fatal(1,"Marimba next must display C2");
   play_and_finish(36);
-  expected_note=36;send_frame(0,'h42,0,0,0);wait(dut.note_busy);
+  expected_note=36;send_frame(0,'h42,0,0,0);wait(dut.system.note_busy);
   send_frame(0,'h41,0,0,0);settle();
-  if(displayed_note!=16 || dut.note_event_note!=36) $fatal(1,"Marimba selection changed sounding pitch");
+  if(displayed_note!=16 || dut.system.note_event_note!=36) $fatal(1,"Marimba selection changed sounding pitch");
   send_frame(0,'h43,0,0,0);settle();
-  if(dut.note_busy || dut.pcm!=0 || displayed_instrument!=0 || displayed_note!=0)
+  if(dut.system.note_busy || dut.pcm!=0 || displayed_instrument!=0 || displayed_note!=0)
    $fatal(1,"Switch to piano must stop and restore its note");
   play_and_finish(0);
   send_frame(0,'h44,0,0,0);settle();
   if(displayed_note!=16 || displayed_instrument!=1) $fatal(1,"Marimba note was not remembered");
   play_and_finish(37);
-  // Physical KEY1 still starts its original marimba sequence at MIDI 36.
-  @(negedge clk);k1=0;
-  wait(dut.audition_event_valid && dut.audition_event_on);
-  if(!dut.marimba_mode || dut.audition_event_note!=36) $fatal(1,"KEY1 behavior changed");
-  repeat(32)@(negedge clk);k1=1;
-  send_frame(0,'h44,0,0,0);settle();
-  if(dut.pcm!=0 || dut.note_busy || displayed_note!=16) $fatal(1,"Reselect must clear physical audition");
+  // Query preserves the selected instrument after UART audition.
   displayed_instrument=-1;send_frame(0,'h01,0,0,0);settle();
   if(displayed_instrument!=1) $fatal(1,"Query must restore instrument text");
   @(negedge clk);k2=0;repeat(4)@(negedge clk);k2=1;wait(dut.rst_n);
   wait(displayed_instrument==0 && displayed_note==0);settle();
-  if(dut.selected_marimba || displayed_instrument!=0 || displayed_note!=0 || dut.uart_notes.marimba_note!=15)
+  if(dut.selected_marimba || displayed_instrument!=0 || displayed_note!=0 || dut.system.uart_notes.marimba_note!=15)
    $fatal(1,"KEY2 must restore both instrument selections");
-  // Third instrument: full UART, real synthesis, note text and Chinese name.
-  send_frame(0,'h10,1,0,0);wait(dut.ringtone_active);
-  prior_ons=ons;send_frame(0,'h45,0,0,0);settle();
-  if(dut.ringtone_active || dut.note_busy || ons!=prior_ons || dut.pcm!=0 ||
-     !dut.selected_clarinet || dut.selected_marimba || displayed_instrument!=2 || displayed_note!=29)
-   $fatal(1,"Clarinet selection/SD cancellation/screen");
-  send_frame(0,'h40,0,0,0);settle();
-  if(displayed_note!=73)$fatal(1,"Clarinet previous must show A#6");
-  play_and_finish(94);
-  send_frame(0,'h41,0,0,0);settle();
-  if(displayed_note!=29)$fatal(1,"Clarinet next must show D3");
-  play_and_finish(50);
-  expected_note=50;send_frame(0,'h42,0,0,0);wait(dut.note_busy);
-  send_frame(0,'h41,0,0,0);settle();
-  if(displayed_note!=30 || dut.note_event_note!=50)$fatal(1,"Clarinet held pitch changed");
-  send_frame(0,'h44,0,0,0);settle();
-  if(dut.note_busy || dut.pcm!=0 || displayed_instrument!=1 || displayed_note!=15)
-   $fatal(1,"Clarinet to marimba must clear sound");
-  send_frame(0,'h45,0,0,0);settle();
-  if(displayed_note!=30 || displayed_instrument!=2)$fatal(1,"Clarinet memory lost");
-  play_and_finish(51);
-  displayed_instrument=-1;send_frame(0,'h01,0,0,0);settle();
-  if(displayed_instrument!=2)$fatal(1,"Clarinet query text");
-  // KEY0/KEY1 retain their original ownership and never use the clarinet path.
-  expected_note=51;send_frame(0,'h42,0,0,0);wait(dut.note_busy);
-  @(negedge clk);k0=0;repeat(32)@(negedge clk);k0=1;
-  repeat(32)@(negedge clk);
-  if(dut.note_busy || !dut.ringtone_active || dut.clarinet_mode)$fatal(1,"KEY0 clarinet preemption");
-  send_frame(0,'h11,0,0,0);settle();
-  @(negedge clk);k1=0;wait(dut.audition_event_valid && dut.audition_event_on);
-  if(dut.clarinet_mode || !dut.marimba_mode || dut.audition_event_note!=36)$fatal(1,"KEY1 clarinet routing");
-  repeat(32)@(negedge clk);k1=1;
-  send_frame(0,'h45,0,0,0);settle();
-  if(dut.pcm!=0 || displayed_note!=30)$fatal(1,"Clarinet reselect must clear physical audition");
-  @(negedge clk);k2=0;repeat(4)@(negedge clk);k2=1;wait(dut.rst_n);
-  wait(displayed_instrument==0 && displayed_note==0);settle();
-  if(dut.selected_clarinet || dut.uart_notes.clarinet_note!=29)$fatal(1,"Clarinet reset");
-  passed=1;$display("PASS UART audition: piano/marimba/clarinet real audio, MIDI mapping, GB2312 screen, memory, switches, query, reset, SD/KEY0/KEY1 arbitration");$finish;
+  passed=1;$display("PASS UART audition: piano/marimba real audio, MIDI mapping, GB2312 screen, memory, switches, query, reset, SD/UART arbitration");$finish;
  end
  initial begin #200000000;$fatal(1,"UART notes timeout");end
 endmodule

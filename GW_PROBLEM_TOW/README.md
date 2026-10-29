@@ -1,134 +1,65 @@
-# Tang Mega 60K 实时钢琴、马林巴与单簧管播放器
+# Tang Mega 60K 实时钢琴与马林巴播放器
 
-工程入口：`GW_PROBLEM_TOW.gprj`。器件：`GW5AT-LV60PG484AC1/I0`，板载时钟 50 MHz。
-SD 卡保存音符事件，FPGA 实时计算钢琴、马林巴或单簧管波形，通过 PT8211 输出。
+工程入口：`GW_PROBLEM_TOW.gprj`；器件：`GW5AT-LV60PG484AC1/I0`；系统时钟50 MHz。
+SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
-主工程已默认启用板载 DDR3：单簧管全音域三力度频谱与包络参数存放在外存，
-上电自动装载并读回校验，单音试听无需 SD 卡。DDR 初始化、参数布局、保留的
-实时工作集和回归入口见 [DDR3 说明](docs/DDR3.md)。
+## 操作
 
-已集成 1600×900 / 60 Hz HDMI/DVI 钢琴瀑布流：播放第 3 首 `PIANO.BIN` 时，画面跟随音频播放器时间，琴键按实际合成事件点亮；停止、结束或切换其他曲目后清除落块。声音继续由 PT8211 输出。接线、替换谱面、同步机制与验证入口见 [钢琴视频说明](docs/PIANO_HDMI.md)。
-
-## 当前功能
-
-| 输入 | 默认行为 |
+| 输入 | 行为 |
 | --- | --- |
-| KEY0 | 从 SD 根目录播放 ANDROID.BIN，再按停止；结束返回手动试听 |
-| KEY1 | 马林巴 C2～F5 的 42 音逐音试听，F5 后回到 C2 |
-| KEY2 | 低有效复位，恢复默认模式及音符选择 |
-| 串口选曲 | 1=ANDROID.BIN，2=RINGTONE.BIN，3=PIANO.BIN，4=CLARINET.BIN |
-| 串口单音 | 40=上一个，41=下一个，42=播放；43=选择钢琴，44=选择马林巴，45=选择单簧管，命令均为十六进制 |
+| KEY0 / KEY1 | 仅保留顶层引脚，不参与控制 |
+| KEY2 | 低有效复位，恢复钢琴A0和马林巴C2的试听选择 |
+| UART选曲 | 1=ANDROID.BIN，2=RINGTONE.BIN，3=PIANO.BIN |
+| UART单音 | 十六进制40=上一个音，41=下一个音，42=播放 |
+| UART乐器 | 十六进制43=钢琴，44=马林巴 |
 
-串口单音支持钢琴 A0～C8 共 88 音、马林巴 C2～B5 共 48 音及单簧管 D3～B♭6 共 45 音，分别记忆选择；复位选中钢琴 A0，马林巴初始 C2，单簧管初始 D3。
-选音不发声，切换乐器清音；播放约 0.5 秒后发送释放，再保留约 1 秒尾音窗口。
-音名和所选试听乐器自动回传至串口屏 `every.tNote`、`every.tInstrument`。单音试听不需要 SD 卡。
+UART默认115200/8N1。选音不发声；播放约0.5秒后释放，再保留约1秒尾音窗口。
+钢琴支持A0～C8共88音，马林巴支持C2～B5共48音，分别记忆选择，单音试听无需SD卡。
+旧的选曲4返回参数错误，旧的乐器命令0x45返回不支持，不改变播放状态。
+协议和接线见 [UART接口](docs/UART_SCREEN.md)、[单音试听](docs/UART_THREE_KEYS.md)。
 
-## 目录
+播放第3首钢琴乐谱时，1600×900/60 Hz HDMI/DVI瀑布流跟随实际音频时间，琴键按已接收事件点亮。
+声音由PT8211输出。替换PIANO.BIN后须同步生成视频谱面ROM，见 [钢琴视频](docs/PIANO_HDMI.md)。
 
-```text
-src/
-  board/       引脚入口、系统集成、复位、CST/SDC
-  control/     播放控制、按键、UART、单音试听、屏幕反馈
-  storage/     SD SPI、FAT、乐谱解码和事件调度
-  audio/       钢琴/马林巴/单簧管合成、包络、琴体滤波、限幅、PT8211
-  rom/         当前七个函数/参数 ROM
-  ddr/         板载 DDR3、参数装载/校验、跨域请求和已验证的厂商 IP
-  video/       同步钢琴瀑布流、视频时钟、逐行缓存、TMDS 和显示谱面 ROM
-tools/         构建、结构/时序检查、乐谱和音色生成工具
-sim/           当前功能的测试平台和仿真入口
-screen/        可复制到串口屏工程的事件脚本
-sd_card/       四首 BIN、转换说明 JSON 和写卡记录
-assets/        当前参数拟合及乐谱转写所需素材、来源说明
-source/        钢琴 MIDI 及来源说明
-docs/          架构、串口、音频/存储说明；reference/ 为设计参考资料
-impl/          Gowin 生成结果（忽略版本跟踪）
-output/        测试夹具、日志和可重建依赖（忽略版本跟踪）
-```
-
-`.gprj` 是当前 RTL 文件列表的唯一维护入口，仿真脚本从它读取源码。
-`src/` 中只保留当前综合输入；旧 PCM/ADPCM 播放器、历史 ROM 和实现快照已移除。
-`docs/reference/` 保留原始硬件和设计资料，当前操作与模块关系以本文及当前源码为准。
-
-## 模块关系
+## 结构
 
 ```text
 GW_PROBLEM_TOW
-└─ piano_score_player：模块连接、事件选择和音频路由
-   ├─ board_reset：上电延时、复位同步释放
-   ├─ playback_control：播放归属、重启和错误锁存
-   ├─ uart_score_control / uart_note_audition：命令、反馈和单音
-   ├─ key_audition：实体按键试听
-   ├─ sd_score_stream
-   │  └─ SD SPI → FAT → 乐谱校验 → FIFO/定时事件
-   ├─ piano_synth / marimba_synth / clarinet_synth：实时合成
-   └─ pt8211_score_tx：输出采样节拍和 DAC 串行数据
+├─ piano_score_player：板级接口层
+│  ├─ board_reset：上电延时及KEY2复位
+│  ├─ uart_score_control：串口屏协议和反馈
+│  ├─ sd_score_stream：SPI → FAT → 解码 → FIFO/定时事件
+│  ├─ pt8211_score_tx：采样节拍与DAC串行输出
+│  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
+│     └─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
+└─ piano_video：视频时钟、快照跨域、瀑布流与TMDS
 ```
 
-单簧管为单声部 32 分音实时加法合成，采用 Iowa 实测的三档力度与起音/持续参数，并逐帧计算响度和轻微音高起伏；ROM 只存参数。接入与验证见 [单簧管说明](docs/CLARINET.md)。
-第 4 首 SD 曲目为肖邦《夜曲》Op.9 No.2 单簧管独奏，文件和播放方法见 [夜曲说明](docs/NOCTURNE_CLARINET.md)。
+`src/board` 保存顶层、复位及CST/SDC；`control` 保存协议与播放控制；`system` 保存演奏集成；
+`storage` 保存SD/FAT/解码/调度；`audio` 保存合成、滤波、限幅及DAC；`rom` 保存五张音频表；`video` 保存视频逻辑。
+`tools` 为数据生成、构建和检查工具；`sim` 为测试；`screen` 为串口屏脚本；`sd_card` 为三首部署乐谱；`assets` 和 `source` 保存来源素材。
+`impl`、`output` 为构建产物和验证证据。`.gprj` 是RTL清单的统一入口，仿真也从它读取源码。
 
-详见 [架构说明](docs/ARCHITECTURE.md)、[音频与乐谱](docs/AUDIO_AND_SD.md)。
-马林巴同步 RAM 优化及音频等价性验证见 [存储优化说明](docs/MARIMBA_STORAGE.md)。
-
-## 硬件与串口
-
-当前有效约束：`src/board/GW_PROBLEM_TOW.cst`、`src/board/GW_PROBLEM_TOW.sdc`。
-
-| 信号 | FPGA 球位 |
-| --- | --- |
-| sys_clk | V22 |
-| KEY0 / KEY1 / KEY2 | AA13 / AB13 / Y12 |
-| UART RX / TX | B17 / B18 |
-| SD MISO / SCK / CS / MOSI | AA15 / V15 / W15 / Y16 |
-| PT8211 BCK / WS / DIN / PA_EN | Y17 / AB17 / AA16 / AB16 |
-
-UART 波特率由 `piano_score_player.UART_BAUD` 决定，当前默认 115200/8N1；屏幕 TX 接 FPGA RX=B17，屏幕 RX 接 FPGA TX=B18，共地。
-屏幕配置脚本和主机工具默认已对齐为 115200；沿用旧 9600 屏幕工程时须同步修改波特率。
-串口屏供电按其规格独立提供。球位不能直接当作排针脚号。
-屏幕设置、全部命令与返回字段见 [UART 接口](docs/UART_SCREEN.md)，五键与音名/乐器显示见 [三乐器逐音试听](docs/UART_THREE_KEYS.md)。
+见 [架构说明](docs/ARCHITECTURE.md)、[音频与SD](docs/AUDIO_AND_SD.md)、[SVG架构图](docs/instrument_architecture.svg)。
 
 ## 构建与验证
 
-从本工程根目录运行。需要 Gowin EDA V1.9.12.03 和 PATH 中可用的 ModelSim `vlib/vlog/vsim`、Python 3。
+需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
 
 ```powershell
 python tools/check_project.py
-powershell -ExecutionPolicy Bypass -File sim/run_all.ps1
-& "D:\Gowin\Gowin_V1.9.12.03_x64\IDE\bin\gw_sh.exe" tools/build.tcl
+powershell -ExecutionPolicy Bypass -File sim/run_structure.ps1
+& 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl
+python tools/check_structure.py
 ```
 
-位流：`impl/pnr/GW_PROBLEM_TOW.fs`。构建脚本在完成后检查 50 MHz 时序。
-`run_all.ps1` 覆盖基础、UART、钢琴读谱和安卓铃声回归，测试夹具自动从现有 BIN 生成，不改写 SD 文件。
-铃声音频逐样本核对需要 NumPy/SciPy；若本地尚未安装，可运行：
+位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，通过构建检查后复制到 `output/GW_PROBLEM_TOW.fs`。
+基础及原有完整音频回归入口为 `sim/run_all.ps1`；当前变更的针对性集成回归为 `sim/run_structure.ps1`。
+验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/no_clarinet/verification.json`。
+此前版本的源代码、已删除素材和位流备份在 `output/no_clarinet/before/`。
 
-```powershell
-python -m pip install --target output/marimba_tools numpy scipy
-```
-
-单项入口：`sim/run.ps1`、`run_uart.ps1`、`run_score.ps1`、`run_ringtone.ps1`。
-`sim/demo.ps1` 生成钢琴试听，`sim/gui.ps1` 打开合成器波形。
-`sim/run_marimba_audio.ps1` 可额外渲染、核对并导出 42 音马林巴试听（不在默认回归中）。
-`sim/run_clarinet.ps1` 可独立验证三乐器控制，并将 45 音单簧管 RTL 输出与整数模型逐样本核对、导出试听 WAV。
-`sim/run_nocturne.ps1` 检查完整夜曲事件、SD 读卡与第 4 首命令；加 `-RenderAudio` 可导出全曲 RTL 试听并逐样本对照。
-`sim/run_ddr.ps1` 验证参数读回、DDR/ROM 音频逐样本一致和真实 SD 播放器；
-`sim/run_ddr_native.ps1` 使用 Gowin 实际 MC 网表验证初始化写 FIFO。
-验证覆盖范围和本次实际结果见 [VERIFICATION.md](VERIFICATION.md)。
-
-## 参数与维护
-
-默认 `DEFAULT_MARIMBA=1`、`SD_SCORE_ENABLE=0`，实体 KEY1 上电试听马林巴；串口虚拟试听键独立默认选择钢琴 A0。
-板级默认 `DDR_ENABLE=1`，完整单簧管大表从 DDR 读取，小型函数表和实时工作集留在片上。
-`SD_SCORE_ENABLE` 控制上电钢琴乐谱模式；设为 0 时，KEY0 和 UART 仍可启动 SD 播放。
-系统集成层保留原参数接口，测试可以加速复位、串口和谱面时间。
-
-当前合成器支持钢琴 88 音、马林巴 C2～B5 共 48 音及单簧管 D3～B♭6 共 45 音；实体 KEY1 仅循环马林巴的 C2～F5。
-钢琴事件使用 0～87 索引，马林巴使用 MIDI 36～83，单簧管使用 MIDI 50～94，不能混用。
-
-清理可重建的仿真缓存、日志、音频和测试夹具：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/clean_generated.ps1
-```
-
-该脚本保留位流、素材、ROM、SD 文件、已安装依赖和写卡备份。
-素材出处及权利说明见 [assets/ATTRIBUTION.md](assets/ATTRIBUTION.md) 和 [source/ATTRIBUTION.md](source/ATTRIBUTION.md)。
+默认 `SD_SCORE_ENABLE=0`，上电等待UART操作；设为1可在复位后自动播放钢琴乐谱。
+KEY2复位接口及UART、SD和视频时间的仿真加速参数保留。
+管脚约束见 `src/board/GW_PROBLEM_TOW.cst`：时钟V22，KEY0/1/2为AA13/AB13/Y12，UART RX/TX为B17/B18。
+SD MISO/SCK/CS/MOSI为AA15/V15/W15/Y16，PT8211 BCK/WS/DIN/PA_EN为Y17/AB17/AA16/AB16。
+球位不能直接当作排针脚号。

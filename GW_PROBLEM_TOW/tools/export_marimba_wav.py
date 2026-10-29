@@ -10,7 +10,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 FS = 50_000_000 / 3072
 RATE = round(FS)
-NOTE_LAST = 77  # Manual audition; higher notes are reserved for SD scores.
+NOTE_LAST = 77  # This offline audio sweep covers C2-F5.
 ROM = ROOT / "src/rom/marimba48.hex"
 
 

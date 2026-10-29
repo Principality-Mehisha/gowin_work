@@ -1,73 +1,19 @@
 # 当前架构与模块边界
 
-## DDR3 参数存储
+板级顶层GW_PROBLEM_TOW连接音频接口层piano_score_player和独立piano_video。仅保留KEY2复位，KEY0和KEY1不连接功能逻辑。没有DDR引脚、控制器、参数种子或运行时外存请求。
 
-板级默认例化 `src/ddr/audio_ddr3.v`，复用成功 DDR 测试工程的 PLL、mDRP、
-400 MHz DDR3 IP 和 PHY 约束。`ddr_asset_service.v` 在校准后装载并核对
-单簧管完整频谱/包络表，通过稳定邮箱连接 50 MHz 合成器和 100 MHz UI。
-种子使用 LUT 分布式 ROM，运行时参数来自 DDR，不保留全表 BSRAM 副本。
-实时相位、包络和系数工作集仍在片上，详细布局和验证见 [DDR3 说明](DDR3.md)。
+piano_score_player负责board_reset、UART串口屏协议、sd_score_stream及PT8211。instrument_system只处理已经解码的控制命令和音符事件，管理播放归属、选音、全局乐器、故障静音及视频状态。
 
-## 钢琴视频显示
+playback_control管理SD曲目、手动/SD模式、停止、切换、同曲不重启及错误锁存。uart_note_audition分别记忆钢琴0～87和马林巴15～62的音名索引；马林巴发声时加21，转换为MIDI 36～83。选音与发声音分离，事件遵循ready/valid反压。
 
-板级顶层额外连接 `src/video/piano_video.v`，音频集成层输出钢琴 SD 播放有效标志、实际毫秒时间和已接收事件的 88 位亮键状态。显示通过请求/确认快照跨域，在垂直消隐期按音频时间重建落块；没有独立动画计时器。逐行掩码替代原 dvi_photo 的整幅位图，减少 BSRAM 占用。模块、同步精度、ROM 与 SD 文件一致性及视频引脚见 [钢琴视频说明](PIANO_HDMI.md)。
+存储链为sd_spi_byte → sd_spi_reader → fat_file_reader → piano_score_reader → piano_score_sequencer。支持FAT16/FAT32根目录8.3文件、P88S钢琴格式和M42S马林巴格式；256项FIFO默认预填充32项，再按毫秒调度。结束记录本地消费，FIFO断粮、格式或存储错误会停止并静音。
 
-## 板级与系统集成
+instrument_voice_bank按全局选择分发事件和采样使能。钢琴保留88音独立状态、共享八分音计算通路和adsr_pipeline；马林巴保留48音四模态、短起音噪声、同步状态RAM及marimba_body_filter。两种音色均通过EXTERNAL_LIMITER=1去掉内部限幅器，选中混音经过一个公共output_limiter，保留右移两位的原舍入方式。独立合成器默认仍带内部限幅器，方便原音频模型对照。
 
-`src/board/GW_PROBLEM_TOW.v` 声明引脚，连接 `piano_score_player` 与独立视频输出子系统。
-`piano_score_player.v` 保留原模块名和参数接口，负责子模块连接、三种事件来源的互斥选择、错误静音和 DAC 路由。
-`board_reset.v` 保存上电计数，KEY2 异步断言复位，两级寄存器同步释放。
-`GSR` 是 Gowin 原语；集成测试提供行为占位模块，不作为综合输入。
+PT8211输出16位左右声道相同的PCM。50 MHz系统时钟、BCK半分频48，每帧3072个系统时钟，采样率约16276.041667 Hz；DDS_PITCH_RATIO=193274补偿按48 kHz生成的钢琴频率表。deadline_error检查是否错过下一帧计算期限。
 
-## 播放控制
+piano_video使用108 MHz像素时钟和540 MHz串行时钟。播放器时间与88位亮键状态通过请求/确认快照跨域；瀑布流按实际音频时间重建，未来三秒音符来自内置谱面ROM。替换PIANO.BIN必须同步运行tools/generate_video_score.py并重建位流。显示使用逐行掩码，保留原像素延迟。
 
-`src/control/playback_control.v` 管理曲目、手动/SD 模式、同曲重复选择、停止、单音抢占和错误锁存。
-输出 `play_rst_n` 清除演奏状态，`storage_rst_n` 控制整个存储链。
-`ringtone_active` 为兼容现有接口保留名称，含义是任意 SD 曲目处于活动状态，包含钢琴。
-`SD_SCORE_ENABLE=1` 启用兼容的上电钢琴模式；默认值 0 不影响之后按键或 UART 选播。
+board_reset负责上电延时、KEY2异步断言和两级同步释放。GSR及视频PLL/CLKDIV/OSER10仍为Gowin原语。视频使用的PLL_INIT必须保留。SDC继续检查系统、像素和串行三个时钟域；原有视频复位恢复/移除检查单独报告，没有隐藏。
 
-`uart_score_control.v` 负责固定帧接收、参数校验、反馈排队；`tjc_status_tx.v` 格式化原生屏幕命令。
-`uart_note_audition.v` 分离所选音与发声音，保证 ready/valid 反压下的音符事件不丢失。
-虚拟试听分别保存钢琴 0～87、马林巴 15～62、单簧管 29～73 的音名索引；后两种乐器发声时加 21 转为实际 MIDI 音高。
-乐器切换请求经 `playback_control` 停止 SD、清除旧音，下一次播放按所选乐器路由。实体 KEY1 和 SD 曲目的原有音源选择独立保留。
-`tjc_status_tx` 每次锁存 57 位反馈快照，依次输出六个数字字段、音名和 GB2312 乐器名。
-`key_control.v` 内含按键同步与逐音试听模块，`dynamics_fixed.v` 提供固定力度 192，并作为后续力度传感器替换接口。
-
-## 存储与调度
-
-`src/storage/sd_score_stream.v` 封装完整的 SD 到事件链，对外只提供 SPI 引脚、曲目选择、事件握手及状态/错误输出。
-
-1. `sd_spi_byte`：单字节 SPI 传输。
-2. `sd_spi_reader`：SD 初始化、扇区读取、CRC 和超时。
-3. `fat_file_reader`：FAT16/FAT32 挂载、8.3 文件定位及簇链遍历。
-4. `piano_score_reader`：文件头、事件范围、时间顺序和结束记录校验，同时支持 P88S/M42S/C45S；C45S 限定实际 MIDI 50～94 和 slot=0。
-5. `piano_score_sequencer`：256 项 FIFO、预填充和毫秒时间调度，通过 ready/valid 交付音符事件。
-
-## 合成与输出
-
-`src/audio/piano_synth.v` 为 88 个音符保存独立相位和包络，用共享数据通路分时计算分音。
-`adsr_pipeline.v` 是当前使用的流水包络运算模块。
-`marimba_synth.v` 计算 48 音、每音四模态和短起音噪声，经 `marimba_body_filter.v` 着色。
-模态相位/幅度打包进同步 RAM，噪声幅度/LFSR 打包进另一块同步 RAM；下一模态提前读取，噪声在 NOTE_START 读取，读延迟被现有状态机周期覆盖。
-复位和停止只清除有效标志，旧 RAM 数据在无效时不会进入计算。小型力度表保留现有事件写入方式。
-该存储调整不改变状态机周期、合成运算、定点精度或出样时刻，验证方法见 [马林巴存储优化](MARIMBA_STORAGE.md)。
-`clarinet_synth.v` 为 D3～B♭6 的 45 音单声部实时加法合成器，分时计算最多 32 个分音，使用 pp/mf/ff 三档实测参数、起音/持续频谱过渡、气息噪声和逐音响度/轻微音高起伏。频谱稳定后缓存系数，动态控制仍逐帧计算。详见 [单簧管说明](CLARINET.md)。
-三种音源各自经过 `output_limiter.v`，系统选择其中一路送入 `pt8211_score_tx.v`。
-两声道当前输出相同样本，属于单声道复制。
-
-## 时钟与实时预算
-
-音频、控制及 SD 逻辑直接使用 50 MHz 系统时钟，采样更新由 `sample_tick` 使能。
-DDR 用户接口为 100 MHz，memory_clk 为 400 MHz；视频像素/串行时钟独立生成。
-板级 BCK 半分频为 48，每帧 3072 个系统时钟；采样率为 50000000/3072 ≈ 16276.041667 Hz。
-钢琴频率表按 48 kHz 生成，集成层通过 `DDS_PITCH_RATIO=193274` 换算至实际采样率。
-`deadline_error` 检测合成未在下一帧前结束的情况，故障将停止或静音。
-
-UART RX 仅将异步输入到第一级同步寄存器的路径排除时序，其余逻辑仍按 50 MHz 检查。
-移动存储/控制层不改变 UART 接收层级，SDC 中的同步器定位保持有效。
-
-## 开发入口
-
-新增或删除 RTL 时修改 `.gprj`，仿真从相同清单读取；`tools/check_project.py` 检查源码与清单一致。
-`tools/make_test_fixtures.py` 从提交的四首 BIN 生成仿真夹具，无须重新下载或转写原始音乐。
-`sim/` 中报告、WAV 和编译库属于生成文件，不作为音源输入。
+新增或删除RTL修改.gprj；仿真从同一清单读取。tools/check_project.py检查源码、五张ROM、三首乐谱和视频ROM一致性。结构回归及构建证据见VERIFICATION.md和output/no_clarinet/verification.json。

@@ -11,19 +11,10 @@ set_false_path -to [get_pins {display_enabled.video/display_cdc/req_meta_s0/D di
 # occurs one cycle later. Its coherency is enforced by the mailbox protocol.
 set_false_path -from [get_cells {display_enabled.video/display_cdc/mailbox*}] -to [get_clocks {pixel_clk}]
 
-# DDR3 uses a separate PLL and trained PHY (same groups as ddr3_test V3).
-create_generated_clock -name memory_clk -source [get_ports {sys_clk}] -multiply_by 8 [get_pins {external_memory.memory/u_clock/u_pll/PLLA_inst/CLKOUT2}]
-create_generated_clock -name ui_clk -source [get_pins {external_memory.memory/u_clock/u_pll/PLLA_inst/CLKOUT2}] -divide_by 4 [get_pins {external_memory.memory/u_ddr3/gw3_top/u_ddr_phy_top/fclkdiv/CLKOUT}]
-set_clock_groups -asynchronous -group [get_clocks {sys_clk pixel_clk serial_clk}] -group [get_clocks {memory_clk}] -group [get_clocks {ui_clk}]
-# Audio mailbox buses are held until request/acknowledge returns. Capture is
-# one extra receiver cycle after the synchronized toggle. Grouping above
-# covers these CDC paths; synchronizers are explicitly marked in the RTL.
-
 # Keep each domain's critical path visible even when another domain has many
 # repeated violations. These commands affect reports, not timing exceptions.
 report_timing -setup -max_paths 25 -max_common_paths 1
 report_timing -setup -from_clock [get_clocks {pixel_clk}] -to_clock [get_clocks {pixel_clk}] -max_paths 25 -max_common_paths 1
-report_timing -setup -from_clock [get_clocks {ui_clk}] -to_clock [get_clocks {ui_clk}] -max_paths 25 -max_common_paths 1
 report_timing -hold -max_paths 25 -max_common_paths 1
 report_timing -recovery -max_paths 25 -max_common_paths 1
 report_timing -removal -max_paths 25 -max_common_paths 1

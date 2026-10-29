@@ -43,9 +43,9 @@ for row, section in zip(parser.rows, parser.sections):
         stats["audio_clock"] = row[1]
         stats["target_mhz"] = float(row[2].replace("(MHz)", ""))
         stats["fmax_mhz"] = float(row[3].replace("(MHz)", ""))
-    if len(row) == 6 and row[1] in ('sys_clk','pixel_clk','ui_clk','memory_clk') and '(MHz)' in row[2]:
+    if len(row) == 6 and row[1] in ('sys_clk','pixel_clk') and '(MHz)' in row[2]:
         clock_timing.setdefault(row[1],{}).update(target_mhz=float(row[2].replace('(MHz)','')),fmax_mhz=float(row[3].replace('(MHz)','')))
-    if len(row) == 4 and row[1] in ('Setup','Hold') and row[0] in ('sys_clk','pixel_clk','serial_clk','ui_clk','memory_clk'):
+    if len(row) == 4 and row[1] in ('Setup','Hold') and row[0] in ('sys_clk','pixel_clk','serial_clk'):
         clock_timing.setdefault(row[0],{})[row[1].lower()+'_violations'] = int(row[3])
     if len(row) == 9 and row[0].isdigit() and row[1].startswith("-"):
         path={"slack": float(row[1]), "from": row[2], "to": row[3], "check": section}
@@ -59,7 +59,7 @@ stats['reset_violations'] = reset_paths
 stats['reset_review_required'] = bool(reset_paths)
 (root / "sim/timing_report.json").write_text(json.dumps(stats, indent=2), encoding="ascii")
 print(json.dumps(stats, indent=2))
-for clock in ('sys_clk','pixel_clk','serial_clk','ui_clk','memory_clk'):
+for clock in ('sys_clk','pixel_clk','serial_clk'):
     assert clock in clock_timing, f'Missing timing summary: {clock}'
     assert clock_timing[clock].get('setup_violations') == 0, f'{clock} setup failed'
     assert clock_timing[clock].get('hold_violations') == 0, f'{clock} hold failed'

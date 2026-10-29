@@ -13,10 +13,3 @@ Croatian Rhapsody uploaded by Aemisiya to Musical Nexus on November 18, 2018.
 to the P88S event format. The score contains no audio recording.
 The page does not state a separate MIDI redistribution license.
 Instrument sample credits and license are preserved in `../assets/`.
-
-## Chopin Nocturne Op.9 No.2
-
-The original Mutopia MIDI, LilyPond source and RDF metadata are preserved in
-`chopin_nocturne_op9_no2/`. Credit: Renato Biolcati Rinaldi / Mutopia Project,
-CC BY-SA 3.0. Source, hashes and clarinet adaptation details are recorded in
-`chopin_nocturne_op9_no2/ATTRIBUTION.md` and `../sd_card/CLARINET_LICENSE.md`.

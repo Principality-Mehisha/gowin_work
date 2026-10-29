@@ -1,7 +1,7 @@
 // P88S v1: validate the fixed header and ordered 8-byte records before publish.
 // event_valid/event_data remain stable until the consumer asserts event_ready.
 module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
-    input wire marimba_format, clarinet_format,
+    input wire marimba_format,
     input wire clk, rst_n,
     input wire [7:0] data,
     input wire valid,
@@ -28,12 +28,9 @@ module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
     wire [31:0] timestamp = record[31:0];
     wire [7:0] slot = record[39:32], note = record[47:40], velocity = record[55:48];
     wire end_record = slot == 255 && note == 255 && velocity == 0;
-    wire use_clarinet = DYNAMIC_FORMAT && clarinet_format;
     wire use_marimba = DYNAMIC_FORMAT && marimba_format;
-    wire [31:0] expected_magic = use_clarinet ? 32'h53353443 :
-                               (use_marimba ? 32'h5332344d : 32'h53383850);
-    wire invalid_note = use_clarinet ? (note < 50 || note > 94 || slot != 0) :
-                       (use_marimba ? (note < 36 || note > 83) : note >= 88);
+    wire [31:0] expected_magic = use_marimba ? 32'h5332344d : 32'h53383850;
+    wire invalid_note = use_marimba ? (note < 36 || note > 83) : note >= 88;
     assign ready = (state == HEADER || state == RECORD) && file_found;
     task fail;
         input [3:0] code;

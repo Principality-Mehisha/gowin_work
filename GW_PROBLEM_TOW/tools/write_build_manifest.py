@@ -13,8 +13,6 @@ def main():
         for f in project.findall('./FileList/File') if f.attrib.get('enable') == '1']
     inputs += sorted((ROOT/'src/rom').glob('*.hex'))
     inputs += [ROOT/'src/video/score_metadata.json', ROOT/'sd_card/PIANO.BIN']
-    inputs += sorted((ROOT/'src/ddr').rglob('*.ipc'))
-    inputs += sorted((ROOT/'src/ddr').rglob('*.vo'))
     inputs += [ROOT/'tools/build.tcl']
     bitstream = ROOT/'impl/pnr/GW_PROBLEM_TOW.fs'
     timing = json.loads((ROOT/'sim/timing_report.json').read_text())

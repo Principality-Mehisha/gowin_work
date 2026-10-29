@@ -33,8 +33,8 @@ module output_limiter #(
     wire [23:0] shifted_rem = {remainder, dividend[35]};
     always @* begin
         // Round to nearest, ties away from zero, including negative samples.
-        scaled = (in_sample + (in_sample < 0 ?
-                 (1 << (MASTER_SHIFT-1))-1 : (1 << (MASTER_SHIFT-1)))) >>> MASTER_SHIFT;
+            scaled = (in_sample + (in_sample < 0 ?
+                     (1 << (MASTER_SHIFT-1))-1 : (1 << (MASTER_SHIFT-1)))) >>> MASTER_SHIFT;
         magnitude = sample_reg < 0 ? -sample_reg : sample_reg;
         decayed = peak > 0 ? peak - (peak[21:12] == 0 ?
                            22'd1 : {12'd0,peak[21:12]}) : 22'd0;

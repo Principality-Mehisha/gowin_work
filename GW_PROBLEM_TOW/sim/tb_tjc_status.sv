@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module tb_tjc_status;
  reg clk=0,rst_n=0,valid=0,passed=0;
- reg [56:0] snapshot=0;
+ reg [55:0] snapshot=0;
  wire ready,byte_valid;
  wire [7:0] data;
  reg [3:0] cycle=0;
@@ -26,8 +26,7 @@ module tb_tjc_status;
      if(line=="") fences=fences+1;
      else begin
       if(field==7) begin
-       if(n/88==2) expected_line={"every.tInstrument.txt=\"",48'hb5a5bbc9b9dc,"\""};
-       else if(n/88==1) expected_line={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""};
+       if(n/88==1) expected_line={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""};
        else expected_line={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""};
       end
       else if(field==6) expected_line={"every.tNote.txt=\"",expected[n%88],"\""};
@@ -47,16 +46,16 @@ module tb_tjc_status;
  initial begin
   `include "../output/uart_test/note_names.vh"
   repeat(4)@(negedge clk);rst_n=1;
-  for(n=0;n<264;n=n+1) begin
+  for(n=0;n<176;n=n+1) begin
    fields[0]=n%5;fields[1]=n%4;fields[2]=0;fields[3]=0;fields[4]=(255-n)&255;fields[5]='h41;
    wait(ready);@(negedge clk);
-   snapshot={1'(n/88==2),1'(n/88==1),7'(n%88),8'(fields[0]),8'(fields[1]),8'd0,8'd0,8'(fields[4]),8'h41};valid=1;
+   snapshot={1'(n/88==1),7'(n%88),8'(fields[0]),8'(fields[1]),8'd0,8'd0,8'(fields[4]),8'h41};valid=1;
    @(negedge clk);valid=0;snapshot='1;
    // Input changes during byte transmission must not affect this snapshot.
    wait(packets==n+1);@(negedge clk);
   end
-  if(fences!=264) $fatal(1,"Each snapshot needs an initial command fence");
-  passed=1;$display("PASS TJC status: all 88 note names for all three GB2312 instruments, numeric fields, FF fences, backpressure and atomic snapshots");$finish;
+  if(fences!=176) $fatal(1,"Each snapshot needs an initial command fence");
+  passed=1;$display("PASS TJC status: all 88 note names for both GB2312 instruments, numeric fields, FF fences, backpressure and atomic snapshots");$finish;
  end
  initial begin #10000000;$fatal(1,"TJC status timeout");end
 endmodule

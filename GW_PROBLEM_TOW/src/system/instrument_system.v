@@ -48,6 +48,7 @@ module instrument_system #(
     output wire video_active,
     output wire [31:0] video_elapsed_ms,
     output reg [87:0] video_keys,
+    output wire piano_audio_active,analysis_clear,
     output wire [3:0] LEDs
 );
     // ringtone_active now means any selected SD score (including piano).
@@ -120,6 +121,9 @@ module instrument_system #(
         .event_valid(synth_event_valid),.event_on(synth_event_on),.event_note(synth_event_note),
         .event_dynamics(synth_event_dynamics),.pitch_ratio(DDS_PITCH_RATIO),
         .event_ready(bank_event_ready),.deadline_error(deadline_error),.pcm(selected_pcm));
+    assign piano_audio_active=!marimba_mode && !audio_silence && !synth_stop &&
+        (manual_mode ? note_busy : playing);
+    assign analysis_clear=synth_stop || !piano_audio_active;
     assign storage_paused=manual_mode || control_restart;
     // Display observes the same accepted events/time used by the piano synth.
     assign video_active = storage_enable && selected_track==3 && playing &&

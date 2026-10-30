@@ -21,6 +21,7 @@
 
 | 工程 | 顶层模块 | 简介 | 验证状态 |
 | --- | --- | --- | --- |
+| [`hc05_test`](./hc05_test) | `hc05_test` | HC-05 蓝牙串口测试；50 MHz，115200/8N1，FPGA TX=R17、RX=T18；PING、LED、ECHO、STAT | 三组 ModelSim 仿真通过；综合 / 布局布线 / 码流生成及 50 MHz 时序通过，待实物蓝牙验证 |
 | [`ws2812_16`](./ws2812_16) | `ws2812_16` | 16 颗 WS2812B-F5 灯珠，自动循环红 / 绿 / 蓝 / 白 / 红色流水灯；50 MHz，PMOD AB20 数据输出 | 完整帧协议及 81 帧灯效仿真通过；综合 / 布局布线 / 码流生成通过，待实物接灯验证 |
 | [`adc_led`](./adc_led) | `top` | 使用 GW5AT-60 **片上 ADC**（ADCV 差分通道，0…1 V）采样，把有效电压范围 8 等分，档位以二进制写在最低 3 个 LED 上；上电带 PMOD 自检与 ADC 异常指示 | 2026-09-26 用 V1.9.12.03 跑通综合 / 布局布线 / 码流；仿真遍历 0…1 V 全部 2048 个码值通过 |
 | [`GoWin_FPGA60k_Music`](./GoWin_FPGA60k_Music) | `test` | 驱动 NEO Dock 板载 **PT8211 DAC**，由 FPGA 实时合成钢琴音色，双声道播放《国际歌》（G 大调，约 120 BPM），8 个 PMOD LED 显示乐曲段落 | 见工程内 [README](./GoWin_FPGA60k_Music/README.md) |

@@ -1,8 +1,28 @@
 # 当前工程验证记录
 
+## 钢琴HDMI三模式版本（2026-10-29，当前）
+
+当前综合清单为38个RTL。保留瀑布流，新增实际DAC PCM驱动的1024点Hann窗FFT频谱与512采样波形；UART命令0x50选择三种画面。系数及字体位于片上ROM，不增加SD文件。
+
+| 实际实现资源 | 增加显示前 | 当前 |
+| --- | ---: | ---: |
+| BSRAM | 68/118 | 77/118 |
+| Logic | 14539 | 15744 |
+| Register | 10730 | 11074 |
+| DSP | 22/118 | 27.5/118 |
+
+新增9块BSRAM，剩余41块。布局布线耗时97秒；系统/像素Fmax分别为60.088/116.744 MHz，目标为50/108 MHz。系统、像素、串行三个域的数据路径setup/hold违例均为0。已有视频复位recovery/removal各4项违例及V22时钟布线警告仍保留，reset_review_required=true；不能据此宣称全部复位时序通过。
+
+13项回归通过：FFT六类向量3072行逐字匹配；真实UART钢琴C4的512行结果逐字匹配；切换画面前后PCM及DAC串行输出相同；跨域双缓冲、消隐期换帧、快速停止/重触发、待确认状态复位、模式参数拒绝均覆盖。三种场景共432万个RGB像素与独立参考完全一致，官方PLL/CLKDIV/OSER10模型回归通过。
+
+复现入口为sim/run_analysis.ps1、tools/build.tcl及tools/check_analysis_build.py，详情见docs/PIANO_ANALYSIS.md。证据及日志位于output/piano_analysis/verification.json；变更前源码/位流备份位于output/piano_analysis/before/。本轮未下载开发板、烧录串口屏或进行实机测试。
+
+最终位流output/GW_PROBLEM_TOW.fs的SHA256：
+`11a99e2f0c53a505296525b0c429bc049c207e13b8370ed4c496e0aa39426618`。
+
 ## 两种乐器版本（2026-10-29）
 
-当前综合清单为35个RTL、五张音频ROM、三首SD乐谱及钢琴视频谱面。
+该阶段综合清单为35个RTL、五张音频ROM、三首SD乐谱及钢琴视频谱面，以下为移除单簧管时的历史记录。
 单簧管音源、选音状态、中文反馈、第4曲、参数/素材/生成工具和专用DDR控制器、IP、PLL/mDRP、参数种子、DDR引脚及约束均已移除。
 视频所需的PLL_INIT保留；钢琴和马林巴继续共用一个限幅器，保留独立声部和包络。
 

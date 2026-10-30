@@ -30,7 +30,7 @@
  <path d="M453 761V782" class="flow"/>
  <rect x="174" y="788" width="558" height="46" rx="8" fill="#ffeecf"/><text x="213" y="817" class="label">选中音源 / 马林巴琴体滤波 → 共用限幅器 → PCM</text>
  <rect x="885" y="428" width="347" height="214" rx="14" class="box"/>
- <text x="909" y="464" class="head">piano_video · 独立视频域</text><text x="909" y="500" class="label">播放器时间 / 实际接收的亮键事件</text><text x="909" y="535" class="label">快照跨域 → 瀑布流 / 琴键场景</text><text x="909" y="570" class="label">TMDS → HDMI / DVI</text><text x="909" y="611" class="small">1600 × 900 / 60 Hz</text>
+ <text x="909" y="464" class="head">piano_video · 独立视频域</text><text x="909" y="500" class="label">钢琴PCM → Hann / FFT / 波形</text><text x="909" y="535" class="label">跨域 → 瀑布流 / 频谱 / 波形</text><text x="909" y="570" class="label">UART选画面 → TMDS → HDMI</text><text x="909" y="611" class="small">1600 × 900 / 60 Hz · 双缓冲换帧</text>
  <path d="M858 476H880" class="flow"/>
  <text x="48" y="904" class="label">当前保留两种实时音色及一个共用限幅器，全部参数与工作状态存于片上。</text>
  <text x="48" y="935" class="small">ADC 与压力键盘尚未接入。不同乐器保留各自声部与包络算法，避免本次结构调整改变音色。</text>

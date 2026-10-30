@@ -3,6 +3,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  reg clk=0,rst_n=0,rx=1,passed=0;
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
+ wire [1:0] view_mode;
  wire note_previous,note_next,note_play;
  wire select_piano,select_marimba;
  reg marimba_selected=0;
@@ -21,7 +22,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   .player_track(selected),.player_error(error),.play_request(play),
   .selected_note(note_selected),
   .selected_marimba(marimba_selected),.note_select_piano(select_piano),.note_select_marimba(select_marimba),
-  .stop_request(stop),.requested_track(track),.overflow(overflow),
+  .stop_request(stop),.requested_track(track),.display_mode(view_mode),.overflow(overflow),
   .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
  always @(posedge clk) if(rst_n) begin
@@ -160,6 +161,16 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   send_frame(29,'h10,4,0,0);expect_reply(29,1,'h10);
   if(starts!=2 || selected!=3 || tracks[29]!=3 || piano_count!=1 || marimba_count!=1)
    $fatal(1,"Removed commands changed track or instrument");
+  send_frame(70,'h50,1,0,0);expect_reply(70,0,'h50);
+  if(view_mode!=1 || starts!=2)$fatal(1,"Spectrum selection changed playback");
+  send_frame(71,'h50,2,0,0);expect_reply(71,0,'h50);
+  if(view_mode!=2)$fatal(1,"Waveform selection failed");
+  send_frame(72,'h50,3,0,0);expect_reply(72,1,'h50);
+  send_frame(73,'h50,0,1,0);expect_reply(73,1,'h50);
+  send_frame(74,'h50,0,0,1);expect_reply(74,1,'h50);
+  if(view_mode!=2 || starts!=2 || note_count!=1)$fatal(1,"Invalid display request changed state");
+  send_frame(75,'h50,0,0,0);expect_reply(75,0,'h50);
+  if(view_mode!=0)$fatal(1,"Waterfall restore failed");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

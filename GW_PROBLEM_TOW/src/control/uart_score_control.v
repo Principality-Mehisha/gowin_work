@@ -14,6 +14,7 @@ module uart_score_control #(
     output wire play_request, stop_request,
     output wire note_previous, note_next, note_play,
     output wire note_select_piano, note_select_marimba,
+    output reg [1:0] display_mode,
     output wire [7:0] requested_track,
     output reg overflow
 );
@@ -50,8 +51,8 @@ module uart_score_control #(
         end
     end
     wire known=(cmd==8'h01 || cmd==8'h10 || cmd==8'h11 ||
-                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44);
-    wire args_ok=(p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : p0==0));
+                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 || cmd==8'h50);
+    wire args_ok=(p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : (cmd==8'h50 ? p0<=2 : p0==0)));
     // A FIFO slot is reserved while the accepted command changes player state.
     reg [55:0] replies[0:15];
     reg [3:0] wr, rd;
@@ -68,6 +69,10 @@ module uart_score_control #(
     assign note_play=request && args_ok && room && cmd==8'h42;
     assign note_select_piano=request && args_ok && room && cmd==8'h43;
     assign note_select_marimba=request && args_ok && room && cmd==8'h44;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)display_mode<=0;
+        else if(request && known && args_ok && room && cmd==8'h50)display_mode<=p0[1:0];
+    end
     reg [31:0] observed;
     reg dirty;
     wire [7:0] reported_error=player_error!=0 ? player_error : (overflow ? 8'h60 : 8'h00);

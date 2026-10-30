@@ -42,5 +42,8 @@
         <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
         <File path="src/system/instrument_system.v" type="file.verilog" enable="1"/>
         <File path="src/audio/instrument_voice_bank.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_audio_analysis.v" type="file.verilog" enable="1"/>
+        <File path="src/video/analysis_frame_cdc.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_analysis_scene.v" type="file.verilog" enable="1"/>
     </FileList>
 </Project>

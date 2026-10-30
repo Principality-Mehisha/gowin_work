@@ -11,6 +11,10 @@ set_false_path -to [get_pins {display_enabled.video/display_cdc/req_meta_s0/D di
 # occurs one cycle later. Its coherency is enforced by the mailbox protocol.
 set_false_path -from [get_cells {display_enabled.video/display_cdc/mailbox*}] -to [get_clocks {pixel_clk}]
 
+# Analysis frame mailbox: only first synchronizer stages and held payloads.
+set_false_path -to [get_pins {display_enabled.video/analysis_frames/req_meta_s0*/D display_enabled.video/analysis_frames/ack_meta_s0*/D display_enabled.video/analysis_frames/epoch_meta_s0*/D}]
+set_false_path -from [get_cells {display_enabled.video/analysis_frames/published_*}] -to [get_clocks {pixel_clk}]
+
 # Keep each domain's critical path visible even when another domain has many
 # repeated violations. These commands affect reports, not timing exceptions.
 report_timing -setup -max_paths 25 -max_common_paths 1

@@ -6,7 +6,7 @@ module tb_video_raster;
     wire [7:0] r,g,b;
     wire hs,vs,de;
     reg passed=0;
-    video_source dut(.pixel_clk(clk),.reset_n(reset_n),.test_pattern(1'b1),.update(1'b0),.active(1'b0),.elapsed_ms(32'd0),.lit_keys(88'd0),.frame_tick(),
+    video_source dut(.display_mode(2'd0),.analysis_valid(1'b0),.analysis_data(32'd0),.analysis_address(),.pixel_clk(clk),.reset_n(reset_n),.test_pattern(1'b1),.update(1'b0),.active(1'b0),.elapsed_ms(32'd0),.lit_keys(88'd0),.frame_tick(),
         .red(r),.green(g),.blue(b),.hsync(hs),.vsync(vs),.de(de));
     integer cycle,n,x,y,active_count=0,hs_count=0,vs_count=0;
     reg [23:0] expected;

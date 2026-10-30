@@ -1,6 +1,8 @@
 # 当前结构与资源优化
 
-当前仅保留钢琴和马林巴两种实时音色、UART串口屏、三首SD乐谱、PT8211及钢琴HDMI瀑布流。
+本文记录移除单簧管及DDR后的结构优化结果。后续已加入钢琴HDMI频谱与波形，当前资源和验证见[三模式说明](PIANO_ANALYSIS.md)及项目VERIFICATION.md；下文68块BSRAM等数据为增加分析显示之前的结果。
+
+该阶段保留钢琴和马林巴两种实时音色、UART串口屏、三首SD乐谱、PT8211及钢琴HDMI瀑布流。
 板级接口与instrument_system分离，instrument_voice_bank按全局乐器选择分发事件与采样使能，保留各自声部/包络算法并共用一个限幅器。架构图见instrument_architecture.svg。
 
 ## 本次完整移除的内容

@@ -1,0 +1,12 @@
+IO_LOC "sys_clk" V22;
+CLOCK_LOC "sys_clk" BUFG;
+IO_PORT "sys_clk" IO_TYPE=LVCMOS33 PULL_MODE=NONE BANK_VCCIO=3.3;
+// Directions are relative to the FPGA. HC-05 RXD -> R17, TXD -> T18.
+// NEO Dock rev1.4: R17=PMOD0_IO5=J9.8; T18=PMOD0_IO7=J9.6.
+IO_LOC "uart_tx" R17;
+IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC "uart_rx" T18;
+IO_PORT "uart_rx" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+// Optional external active-low LED on the existing PMOD1 LED[0] signal.
+IO_LOC "led_n" AB20;
+IO_PORT "led_n" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;

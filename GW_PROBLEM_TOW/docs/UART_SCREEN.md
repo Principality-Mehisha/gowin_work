@@ -44,6 +44,7 @@ SEQ 回显且不去重；固定按钮可用 00，P1/P2 必须为 00。
 | 42 | 播放当前试听音 | 00 |
 | 43 | 切换试听乐器为钢琴，停止当前播放 | 00 |
 | 44 | 切换试听乐器为马林巴琴，停止当前播放 | 00 |
+| 50 | 切换钢琴HDMI显示，不改变播放 | 00瀑布流、01频谱、02波形 |
 
 可直接复制的按钮命令：
 
@@ -98,3 +99,5 @@ FPGA 返回原生控件赋值（命令/数字为 ASCII，汉字为 GB2312），�
 
 主机示例：`powershell -File tools/send_uart_command.ps1 -Command InstrumentMarimba` 仅打印帧；`InstrumentPiano` 切回钢琴。原 `Piano` 命令仍代表 SD 第三首曲目。显式指定 `-Port COMx` 才访问串口，默认 115200，`-BaudRate 9600` 可匹配其他编译配置。
 验证：`powershell -ExecutionPolicy Bypass -File sim/run_uart.ps1`。
+
+钢琴三种显示的完整按钮指令和分析范围见 [PIANO_ANALYSIS.md](PIANO_ANALYSIS.md)。

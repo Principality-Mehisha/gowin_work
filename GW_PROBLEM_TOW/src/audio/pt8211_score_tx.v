@@ -10,6 +10,7 @@ module pt8211_score_tx #(
     input  wire sys_rst_n,
     input  wire signed [15:0] pcm_left,
     input  wire signed [15:0] pcm_right,
+    output wire signed [15:0] sample_pcm,
     output reg sample_tick,
     output reg HP_BCK,
     output reg HP_WS,
@@ -35,6 +36,7 @@ module pt8211_score_tx #(
     reg [4:0] bit_index;
     reg [15:0] left_sample;
     reg [15:0] right_sample;
+    assign sample_pcm=left_sample;
     always @(posedge sys_clk or negedge sys_rst_n) begin
         if (!sys_rst_n) begin
             bck_div_cnt <= 16'd0;

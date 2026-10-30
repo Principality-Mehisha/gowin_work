@@ -67,3 +67,7 @@ powershell -ExecutionPolicy Bypass -File sim/run_video_hardware.ps1
 硬件模型入口使用高云官方 PLL/CLKDIV/OSER10 模型检查启动、输出和复位重新锁定。
 日志、参考图像及 RTL 预览位于 `output/video_integration/`。原有音频回归仍使用各自入口。
 本地仿真和布局布线不能替代显示器与开发板上的最终音画、锁定和信号完整性验证。
+
+## 钢琴频谱与波形
+
+当前新增UART 0x50参数0/1/2在瀑布流、频谱和波形之间切换。原瀑布流算法、SD谱面和亮键接口保留。使用方法见 [PIANO_ANALYSIS.md](PIANO_ANALYSIS.md)。

@@ -17,3 +17,5 @@ piano_video使用108 MHz像素时钟和540 MHz串行时钟。播放器时间与8
 board_reset负责上电延时、KEY2异步断言和两级同步释放。GSR及视频PLL/CLKDIV/OSER10仍为Gowin原语。视频使用的PLL_INIT必须保留。SDC继续检查系统、像素和串行三个时钟域；原有视频复位恢复/移除检查单独报告，没有隐藏。
 
 新增或删除RTL修改.gprj；仿真从同一清单读取。tools/check_project.py检查源码、五张ROM、三首乐谱和视频ROM一致性。结构回归及构建证据见VERIFICATION.md和output/no_clarinet/verification.json。
+
+新增显示模式经playback_video_cdc的同一快照跨域。实际DAC样本由piano_audio_analysis进行Hann/FFT分析，analysis_frame_cdc双缓冲按帧发布，piano_analysis_scene渲染频谱/波形。整个路径只读音频，不反压播放器；见PIANO_ANALYSIS.md。

@@ -6,7 +6,7 @@ module tb_video_hardware;
     wire [2:0] dp,dn;
     wire cp,cn;
     GSR GSR(.GSRI(1'b1));
-    piano_video dut(.sys_clk(clk),.reset_n(rst),.active(1'b0),.elapsed_ms(32'd0),.keys(88'd0),
+    piano_video dut(.display_mode(2'd0),.audio_active(1'b0),.analysis_clear(1'b1),.sample_tick(1'b0),.sample_pcm(16'sd0),.sys_clk(clk),.reset_n(rst),.active(1'b0),.elapsed_ms(32'd0),.keys(88'd0),
         .tmds_data_p(dp),.tmds_data_n(dn),.tmds_clk_p(cp),.tmds_clk_n(cn));
     integer attempt,i;
     realtime last_edge,pixel_period;

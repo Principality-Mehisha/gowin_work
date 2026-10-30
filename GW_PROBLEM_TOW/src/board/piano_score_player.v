@@ -33,6 +33,9 @@ module piano_score_player #(
     output wire [3:0] LEDs,
     output wire player_reset_n, video_active,
     output wire [31:0] video_elapsed_ms,
+    output wire [1:0] display_mode,
+    output wire piano_audio_active,analysis_clear,analysis_sample_tick,
+    output wire signed [15:0] analysis_pcm,
     output wire [87:0] video_keys
 );
     GSR GSR_INST (.GSRI(1'b1));
@@ -73,6 +76,7 @@ module piano_score_player #(
     wire [15:0] pcm;
     wire uart_overflow;
     wire sample_tick;
+    assign analysis_sample_tick=sample_tick;
     wire signed [15:0] pcm_right=pcm;
     wire [55:0] notes,velocities;
     wire [7:0] gates,triggers;
@@ -86,9 +90,9 @@ module piano_score_player #(
             .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
-            .requested_track(uart_track),.overflow(uart_overflow));
+            .display_mode(display_mode),.requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
-        assign uart_tx=1'b1;
+        assign uart_tx=1'b1;assign display_mode=0;
         assign uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
@@ -116,7 +120,7 @@ module piano_score_player #(
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (
         .sys_clk(sys_clk), .sys_rst_n(rst_n),
         .pcm_left(pcm), .pcm_right(pcm_right),
-        .sample_tick(sample_tick),
+        .sample_tick(sample_tick),.sample_pcm(analysis_pcm),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
     instrument_system #(
@@ -166,6 +170,6 @@ module piano_score_player #(
         .video_active(video_active),
         .video_elapsed_ms(video_elapsed_ms),
         .video_keys(video_keys),
-        .LEDs(LEDs)
+        .LEDs(LEDs),.piano_audio_active(piano_audio_active),.analysis_clear(analysis_clear)
     );
 endmodule

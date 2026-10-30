@@ -18,6 +18,8 @@ UART默认115200/8N1。选音不发声；播放约0.5秒后释放，再保留约
 旧的选曲4返回参数错误，旧的乐器命令0x45返回不支持，不改变播放状态。
 协议和接线见 [UART接口](docs/UART_SCREEN.md)、[单音试听](docs/UART_THREE_KEYS.md)。
 
+HDMI支持钢琴瀑布流、实时频谱图和实时波形图，使用UART命令0x50、参数0/1/2切换，详见 [三种显示与按钮帧](docs/PIANO_ANALYSIS.md)。分析直接使用钢琴DAC采样，无需SD查表。
+
 播放第3首钢琴乐谱时，1600×900/60 Hz HDMI/DVI瀑布流跟随实际音频时间，琴键按已接收事件点亮。
 声音由PT8211输出。替换PIANO.BIN后须同步生成视频谱面ROM，见 [钢琴视频](docs/PIANO_HDMI.md)。
 
@@ -48,14 +50,14 @@ GW_PROBLEM_TOW
 
 ```powershell
 python tools/check_project.py
-powershell -ExecutionPolicy Bypass -File sim/run_structure.ps1
+powershell -ExecutionPolicy Bypass -File sim/run_analysis.ps1
 & 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl
-python tools/check_structure.py
+python tools/check_analysis_build.py
 ```
 
 位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，通过构建检查后复制到 `output/GW_PROBLEM_TOW.fs`。
-基础及原有完整音频回归入口为 `sim/run_all.ps1`；当前变更的针对性集成回归为 `sim/run_structure.ps1`。
-验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/no_clarinet/verification.json`。
+基础及原有完整音频回归入口为 `sim/run_all.ps1`；当前变更的针对性集成回归为 `sim/run_analysis.ps1`。
+验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/piano_analysis/verification.json`。
 此前版本的源代码、已删除素材和位流备份在 `output/no_clarinet/before/`。
 
 默认 `SD_SCORE_ENABLE=0`，上电等待UART操作；设为1可在复位后自动播放钢琴乐谱。

@@ -3,6 +3,10 @@
 module video_source (
     input wire pixel_clk, input wire reset_n, input wire test_pattern,
     input wire update, active,
+    input wire [1:0] display_mode,
+    input wire analysis_valid,
+    input wire [31:0] analysis_data,
+    output wire [8:0] analysis_address,
     input wire [31:0] elapsed_ms,
     input wire [87:0] lit_keys,
     output reg frame_tick,
@@ -12,7 +16,10 @@ module video_source (
     reg [10:0] x;
     reg [9:0] y;
     reg [4:0] hs_pipe, vs_pipe, de_pipe;
-    wire [23:0] rgb;
+    wire [23:0] rgb,analysis_rgb;
+    piano_analysis_scene analysis_scene(.clk(pixel_clk),.reset_n(reset_n),.display_mode(display_mode),
+        .x(x),.y(y),.visible_valid(analysis_valid),.read_data(analysis_data),
+        .read_address(analysis_address),.rgb(analysis_rgb));
     piano_scene scene(.clk(pixel_clk), .reset_n(reset_n), .frame_tick(frame_tick),
         .x(x), .y(y), .test_pattern(test_pattern), .rgb(rgb),
         .update(update),.active(active),.elapsed_ms(elapsed_ms),.lit_keys(lit_keys));
@@ -34,5 +41,12 @@ module video_source (
     assign hsync = hs_pipe[4];
     assign vsync = vs_pipe[4];
     assign de = de_pipe[4];
-    assign {red,green,blue} = rgb;
+    reg [23:0] selected_rgb;
+    always @*begin
+        case(display_mode)
+            1,2:selected_rgb=test_pattern ? rgb : analysis_rgb;
+            default:selected_rgb=rgb;
+        endcase
+    end
+    assign {red,green,blue} = selected_rgb;
 endmodule

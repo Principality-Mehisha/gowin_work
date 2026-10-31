@@ -171,6 +171,16 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   if(view_mode!=2 || starts!=2 || note_count!=1)$fatal(1,"Invalid display request changed state");
   send_frame(75,'h50,0,0,0);expect_reply(75,0,'h50);
   if(view_mode!=0)$fatal(1,"Waterfall restore failed");
+  send_frame(76,'h12,1,1,0);expect_reply(76,0,'h12);
+  if(starts!=3 || selected!=4 || tracks[76]!=4)$fatal(1,"PN001 mapping");
+  send_frame(77,'h12,2,100,0);expect_reply(77,0,'h12);
+  if(starts!=4 || selected!=203 || tracks[77]!=203)$fatal(1,"MB100 mapping");
+  send_frame(78,'h12,0,1,0);expect_reply(78,1,'h12);
+  send_frame(79,'h12,3,1,0);expect_reply(79,1,'h12);
+  send_frame(80,'h12,1,0,0);expect_reply(80,1,'h12);
+  send_frame(81,'h12,1,101,0);expect_reply(81,1,'h12);
+  send_frame(82,'h12,1,1,1);expect_reply(82,1,'h12);
+  if(starts!=4 || selected!=203)$fatal(1,"Invalid numbered command changed playback");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

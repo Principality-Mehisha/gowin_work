@@ -1,5 +1,6 @@
 """Freeze verified analysis images, regression evidence and actual implementation."""
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import re
@@ -13,6 +14,9 @@ BENCHES = ('tb_audio_analysis', 'tb_analysis_cdc', 'tb_piano_views', 'tb_analysi
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--baseline', type=Path, default=OUT/'before/GW_PROBLEM_TOW.rpt.txt')
+    args = parser.parse_args()
     manifest = json.loads((ROOT/'output/build_manifest.json').read_text())
     for name, digest in manifest['inputs'].items():
         assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest() == digest, f'Stale build input: {name}'
@@ -31,12 +35,13 @@ def main():
         tests[bench] = dict(log=path.relative_to(ROOT).as_posix(),
                             sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                             results=[line for line in content.splitlines() if line.startswith('# PASS')])
-    before = implementation(OUT/'before/GW_PROBLEM_TOW.rpt.txt')
+    before = implementation(args.baseline)
     after = implementation(ROOT/'impl/pnr/GW_PROBLEM_TOW.rpt.txt')
     assert after['BSRAM']['used'] <= after['BSRAM']['total']
     artifacts = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                  for p in [OUT/n for n in ('piano_input.hex', 'piano_result.hex', 'spectrum.png', 'waveform.png', 'preview.png')]}
     result = dict(tests=tests, distinct_testbenches=len(tests), before=before, after=after,
+                  baseline_report=str(args.baseline.resolve()),
                   timing=manifest['timing'], bitstream_sha256=digest, artifacts=artifacts,
                   sample_rate_hz=50000000/3072, fft_points=1024, fft_bin_hz=50000000/(3072*1024),
                   waveform_samples=512, pixel_checks=3*1600*900, hardware_tested=False)

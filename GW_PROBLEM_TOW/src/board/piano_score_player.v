@@ -26,6 +26,8 @@ module piano_score_player #(
 ) (
     input wire sys_clk, KEY2,
     input wire uart_rx,
+    input wire upload_complete, upload_invalidated,
+    input wire [7:0] uploaded_track,
     output wire uart_tx,
     output wire HP_BCK, HP_WS, HP_DIN, PA_EN,
     output wire sd_cs_n, sd_sck, sd_mosi,
@@ -44,7 +46,7 @@ module piano_score_player #(
     board_reset #(.POWER_ON_CYCLES(POWER_ON_CYCLES)) reset_controller (
         .clk(sys_clk), .key_reset_n(KEY2), .rst_n(rst_n)
     );
-    wire uart_play;
+    wire uart_play, raw_uart_play;
     wire uart_stop;
     wire uart_note_previous;
     wire uart_note_next;
@@ -70,6 +72,23 @@ module piano_score_player #(
     wire [6:0] selected_note;
     wire selected_marimba;
     wire [7:0] player_state;
+    wire [199:0] scanned_catalog;
+    wire scanned_catalog_done;
+    reg [199:0] catalog;
+    reg catalog_valid;
+    wire numbered_request=uart_track>=4 && uart_track<=203;
+    assign uart_play=raw_uart_play && (!numbered_request ||
+        catalog[uart_track-8'd4] || (!catalog_valid && (player_state==0 || player_state==3)));
+    always @(posedge sys_clk or negedge rst_n) begin
+        if(!rst_n) begin catalog<=0; catalog_valid<=0; end
+        else begin
+            if(scanned_catalog_done) begin catalog<=scanned_catalog; catalog_valid<=1; end
+            if(upload_complete && uploaded_track>=4 && uploaded_track<=203)
+                catalog[uploaded_track-8'd4]<=1;
+            if(upload_invalidated && uploaded_track>=4 && uploaded_track<=203)
+                catalog[uploaded_track-8'd4]<=0;
+        end
+    end
     wire storage_rst_n;
     wire storage_paused;
     wire dds_event_ready;
@@ -87,13 +106,13 @@ module piano_score_player #(
             .player_state(player_state),.player_track(selected_track),
             .selected_note(selected_note),
             .selected_marimba(selected_marimba),
-            .player_error(last_error),.play_request(uart_play),.stop_request(uart_stop),
+            .player_error(last_error),.play_request(raw_uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
             .display_mode(display_mode),.requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;assign display_mode=0;
-        assign uart_play=1'b0; assign uart_stop=1'b0;
+        assign raw_uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
         assign uart_select_piano=0; assign uart_select_marimba=0;
@@ -103,7 +122,7 @@ module piano_score_player #(
         .SD_INIT_HALF_DIV(SD_INIT_HALF_DIV), .SD_READ_HALF_DIV(SD_READ_HALF_DIV),
         .CLOCKS_PER_MS(CLOCKS_PER_MS)
     ) score_stream (
-        .clk(sys_clk), .rst_n(storage_rst_n),
+        .clk(sys_clk), .rst_n(storage_rst_n),.catalog_cached(catalog_valid),
         .paused(storage_paused),
         .selected_track(selected_track),
         .sd_cs_n(sd_cs_n), .sd_sck(sd_sck), .sd_mosi(sd_mosi), .sd_miso(sd_miso),
@@ -114,7 +133,7 @@ module piano_score_player #(
         .playing(playing), .finished(finished), .sequence_error(sequence_error),
         .sd_error_code(sd_error_code), .fat_error(fat_error), .score_error(score_error),
         .notes(notes), .velocities(velocities), .gates(gates), .triggers(triggers),
-        .elapsed_ms(elapsed_ms)
+        .elapsed_ms(elapsed_ms),.catalog_mask(scanned_catalog),.catalog_done(scanned_catalog_done)
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
                       .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (

@@ -2,6 +2,16 @@
 
 板级顶层GW_PROBLEM_TOW连接音频接口层piano_score_player和独立piano_video。仅保留KEY2复位，KEY0和KEY1不连接功能逻辑。没有DDR引脚、控制器、参数种子或运行时外存请求。
 
+顶层另直接例化bluetooth_file_receiver，使用D15/D16独立串口和共享复位；
+内部fixed_slot_writer覆盖预分配的200个100 KiB编号文件，运行时不分配或释放FAT簇链。
+BEGIN校验布局并清零整个槽位，READY后通过32 KiB BSRAM FIFO接收连续原始文件字节，
+END通过整文件CRC和格式检查后提交独立的有效记录。顶层以upload_active选择SD SPI输出，
+不实现同时读写调度。原播放器仍由串口屏控制，新增0x12编号选曲。
+sd_spi_reader保留原读接口并增加CMD24写接口；fat_file_reader增加LOOKUP_ONLY及卷/目录元数据输出。
+详见BLUETOOTH_UPLOAD.md。新编号曲目不使用旧钢琴瀑布流ROM。
+播放器首次SD加载扫描200个私有有效记录，缓存编号有效表；上传失效/成功脉冲更新对应位，
+空编号请求不会打断已经播放的曲目。电脑修改或更换卡后需KEY2复位刷新快照。
+
 piano_score_player负责board_reset、UART串口屏协议、sd_score_stream及PT8211。instrument_system只处理已经解码的控制命令和音符事件，管理播放归属、选音、全局乐器、故障静音及视频状态。
 
 playback_control管理SD曲目、手动/SD模式、停止、切换、同曲不重启及错误锁存。uart_note_audition分别记忆钢琴0～87和马林巴15～62的音名索引；马林巴发声时加21，转换为MIDI 36～83。选音与发声音分离，事件遵循ready/valid反压。

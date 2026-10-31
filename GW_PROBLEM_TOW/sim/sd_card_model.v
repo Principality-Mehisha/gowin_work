@@ -3,7 +3,8 @@
 // profile: 0=SDv1 SDSC, 1=SDv2 SDSC, 2=SDHC.
 module sd_card_model #(
     parameter IMAGE_FILE = "",
-    parameter integer IMAGE_BYTES = 1
+    parameter integer IMAGE_BYTES = 1,
+    parameter integer WRITABLE = 0
 ) (
     input wire rst_n,
     input wire cs_n,
@@ -26,6 +27,13 @@ module sd_card_model #(
     reg [7:0] host_byte;
     reg [7:0] image [0:IMAGE_BYTES-1];
     integer image_index;
+    integer write_phase, write_offset, write_commands;
+    reg [31:0] write_lba;
+    reg [7:0] write_block[0:511];
+    reg [15:0] write_crc, sent_crc;
+    reg stuck_busy;
+    integer extra_write_busy_bytes=0;
+    integer busy_bytes_left=0;
     initial begin
         if (IMAGE_FILE != "") begin
             for (image_index = 0; image_index < IMAGE_BYTES; image_index = image_index + 1)
@@ -196,7 +204,7 @@ module sd_card_model #(
                                 enqueue(8'hfe);
                                 block_crc = 0;
                                 for (i = 0; i < 512; i = i + 1) begin
-                                    if (IMAGE_FILE != "") begin
+                                    if (IMAGE_FILE != "" || WRITABLE) begin
                                         if (lba * 512 + i >= IMAGE_BYTES)
                                             $fatal(1, "Fixture read out of range LBA=%0d", lba);
                                         value = image[lba * 512 + i];
@@ -210,6 +218,17 @@ module sd_card_model #(
                             end
                         end
                     end
+                    24: begin
+                        if(!WRITABLE || !card_ready || (profile!=2 && !cmd16_seen))
+                            $fatal(1,"Write before initialization or to read-only model");
+                        if(profile!=2 && argument[8:0]!=0) $fatal(1,"Unaligned SDSC write");
+                        write_lba=(profile==2) ? argument : argument>>9;
+                        if(write_lba*512+511>=IMAGE_BYTES) $fatal(1,"Write LBA out of range");
+                        write_phase=1; write_offset=0; write_crc=0;
+                        write_commands=write_commands+1;
+                        enqueue(0);
+                    end
+                    13: begin enqueue(0); enqueue(fault==14 ? 8'h20 : 8'h00); end
                     default: $fatal(1, "Unexpected SD command %0d", number);
                 endcase
             end
@@ -231,10 +250,13 @@ module sd_card_model #(
             last_argument = 0;
             read_commands = 0;
             cmd16_seen = 0;
+            write_phase=0; write_offset=0; write_commands=0;
+            write_lba=0; write_crc=0; sent_crc=0; stuck_busy=0; busy_bytes_left=0;
         end else if (cs_n) begin
             rx_bits = 0;
             command_bytes = 0;
             tail = 0;
+            write_phase=0; stuck_busy=0; busy_bytes_left=0;
             if (sck) begin
                 if (mosi !== 1)
                     $fatal(1, "MOSI must be high during deselect clocks");
@@ -245,7 +267,32 @@ module sd_card_model #(
             if (rx_bits == 7) begin
                 rx_bits = 0;
                 host_byte = rx_shift;
-                if (command_bytes == 0) begin
+                if(write_phase!=0) begin
+                    case(write_phase)
+                        1: if(host_byte==8'hfe) write_phase=2;
+                           else if(host_byte!=8'hff) $fatal(1,"Expected write token");
+                        2: begin
+                            write_block[write_offset]=host_byte;
+                            write_crc=reference_crc(write_crc,host_byte);
+                            if(write_offset==511) write_phase=3;
+                            else write_offset=write_offset+1;
+                        end
+                        3: begin sent_crc[15:8]=host_byte; write_phase=4; end
+                        4: begin
+                            sent_crc[7:0]=host_byte;
+                            if(sent_crc!==write_crc) $fatal(1,"Host write CRC incorrect");
+                            if(fault!=12 && fault!=13)
+                                for(image_index=0;image_index<512;image_index=image_index+1)
+                                    image[write_lba*512+image_index]=write_block[image_index];
+                            enqueue(fault==12 ? 8'h0d : 8'h05);
+                            enqueue(0);enqueue(0);enqueue(0);
+                            busy_bytes_left=extra_write_busy_bytes;
+                            if(fault==13) stuck_busy=1;
+                            else if(extra_write_busy_bytes==0) enqueue(8'hff);
+                            write_phase=0;
+                        end
+                    endcase
+                end else if (command_bytes == 0) begin
                     if (host_byte[7:6] == 2'b01) begin
                         command_frame = {40'd0, host_byte};
                         command_bytes = 1;
@@ -272,8 +319,10 @@ module sd_card_model #(
             if (head < tail) begin
                 tx_shift = queue[head];
                 head = head + 1;
+            end else if(busy_bytes_left>0)begin
+                tx_shift=0;busy_bytes_left=busy_bytes_left-1;
             end else
-                tx_shift = 8'hff;
+                tx_shift = stuck_busy ? 8'h00 : 8'hff;
         end else
             tx_shift = {tx_shift[6:0], 1'b1};
     end

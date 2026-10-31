@@ -31,6 +31,8 @@ for name,magic,low,high in [('ANDROID.BIN',b'M42S',36,83),('RINGTONE.BIN',b'M42S
     assert all(slot<8 and low<=note<=high and vel<128 and reserved==0 for _,slot,note,vel,reserved in records[:-1]), name
 cst = (ROOT/'src/board/GW_PROBLEM_TOW.cst').read_text()
 assert 'IO_LOC "uart_rx" B17;' in cst and 'IO_LOC "uart_tx" B18;' in cst
+assert 'IO_LOC "bt_rx" D16;' in cst and 'IO_LOC "bt_tx" D15;' in cst
 subprocess.run([sys.executable, str(ROOT/'tools/generate_video_score.py'), '--check'], check=True)
 subprocess.run([sys.executable, str(ROOT/'tools/generate_analysis_tables.py'), '--check'], check=True)
-print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, piano video ROM, three scores and current UART pins')
+subprocess.run([sys.executable, str(ROOT/'tools/generate_numbered_buttons.py'), '--check'], check=True)
+print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, video ROM, three legacy scores, 200 buttons and both UART pin pairs')

@@ -1,4 +1,4 @@
-// Read-only SD SPI host: SD v1/v2 SDSC and SDHC/SDXC, 512-byte sectors.
+// SD SPI sector host: SD v1/v2 SDSC and SDHC/SDXC, 512-byte sectors.
 // No filesystem or MP3 decoder. Reset to initialize; pulse read_start when
 // read_ready. Bytes are provisional until read_done validates the block CRC.
 module sd_spi_reader #(
@@ -9,7 +9,8 @@ module sd_spi_reader #(
     parameter integer READ_TIMEOUT_CYCLES = 12_500_000,
     parameter integer RESPONSE_BYTES = 16,
     parameter integer BUSY_BYTES = 1024,
-    parameter integer ENABLE_COMMAND_CRC = 0
+    parameter integer ENABLE_COMMAND_CRC = 0,
+    parameter integer WRITE_TIMEOUT_CYCLES = 50_000_000
 ) (
     input  wire clk,
     input  wire rst_n,
@@ -30,7 +31,12 @@ module sd_spi_reader #(
     output reg  sd_cs_n,
     output wire sd_sck,
     output wire sd_mosi,
-    input  wire sd_miso
+    input  wire sd_miso,
+    input wire write_start,
+    input wire [31:0] write_lba,
+    output reg [8:0] write_index,
+    input wire [7:0] write_data,
+    output reg write_done
 );
     localparam [5:0]
         POWER_WAIT = 0, POWER_CLOCKS = 1,
@@ -48,7 +54,11 @@ module sd_spi_reader #(
         COMMAND_RESPONSE = 25, COMMAND_EXTRA = 26,
         BYTE_START = 27, BYTE_WAIT = 28,
         ERROR_RECOVER = 29, ERROR_DONE = 30, FAILED = 31,
-        INIT_CRC = 32, CMD59_RESULT = 33;
+        INIT_CRC = 32, CMD59_RESULT = 33,
+        CMD24_RESULT = 34, WRITE_FETCH = 35, WRITE_SEND = 36,
+        WRITE_BYTE = 37, WRITE_CRC_LOW = 38, WRITE_RESPONSE = 39,
+        WRITE_BUSY = 40, WRITE_COMPLETE = 41, WRITE_STATUS = 42,
+        WRITE_STATUS_BYTE = 43, WRITE_STATUS_CHECK = 44, WRITE_DONE = 45;
     localparam [3:0]
         ERR_INIT_TIMEOUT = 1, ERR_CARD_BUSY = 2,
         ERR_RESPONSE_TIMEOUT = 3, ERR_R1 = 4,
@@ -87,6 +97,8 @@ module sd_spi_reader #(
     reg [1:0] extra_index;
     reg [15:0] crc;
     reg [7:0] received_crc_high;
+    reg [31:0] write_timer;
+    reg write_timing;
 
     assign read_ready = initialized && state == IDLE;
     assign busy = state != IDLE && state != FAILED;
@@ -168,6 +180,7 @@ module sd_spi_reader #(
             token_timing <= 0;
             sd_cs_n <= 1;
             abort_transfer <= 1;
+            write_timing <= 0;
             state <= ERROR_RECOVER;
         end
     endtask
@@ -207,16 +220,24 @@ module sd_spi_reader #(
             error_code <= 0;
             debug_failure <= 0;
             sd_cs_n <= 1;
+            write_index <= 0;
+            write_done <= 0;
+            write_timer <= 0;
+            write_timing <= 0;
         end else begin
             spi_start <= 0;
             read_done <= 0;
             error_pulse <= 0;
+            write_done <= 0;
+            if (write_timing) write_timer <= write_timer + 1'b1;
             if (init_timing)
                 init_count <= init_count + 1'b1;
             if (token_timing)
                 token_count <= token_count + 1'b1;
 
-            if (init_timing && init_count >= INIT_TIMEOUT_CYCLES - 1) begin
+            if (write_timing && write_timer >= WRITE_TIMEOUT_CYCLES - 1) begin
+                fail(ERR_CARD_BUSY);
+            end else if (init_timing && init_count >= INIT_TIMEOUT_CYCLES - 1) begin
                 fail(ERR_INIT_TIMEOUT);
             end else if (token_timing && token_count >= READ_TIMEOUT_CYCLES - 1) begin
                 fail(ERR_TOKEN_TIMEOUT);
@@ -320,8 +341,59 @@ module sd_spi_reader #(
                                 send_command(17, high_capacity ? read_lba
                                              : {read_lba[22:0], 9'd0},
                                              8'h01, CMD17_RESULT);
+                        end else if (write_start) begin
+                            error_code <= 0;
+                            write_index <= 0;
+                            crc <= 0;
+                            write_timer <= 0;
+                            write_timing <= 1;
+                            if (!high_capacity && |write_lba[31:23])
+                                fail(ERR_ADDRESS);
+                            else
+                                send_command(24, high_capacity ? write_lba
+                                             : {write_lba[22:0], 9'd0},
+                                             8'h01, CMD24_RESULT);
                         end
                     end
+                    CMD24_RESULT: begin
+                        if (r1 != 0) fail(ERR_R1);
+                        else transfer_byte(8'hfe, WRITE_FETCH);
+                    end
+                    // Two clocks allow synchronous sector RAM to follow write_index.
+                    WRITE_FETCH: state <= WRITE_SEND;
+                    WRITE_SEND: begin
+                        crc <= crc16_byte(crc, write_data);
+                        transfer_byte(write_data, WRITE_BYTE);
+                    end
+                    WRITE_BYTE: begin
+                        if (write_index == 511)
+                            transfer_byte(crc[15:8], WRITE_CRC_LOW);
+                        else begin write_index <= write_index + 1'b1; state <= WRITE_FETCH; end
+                    end
+                    WRITE_CRC_LOW: transfer_byte(crc[7:0], WRITE_RESPONSE);
+                    WRITE_RESPONSE: transfer_byte(8'hff, WRITE_BUSY);
+                    WRITE_BUSY: begin
+                        if (spi_rx == 8'hff) transfer_byte(8'hff, WRITE_BUSY);
+                        else if (spi_rx[4:0] != 5'b00101) fail(ERR_DATA_TOKEN);
+                        else transfer_byte(8'hff, WRITE_COMPLETE);
+                    end
+                    WRITE_COMPLETE: begin
+                        if (spi_rx != 8'hff) transfer_byte(8'hff, WRITE_COMPLETE);
+                        else begin
+                            write_timing <= 0;
+                            deselect_card(WRITE_STATUS);
+                        end
+                    end
+                    WRITE_STATUS: send_command(13, 0, 8'h01, WRITE_STATUS_BYTE);
+                    WRITE_STATUS_BYTE: begin
+                        if (r1 != 0) fail(ERR_R1);
+                        else transfer_byte(8'hff, WRITE_STATUS_CHECK);
+                    end
+                    WRITE_STATUS_CHECK: begin
+                        if (spi_rx != 0) fail(ERR_R1);
+                        else deselect_card(WRITE_DONE);
+                    end
+                    WRITE_DONE: begin write_done <= 1; state <= IDLE; end
                     CMD17_RESULT: begin
                         if (r1 != 0)
                             fail(ERR_R1);

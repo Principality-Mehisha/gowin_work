@@ -4,7 +4,9 @@ module fat_file_reader #(
     parameter [87:0] FILE_NAME = "MUSIC   WAV",
     parameter integer DYNAMIC_FILE_NAME = 0,
     // Zero selects automatic MBR/superfloppy discovery.
-    parameter [31:0] VOLUME_START_LBA = 0
+    parameter [31:0] VOLUME_START_LBA = 0,
+    parameter integer LOOKUP_ONLY = 0,
+    parameter integer BUILD_CATALOG = 0
 ) (
     input wire [87:0] requested_file_name,
     input wire clk,
@@ -24,7 +26,20 @@ module fat_file_reader #(
     output reg file_found,
     output reg [31:0] file_size,
     output reg file_done,
-    output reg [3:0] error_code
+    output reg [3:0] error_code,
+    output wire [31:0] fs_volume, fs_fat_start, fs_fat_base, fs_fat_sectors,
+    output wire [31:0] fs_data_base, fs_clusters, fs_root_base, fs_root_sectors,
+    output wire [31:0] fs_first_cluster, fs_dir_cluster, fs_dir_lba,
+    output wire [8:0] fs_dir_offset,
+    output wire [7:0] fs_attributes, fs_spc, fs_fat_count,
+    output wire [2:0] fs_cluster_shift,
+    output wire fs_fat32, fs_mirror,
+    output wire [15:0] fs_reserved, fs_info, fs_backup,
+    output reg free_valid, free_end,
+    output reg [31:0] free_lba,
+    output reg [8:0] free_offset,
+    output reg [199:0] catalog_mask,
+    output reg catalog_done
 );
     localparam [5:0]
         START = 0, REQUEST = 1, WAIT_SECTOR = 2,
@@ -35,7 +50,7 @@ module fat_file_reader #(
         DIR_NEXT = 14, FAT_START = 15, FAT_BYTE = 16,
         FAT_CHECK = 17, FILE_BEGIN = 18, FILE_BYTE = 19,
         FILE_HOLD = 20, FINISHED = 21, FAILED = 22, FAT_NEXT = 23,
-        LAYOUT_CALC = 24, CLUSTER_CALC = 25;
+        LAYOUT_CALC = 24, CLUSTER_CALC = 25, DIR_ADVANCE = 26, OPEN_SELECTED = 27;
     reg [5:0] state, sector_return, memory_return;
     reg [7:0] sector [0:511];
     reg [8:0] memory_address;
@@ -50,6 +65,7 @@ module fat_file_reader #(
     reg [7:0] jump_byte, sectors_per_cluster, fat_count;
     reg [15:0] sector_size, reserved_sectors, root_entries;
     reg [15:0] total16, fat16_size, signature, flags32, version32;
+    reg [15:0] info_sector, backup_sector;
     reg [15:0] received_signature;
     reg [9:0] received_bytes;
     reg [31:0] total32, fat32_size, root_cluster;
@@ -75,6 +91,17 @@ module fat_file_reader #(
     reg [32:0] layout_end, layout_data_offset, checked_volume_end;
     reg [31:0] checked_total, checked_fat_length, checked_root_sectors;
     reg [31:0] calculated_clusters;
+    reg [87:0] entry_name;
+    reg selected_found;
+    reg [31:0] selected_cluster, selected_size;
+    wire [15:0] catalog_number=(entry_name[71:64]-8'd48)*16'd100+
+        (entry_name[63:56]-8'd48)*16'd10+(entry_name[55:48]-8'd48);
+    wire catalog_name_ok=(entry_name[87:72]=="PN" || entry_name[87:72]=="MB") &&
+        entry_name[47:0]=="   BIN" &&
+        entry_name[71:64]>="0" && entry_name[71:64]<="9" &&
+        entry_name[63:56]>="0" && entry_name[63:56]<="9" &&
+        entry_name[55:48]>="0" && entry_name[55:48]<="9" &&
+        catalog_number>=1 && catalog_number<=100;
 
     wire [31:0] root_sector_count = ({16'd0, root_entries} + 32'd15) >> 4;
     wire [31:0] fat_length = fat16_size != 0 ? {16'd0, fat16_size} : fat32_size;
@@ -93,6 +120,27 @@ module fat_file_reader #(
     wire end_of_chain = is_fat32 ? decoded_next >= 32'h0ffffff8
                                 : decoded_next >= 32'h0000fff8;
     wire [31:0] fat_sector_offset = is_fat32 ? (cluster >> 7) : (cluster >> 8);
+    assign fs_volume=volume_base;
+    assign fs_fat_start=volume_base+reserved_sectors;
+    assign fs_fat_base=fat_base;
+    assign fs_fat_sectors=fat_sectors;
+    assign fs_data_base=data_base;
+    assign fs_clusters=cluster_count;
+    assign fs_root_base=root_base;
+    assign fs_root_sectors=root_sector_count;
+    assign fs_first_cluster=entry_cluster;
+    assign fs_dir_cluster=cluster;
+    assign fs_dir_lba=sd_lba;
+    assign fs_dir_offset=entry_base;
+    assign fs_attributes=attributes;
+    assign fs_spc=sectors_per_cluster;
+    assign fs_fat_count=fat_count;
+    assign fs_cluster_shift=cluster_shift;
+    assign fs_fat32=is_fat32;
+    assign fs_mirror=!is_fat32 || !flags32[7];
+    assign fs_reserved=reserved_sectors;
+    assign fs_info=info_sector;
+    assign fs_backup=backup_sector;
 
     function [31:0] cluster_lba;
         input [31:0] value;
@@ -133,6 +181,15 @@ module fat_file_reader #(
             state <= FAILED;
         end
     endtask
+    task directory_complete;
+        begin
+            if(BUILD_CATALOG) begin
+                catalog_done<=1;
+                if(selected_found) state<=OPEN_SELECTED;
+                else fail(4);
+            end else fail(4);
+        end
+    endtask
 
     integer p;
     always @(posedge clk or negedge rst_n) begin
@@ -157,6 +214,8 @@ module fat_file_reader #(
             received_bytes <= 0;
             flags32 <= 0;
             version32 <= 0;
+            info_sector <= 0; backup_sector <= 0;
+            free_valid <= 0; free_end <= 0; free_lba <= 0; free_offset <= 0;
             total32 <= 0;
             fat32_size <= 0;
             root_cluster <= 0;
@@ -197,6 +256,8 @@ module fat_file_reader #(
             checked_fat_length <= 0;
             checked_root_sectors <= 0;
             calculated_clusters <= 0;
+            entry_name<=0; selected_found<=0; selected_cluster<=0; selected_size<=0;
+            catalog_mask<=0; catalog_done<=0;
             data <= 0;
             valid <= 0;
             mounted <= 0;
@@ -255,6 +316,10 @@ module fat_file_reader #(
                             42: version32[7:0] <= memory_data;
                             43: version32[15:8] <= memory_data;
                             44,45,46,47: root_cluster[(scan_index-44)*8 +: 8] <= memory_data;
+                            48: info_sector[7:0] <= memory_data;
+                            49: info_sector[15:8] <= memory_data;
+                            50: backup_sector[7:0] <= memory_data;
+                            51: backup_sector[15:8] <= memory_data;
                             510: signature[7:0] <= memory_data;
                             511: signature[15:8] <= memory_data;
                         endcase
@@ -384,9 +449,15 @@ module fat_file_reader #(
                         get_byte(0, DIR_BYTE);
                     end
                     DIR_BYTE: begin
+                        if (entry_index == 0 && !free_valid &&
+                            (memory_data == 0 || memory_data == 8'he5)) begin
+                            free_valid <= 1; free_end <= memory_data == 0;
+                            free_lba <= sd_lba; free_offset <= entry_base;
+                        end
                         if (entry_index == 0 && memory_data == 0) begin
-                            fail(4);
+                            directory_complete();
                         end else begin
+                            if(entry_index<11) entry_name<={entry_name[79:0],memory_data};
                             if (entry_index < 11
                                 && memory_data != (((DYNAMIC_FILE_NAME ? requested_file_name : FILE_NAME) >> ((10-entry_index)*8)) & 8'hff))
                                 name_matches <= 0;
@@ -407,10 +478,17 @@ module fat_file_reader #(
                         end
                     end
                     DIR_CHECK: begin
-                        if (name_matches && (attributes & 8'h18) == 0) begin
+                        if(BUILD_CATALOG && catalog_name_ok && (attributes & 8'h18)==0)
+                            catalog_mask[entry_name[87:72]=="PN" ? catalog_number-1 : catalog_number+99]<=1;
+                        if(LOOKUP_ONLY && name_matches && attributes!=8'h0f &&
+                            (attributes & 8'h18)!=0) fail(2);
+                        else if (name_matches && (attributes & 8'h18) == 0) begin
                             if (entry_size != 0 && (entry_cluster < 2
                                 || entry_cluster >= cluster_count + 2)) begin
                                 fail(5);
+                            end else if(BUILD_CATALOG) begin
+                                selected_found<=1; selected_cluster<=entry_cluster; selected_size<=entry_size;
+                                state<=DIR_ADVANCE;
                             end else begin
                                 file_found <= 1;
                                 file_size <= entry_size;
@@ -419,20 +497,23 @@ module fat_file_reader #(
                                 cluster_steps <= 0;
                                 sector_in_cluster <= 0;
                                 directory_walk <= 0;
-                                if (entry_size == 0) begin
+                                if (LOOKUP_ONLY || entry_size == 0) begin
                                     file_done <= 1;
                                     state <= FINISHED;
                                 end else
                                     fetch(cluster_lba(entry_cluster), FILE_BEGIN);
                             end
-                        end else if (entry_base != 480) begin
+                        end else state<=DIR_ADVANCE;
+                    end
+                    DIR_ADVANCE: begin
+                        if (entry_base != 480) begin
                             entry_base <= entry_base + 9'd32;
                             entry_index <= 0;
                             name_matches <= 1;
                             get_byte(entry_base + 9'd32, DIR_BYTE);
                         end else if (!is_fat32) begin
                             if (root_sectors_left <= 1)
-                                fail(4);
+                                directory_complete();
                             else begin
                                 root_sectors_left <= root_sectors_left - 1'b1;
                                 fetch(sd_lba + 1'b1, DIR_BEGIN);
@@ -442,6 +523,12 @@ module fat_file_reader #(
                             fetch(sd_lba + 1'b1, DIR_BEGIN);
                         end else
                             state <= FAT_START;
+                    end
+                    OPEN_SELECTED: begin
+                        file_found<=1; file_size<=selected_size; remaining<=selected_size;
+                        cluster<=selected_cluster; cluster_steps<=0; sector_in_cluster<=0; directory_walk<=0;
+                        if(selected_size==0) begin file_done<=1; state<=FINISHED; end
+                        else fetch(cluster_lba(selected_cluster),FILE_BEGIN);
                     end
                     FAT_START: begin
                         if (fat_sector_offset >= fat_sectors || cluster_steps >= cluster_count)
@@ -469,7 +556,8 @@ module fat_file_reader #(
                     end
                     FAT_NEXT: begin
                         if (end_of_chain) begin
-                            fail(directory_walk ? 4 : 5);
+                            if(directory_walk) directory_complete();
+                            else fail(5);
                         end else if (decoded_next < 2 || decoded_next >= cluster_count + 2
                                      || (is_fat32 ? decoded_next >= 32'h0ffffff0
                                                   : decoded_next >= 32'h0000fff0)) begin

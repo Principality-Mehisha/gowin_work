@@ -1,6 +1,6 @@
 // Build the NEXT scanline during horizontal blank. Pipeline the 64:1 slot
 // selection as 8x8, then register geometry and merge masks. The result is
-// published within 69 clocks; the pixel read port retains its one-clock delay.
+// published within 70 clocks; the pixel read port retains its one-clock delay.
 module piano_roll_line (
     input wire clk, reset_n,
     input wire [10:0] x,
@@ -27,6 +27,13 @@ module piano_roll_line (
     reg signed [15:0] top_y,bottom_y;
     reg hit,interior_hit;
     reg [87:0] note_mask;
+    reg start_line;
+    reg [9:0] next_row;
+    // Register the blanking comparator before it reaches the geometry enables.
+    always @(posedge clk or negedge reset_n)begin
+        if(!reset_n)begin start_line<=0;next_row<=0;end
+        else begin start_line<=x==1600;next_row<=y==999 ? 10'd0 : y+1'b1;end
+    end
     wire signed [15:0] row_signed=$signed({6'd0,row});
     assign busy=running || (valid_pipe!=0);
     always @(posedge clk or negedge reset_n) begin
@@ -38,9 +45,9 @@ module piano_roll_line (
             hit<=0;interior_hit<=0;note_mask<=0;
         end else begin
             pixel<=read_pitch<88 ? {interiors[read_pitch],edges[read_pitch]} : 2'b00;
-            if(x==1600) begin
+            if(start_line) begin
                 if(busy) overflow<=1;
-                row<=y==999 ? 10'd0 : y+1'b1;
+                row<=next_row;
                 slot<=0; work_edges<=0; work_interiors<=0; running<=1;valid_pipe<=0;
             end else begin
                 valid_pipe<={valid_pipe[2:0],running};

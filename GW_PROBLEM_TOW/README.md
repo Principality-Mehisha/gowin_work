@@ -3,6 +3,14 @@
 工程入口：`GW_PROBLEM_TOW.gprj`；器件：`GW5AT-LV60PG484AC1/I0`；系统时钟50 MHz。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
+新增HC-05蓝牙上传：115200/8N1，FPGA TX=D15、RX=D16，模块直接例化在顶层。
+使用预分配的PN001.BIN～PN100.BIN和MB001.BIN～MB100.BIN共200个100 KiB文件槽位，
+BEGIN后先清零目标槽位，回复READY；手机随后连续透传文件字节，DATA阶段不分包、不逐块确认。
+SD卡需先用离线工具生成专用FAT32布局镜像，不能直接在普通格式的卡上上传。
+蓝牙使用协议v2，与旧分包协议不兼容；串口屏协议保持原v1。
+播放仍由串口屏CMD=0x12按乐器及编号控制。上传和播放由操作者错开，不支持同时读写。
+协议、PC发送工具、200个按钮脚本及失败边界见 [蓝牙上传](docs/BLUETOOTH_UPLOAD.md)。
+
 ## 操作
 
 | 输入 | 行为 |
@@ -30,10 +38,11 @@ GW_PROBLEM_TOW
 ├─ piano_score_player：板级接口层
 │  ├─ board_reset：上电延时及KEY2复位
 │  ├─ uart_score_control：串口屏协议和反馈
-│  ├─ sd_score_stream：SPI → FAT → 解码 → FIFO/定时事件
+│  ├─ sd_score_stream：SPI → 固定槽位/旧FAT → 解码 → FIFO/定时事件
 │  ├─ pt8211_score_tx：采样节拍与DAC串行输出
 │  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
 │     └─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
+├─ bluetooth_file_receiver：独立UART连续流、32 KiB FIFO及固定槽位写入
 └─ piano_video：视频时钟、快照跨域、瀑布流与TMDS
 ```
 
@@ -50,14 +59,15 @@ GW_PROBLEM_TOW
 
 ```powershell
 python tools/check_project.py
-powershell -ExecutionPolicy Bypass -File sim/run_analysis.ps1
+powershell -ExecutionPolicy Bypass -File sim/run_upload.ps1
 & 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl
-python tools/check_analysis_build.py
+python tools/check_upload.py --require-build
 ```
 
 位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，通过构建检查后复制到 `output/GW_PROBLEM_TOW.fs`。
-基础及原有完整音频回归入口为 `sim/run_all.ps1`；当前变更的针对性集成回归为 `sim/run_analysis.ps1`。
-验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/piano_analysis/verification.json`。
+基础及原有完整音频回归入口为 `sim/run_all.ps1`；三模式显示回归为 `sim/run_analysis.ps1`，
+蓝牙上传及编号曲目回归为 `sim/run_upload.ps1`。
+验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/fixed_slots/verification.json`。
 此前版本的源代码、已删除素材和位流备份在 `output/no_clarinet/before/`。
 
 默认 `SD_SCORE_ENABLE=0`，上电等待UART操作；设为1可在复位后自动播放钢琴乐谱。

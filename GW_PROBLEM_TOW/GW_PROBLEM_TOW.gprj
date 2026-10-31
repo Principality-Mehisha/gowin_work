@@ -45,5 +45,10 @@
         <File path="src/video/piano_audio_analysis.v" type="file.verilog" enable="1"/>
         <File path="src/video/analysis_frame_cdc.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_analysis_scene.v" type="file.verilog" enable="1"/>
+        <File path="src/control/bluetooth_file_receiver.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/fixed_slot_writer.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/fixed_slot_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/slot_card_query.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/score_file_name.v" type="file.verilog" enable="1"/>
     </FileList>
 </Project>

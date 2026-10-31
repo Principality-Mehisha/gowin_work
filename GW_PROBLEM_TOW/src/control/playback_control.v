@@ -20,7 +20,8 @@ module playback_control #(
     assign uart_start = uart_play && !(ringtone_active && selected_track==uart_track);
     assign control_restart = uart_start || uart_stop || uart_note_play || instrument_request;
     assign play_rst_n = rst_n && !control_restart;
-    assign marimba_mode = ringtone_active ? (selected_track==1 || selected_track==2) :
+    assign marimba_mode = ringtone_active ? (selected_track==1 || selected_track==2 ||
+                       (selected_track>=104 && selected_track<=203)) :
                        audition_marimba;
     assign storage_enable = ringtone_active;
     assign storage_rst_n = play_rst_n && storage_enable && !storage_restart;
@@ -54,7 +55,12 @@ module playback_control #(
                 ringtone_error<=0; last_error<=0;
             end else if (ringtone_active && (finished || failed)) begin
                 if (!legacy_autoplay) ringtone_active <= 0;
-                if (failed) begin ringtone_error <= 1; last_error<=failure_code; end
+                if (failed) begin
+                    // Empty numbered slots are normal, unlike legacy deployment errors.
+                    if (selected_track>=4 && selected_track<=203 && fat_error==4) begin
+                        ringtone_error<=0; last_error<=0; selected_track<=0;
+                    end else begin ringtone_error <= 1; last_error<=failure_code; end
+                end
             end
         end
     end

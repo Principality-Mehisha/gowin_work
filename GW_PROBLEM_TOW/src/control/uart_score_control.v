@@ -11,11 +11,11 @@ module uart_score_control #(
     input wire [7:0] player_state, player_track, player_error,
     input wire [6:0] selected_note,
     input wire selected_marimba,
-    output wire play_request, stop_request,
-    output wire note_previous, note_next, note_play,
-    output wire note_select_piano, note_select_marimba,
+    output reg play_request, stop_request,
+    output reg note_previous, note_next, note_play,
+    output reg note_select_piano, note_select_marimba,
     output reg [1:0] display_mode,
-    output wire [7:0] requested_track,
+    output reg [7:0] requested_track,
     output reg overflow
 );
     wire [7:0] rx_data;
@@ -50,25 +50,34 @@ module uart_score_control #(
             end else if (received!=0) timeout_count<=timeout_count+1'b1;
         end
     end
-    wire known=(cmd==8'h01 || cmd==8'h10 || cmd==8'h11 ||
+    wire known=(cmd==8'h01 || cmd==8'h10 || cmd==8'h11 || cmd==8'h12 ||
                 cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 || cmd==8'h50);
-    wire args_ok=(p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : (cmd==8'h50 ? p0<=2 : p0==0)));
+    wire args_ok=cmd==8'h12 ? (p0>=1 && p0<=2 && p1>=1 && p1<=100 && p2==0) :
+        (p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : (cmd==8'h50 ? p0<=2 : p0==0)));
     // A FIFO slot is reserved while the accepted command changes player state.
     reg [55:0] replies[0:15];
     reg [3:0] wr, rd;
     reg [4:0] count;
-    reg pending;
+    reg pending, waiting_apply;
     reg [7:0] ack_seq, ack_cmd, ack_result;
     wire room=count<15;
-    assign play_request=request && known && args_ok && room && cmd==8'h10;
-    // Stop remains effective even if a misbehaving host saturates feedback.
-    assign stop_request=request && known && args_ok && cmd==8'h11;
-    assign requested_track=p0;
-    assign note_previous=request && args_ok && room && cmd==8'h40;
-    assign note_next=request && args_ok && room && cmd==8'h41;
-    assign note_play=request && args_ok && room && cmd==8'h42;
-    assign note_select_piano=request && args_ok && room && cmd==8'h43;
-    assign note_select_marimba=request && args_ok && room && cmd==8'h44;
+    // Keep parameter decoding off the high-fanout playback reset/enable paths.
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin
+            play_request<=0;stop_request<=0;requested_track<=0;
+            note_previous<=0;note_next<=0;note_play<=0;note_select_piano<=0;note_select_marimba<=0;
+        end else begin
+            play_request<=request && known && args_ok && room && (cmd==8'h10 || cmd==8'h12);
+            // Stop remains effective even when feedback is full.
+            stop_request<=request && known && args_ok && cmd==8'h11;
+            requested_track<=cmd==8'h12 ? (p0==1 ? p1+8'd3 : p1+8'd103) : p0;
+            note_previous<=request && args_ok && room && cmd==8'h40;
+            note_next<=request && args_ok && room && cmd==8'h41;
+            note_play<=request && args_ok && room && cmd==8'h42;
+            note_select_piano<=request && args_ok && room && cmd==8'h43;
+            note_select_marimba<=request && args_ok && room && cmd==8'h44;
+        end
+    end
     always @(posedge clk or negedge rst_n)begin
         if(!rst_n)display_mode<=0;
         else if(request && known && args_ok && room && cmd==8'h50)display_mode<=p0[1:0];
@@ -77,21 +86,21 @@ module uart_score_control #(
     reg dirty;
     wire [7:0] reported_error=player_error!=0 ? player_error : (overflow ? 8'h60 : 8'h00);
     wire [31:0] current={selected_marimba,selected_note,player_state,player_track,reported_error};
-    wire push=pending || (dirty && room && !request);
+    wire push=pending || (dirty && room && !request && !waiting_apply);
     wire response_ready;
     wire pop=count!=0 && response_ready;
     wire [55:0] push_data=pending ? {current,ack_result,ack_seq,ack_cmd} :
                                                   {current,(overflow ? 8'd3 : 8'd0),8'd0,8'h81};
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            wr<=0; rd<=0; count<=0; pending<=0; observed<=0; dirty<=1;
+            wr<=0; rd<=0; count<=0; pending<=0; waiting_apply<=0; observed<=0; dirty<=1;
             ack_seq<=0; ack_cmd<=0; ack_result<=0; overflow<=0;
         end else begin
-            pending<=0;
+            waiting_apply<=0;pending<=waiting_apply;
             if (current!=observed) begin observed<=current; dirty<=1; end
             if (request) begin
                 if (room) begin
-                    pending<=1; ack_seq<=seq; ack_cmd<=cmd;
+                    waiting_apply<=1; ack_seq<=seq; ack_cmd<=cmd;
                     ack_result<=!known ? 8'd2 : (!args_ok ? 8'd1 : 8'd0);
                 end else begin overflow<=1; dirty<=1; end
             end

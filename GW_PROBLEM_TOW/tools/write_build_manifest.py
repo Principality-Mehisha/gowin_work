@@ -14,7 +14,7 @@ def main():
     inputs += sorted((ROOT/'src/rom').glob('*.hex'))
     inputs += [ROOT/'src/video/score_metadata.json', ROOT/'sd_card/PIANO.BIN']
     inputs += sorted((ROOT/'src/video').glob('analysis_*.hex'))
-    inputs += [ROOT/'tools/build.tcl']
+    inputs += [ROOT/'tools/build.tcl', ROOT/'tools/slot_card.py']
     bitstream = ROOT/'impl/pnr/GW_PROBLEM_TOW.fs'
     timing = json.loads((ROOT/'sim/timing_report.json').read_text())
     assert all(c.get('setup_violations') == c.get('hold_violations') == 0 for c in timing['clocks'].values())

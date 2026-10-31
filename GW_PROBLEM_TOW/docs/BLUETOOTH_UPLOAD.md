@@ -80,7 +80,8 @@ python -B tools/bluetooth_upload.py sd_card/PIANO.BIN --instrument piano --numbe
 ```
 
 手机实现相同的BEGIN/READY、原始文件、END/结果流程即可，普通裸文件发送不能省掉首尾控制。
-不需要在DATA阶段与FPGA交互。原hc05_test的PING/LED/ECHO文本命令没有并入。
+不需要在DATA阶段与FPGA交互。上传协议不包含LED/ECHO文本命令。
+空闲时可发送ASCII `PING`（可带回车换行）做链路测试，FPGA回复`PONG\r\n`；测试命令不会启动SD访问。
 115200/8N1理论净速率11520字节/秒，20 KiB正文约1.78秒，100 KiB正文约8.89秒，另加清零和写卡等待。
 PC工具BEGIN最多等300秒，END每次最多120秒，控制帧最多尝试3次。
 

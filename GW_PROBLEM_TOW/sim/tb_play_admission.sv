@@ -6,6 +6,7 @@ module tb_play_admission;
     reg complete=0,invalidated=0;
     reg [7:0] uploaded=0;
     integer starts=0,saved;
+    wire [7:0] leds;
     always #10 clk=~clk;
     piano_score_player #(.PRESSURE_ENABLE(1),.POWER_ON_CYCLES(8),.AUDIO_START_CYCLES(32),
         .UART_CLK_HZ(76800),.UART_BAUD(9600),.UART_TIMEOUT_CYCLES(4000),
@@ -15,9 +16,10 @@ module tb_play_admission;
         .pressure_sample_key(4'd0),.pressure_sample_data(12'd3510),
         .upload_complete(complete),.upload_invalidated(invalidated),.uploaded_track(uploaded),
         .sd_miso(1'b1),.sd_cs_n(),.sd_sck(),.sd_mosi(),
-        .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.LEDs());
+        .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.LEDs(leds));
     `include "uart_test_tasks.vh"
     always @(posedge clk)if(dut.rst_n)begin
+        if(leds!==8'hff)$fatal(1,"SD/UI state leaked into pressure-only LEDs");
         if(dut.sd_active!==dut.system.control.ringtone_active)
             $fatal(1,"SD admission status is not the registered owner");
         if(dut.system.uart_start)starts=starts+1;

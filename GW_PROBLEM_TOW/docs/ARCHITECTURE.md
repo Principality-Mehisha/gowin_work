@@ -39,6 +39,11 @@ uart_note_audition分别记忆钢琴与马林巴的试听音。
 不重启相位/ADSR，松键冻结力度保留尾音。马林巴、槽位/蓝牙协议及五张ROM不变。
 原有固定力度事件对照1152帧PCM一致，88音实时力度最大2861周期。
 压力FIFO溢出锁存0x61并静音，可用停止/重选/KEY2恢复。
+八路GPIO LED仅显示压力长按进度，不再承担SD/校准/播放/错误指示。
+pressure_keys复用逐键计数，在8档封顶；pressure_keyboard按有效持有键合并阈值，
+instrument_system统一取反输出低有效LED。所有中间LED端口已扩为8位。
+原有模式互斥、松键重按及校准条件同时约束灯光；LED只是输出观察，不回流到控制。
+独立静态彩灯、音高分组、CST/SDC及既有sd_active解耦修正保持不变。
 完整接线及校准说明见PRESSURE_KEYBOARD.md。
 
 钢琴为88音DDS/ADSR，马林巴为48音四模态及短起音噪声，经过共用output_limiter。

@@ -8,17 +8,19 @@ module tb_pressure_integration;
     reg [11:0] voltages[0:15];
     reg [11:0] adc_data=0,pipeline0=0,pipeline1=0;
     wire [3:0] select;
+    wire [7:0] leds;
     wire adc_clk,cs,sck,mosi,miso,bck,ws,din;
     reg passed=0;
     integer i,ons=0,offs=0,updates=0,heard=0,pressure_ons=0,saved,cycles=0,last_adc=0;
     integer per_note[0:87];
     GW_PROBLEM_TOW #(.VIDEO_ENABLE(0),.POWER_ON_CYCLES(8),.AUDIO_START_CYCLES(32),
-        .PITCH_GROUP_STABLE_CYCLES(3),.PRESSURE_CALIBRATION_LOG2(1)) dut(
+        .PITCH_GROUP_STABLE_CYCLES(3),.PRESSURE_CALIBRATION_LOG2(1),
+        .PRESSURE_LONG_HOLD_FRAMES(4)) dut(
         .sys_clk(clk),.KEY0(1'b1),.KEY1(1'b1),.KEY2(k2),.uart_rx(rx),.uart_tx(),
         .bt_rx(1'b1),.bt_tx(),.ADC_DATA(adc_data),.pitch_group(group_mask),
         .S(select),.S_EN(),.CLK_500kHz(adc_clk),
         .HP_BCK(bck),.HP_WS(ws),.HP_DIN(din),.PA_EN(),
-        .sd_cs_n(cs),.sd_sck(sck),.sd_mosi(mosi),.sd_miso(miso),.LEDs(),
+        .sd_cs_n(cs),.sd_sck(sck),.sd_mosi(mosi),.sd_miso(miso),.LEDs(leds),
         .tmds_data_p(),.tmds_data_n(),.tmds_clk_p(),.tmds_clk_n(),.LED_indicator_static());
     defparam dut.score_player.UART_CLK_HZ=76800;
     defparam dut.score_player.UART_BAUD=9600;
@@ -42,6 +44,12 @@ module tb_pressure_integration;
         last_adc=cycles;
     end
     `include "uart_test_tasks.vh"
+    always @(negedge clk)begin
+        #1;
+        if((!dut.player_reset_n || !dut.score_player.system.pressure_enable ||
+            dut.score_player.system.pressure_calibrated!=16'hffff) && leds!==8'hff)
+            $fatal(1,"LEDs retained old status/mode/reset indication");
+    end
     task scans(input integer count);
         repeat(count*16*1500)@(negedge clk);
     endtask
@@ -93,11 +101,12 @@ module tb_pressure_integration;
         for(i=0;i<16;i=i+1)voltages[i]=1900+i*3;
         scans(20);
         if(pressure_ons!=16 || dut.score_player.system.voices.piano.active_voices!=16 || !heard ||
-           !dut.piano_audio_active || dut.score_player.player_state!=4)
+           !dut.piano_audio_active || dut.score_player.player_state!=4 || leds==8'hff)
             $fatal(1,"Integrated pressure chord/status/analysis");
         for(i=0;i<16;i=i+1)voltages[i]=2700+i*3;
         scans(35);
         if(pressure_ons!=16 || !updates ||
+           leds!==8'h00 ||
            dut.score_player.system.voices.piano.voice_ram[32][90:83]<140 ||
            dut.score_player.system.voices.piano.voice_ram[32][90:83]>150)
             $fatal(1,"Continuous gain decrease retriggered or failed");
@@ -105,7 +114,7 @@ module tb_pressure_integration;
         for(i=0;i<16;i=i+1)voltages[i]=3510+i*3;
         scans(18);
         if(offs!=16 || dut.score_player.system.voices.piano.gates!=0 ||
-           !dut.score_player.system.voices.piano_busy || !dut.piano_audio_active)
+           !dut.score_player.system.voices.piano_busy || !dut.piano_audio_active || leds!==8'hff)
             $fatal(1,"Mapped release/tail ownership");
         repeat(300)@(posedge dut.score_player.sample_tick);
         if(dut.score_player.system.voices.piano_busy)$fatal(1,"Pressure tail did not finish");
@@ -113,7 +122,7 @@ module tb_pressure_integration;
         send_frame(0,'h42,0,0,0);wait(dut.score_player.system.note_busy);
         if(dut.score_player.system.pressure_enable)$fatal(1,"Audition did not suspend pressure");
         wait(!dut.score_player.system.note_busy);scans(8);
-        if(pressure_ons!=saved)$fatal(1,"Held key replayed after audition");
+        if(pressure_ons!=saved || leds!==8'hff)$fatal(1,"Held key replayed/lit LEDs after audition");
         voltages[0]=3510;scans(20);voltages[0]=1900;scans(12);
         if(pressure_ons!=saved+1 || per_note[48]!=2)
             $fatal(1,"Fresh key failed after audition/group: ons=%0d saved=%0d note48=%0d pressed=%h",
@@ -122,7 +131,7 @@ module tb_pressure_integration;
         voltages[1]=1903;scans(8);
         if(pressure_ons!=saved || dut.score_player.pcm!=0)$fatal(1,"Pressure played marimba");
         send_frame(0,'h43,0,0,0);scans(8);
-        if(pressure_ons!=saved)$fatal(1,"Held key replayed after instrument switch");
+        if(pressure_ons!=saved || leds!==8'hff)$fatal(1,"Held key replayed/lit LEDs after instrument switch");
         // First SD selection must also work while pressure is actively
         // sounding and no catalog has ever been scanned.
         voltages[0]=3510;voltages[1]=3513;scans(20);

@@ -7,6 +7,8 @@ module GW_PROBLEM_TOW #(
     parameter integer PRESSURE_SLOT_CYCLES = 1500,
     parameter integer PRESSURE_ADC_HALF_CYCLES = 50,
     parameter integer PRESSURE_SAMPLE_CYCLE = PRESSURE_SLOT_CYCLES-10,
+    parameter integer PRESSURE_LONG_HOLD_FRAMES =
+        (50000000 + PRESSURE_SLOT_CYCLES*32 - 1) / (PRESSURE_SLOT_CYCLES*32),
     parameter integer PRESSURE_CALIBRATION_LOG2 = 5,
     parameter integer PRESSURE_SOFT_TOUCH_BOOST = 1,
     parameter integer POWER_ON_CYCLES = 65536,
@@ -73,6 +75,7 @@ module GW_PROBLEM_TOW #(
         .PITCH_GROUP_STABLE_CYCLES(PITCH_GROUP_STABLE_CYCLES),
         .PRESSURE_CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
         .PRESSURE_SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
+        .PRESSURE_LONG_HOLD_FRAMES(PRESSURE_LONG_HOLD_FRAMES),
         .POWER_ON_CYCLES(POWER_ON_CYCLES),.AUDIO_START_CYCLES(AUDIO_START_CYCLES)) score_player (
         .sys_clk(sys_clk), .KEY2(KEY2), .uart_rx(uart_rx), .uart_tx(uart_tx),
         .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),

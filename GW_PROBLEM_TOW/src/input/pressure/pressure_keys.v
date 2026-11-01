@@ -16,17 +16,20 @@ module pressure_keys #(
     output reg [15:0] calibrated, pressed, long_held,
     output wire [127:0] gains,
     output wire [191:0] forces,
+    output wire [127:0] hold_progress,
     output reg edge_valid, edge_on,
     output reg [3:0] edge_key,
     output reg [7:0] edge_gain
 );
     localparam integer CALIBRATION_SAMPLES = 1 << CALIBRATION_LOG2;
+    localparam integer HOLD_MAX = LONG_HOLD_FRAMES * 8;
+    localparam integer HOLD_BITS = HOLD_MAX < 2 ? 1 : $clog2(HOLD_MAX+1);
     reg [11:0] baseline [0:15];
     reg [15:0] filtered [0:15]; // Q12.4 preserves sub-code filter increments.
     reg [23:0] calibration_sum [0:15];
     reg [11:0] calibration_count [0:15];
     reg [15:0] confirm_count [0:15];
-    reg [31:0] held_frames [0:15];
+    reg [HOLD_BITS-1:0] held_frames [0:15];
     reg [7:0] gain [0:15];
     reg [11:0] force_value [0:15];
     wire signed [16:0] difference =
@@ -50,10 +53,14 @@ module pressure_keys #(
     wire [7:0] new_gain = SOFT_TOUCH_BOOST ? soft_gain : linear_gain;
     wire [23:0] calibration_total = calibration_sum[sample_key]+sample_data;
     wire [11:0] calibration_average = calibration_total[CALIBRATION_LOG2 +: 12];
-    genvar k;
+    genvar k,level;
     generate for(k=0;k<16;k=k+1) begin: debug_values
         assign gains[k*8 +: 8]=gain[k];
         assign forces[k*12 +: 12]=force_value[k];
+        for(level=0;level<8;level=level+1) begin: hold_steps
+            assign hold_progress[k*8+level]=pressed[k] &&
+                held_frames[k]>=(level+1)*LONG_HOLD_FRAMES;
+        end
     end endgenerate
     integer i;
     always @(posedge clk or negedge reset_n) begin
@@ -93,7 +100,7 @@ module pressure_keys #(
                             end else confirm_count[sample_key]<=confirm_count[sample_key]+1'b1;
                         end else confirm_count[sample_key]<=0;
                     end else begin
-                        if(held_frames[sample_key]!=32'hffffffff)
+                        if(held_frames[sample_key]<HOLD_MAX)
                             held_frames[sample_key]<=held_frames[sample_key]+1'b1;
                         if(held_frames[sample_key]>=LONG_HOLD_FRAMES-1)
                             long_held[sample_key]<=1;

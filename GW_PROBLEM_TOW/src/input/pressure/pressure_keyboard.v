@@ -19,6 +19,7 @@ module pressure_keyboard #(
     output wire [7:0] event_dynamics,
     output wire [15:0] pressed, long_held, calibrated,
     output wire [15:0] enabled_pressed,
+    output wire [7:0] hold_progress,
     output wire overflow
 );
     wire edge_valid, edge_on;
@@ -26,6 +27,7 @@ module pressure_keyboard #(
     wire [7:0] edge_gain;
     wire [127:0] gains;
     wire [191:0] forces;
+    wire [127:0] key_hold_progress;
     reg [15:0] armed;
     wire event_reset_n=reset_n && enable;
     assign enabled_pressed=pressed & armed;
@@ -45,7 +47,18 @@ module pressure_keyboard #(
         .sample_key(sample_key), .sample_data(sample_data),
         .calibrated(calibrated), .pressed(pressed), .long_held(long_held),
         .gains(gains), .forces(forces), .edge_valid(edge_valid),
+        .hold_progress(key_hold_progress),
         .edge_on(edge_on), .edge_key(edge_key), .edge_gain(edge_gain));
+    genvar level,key;
+    generate for(level=0;level<8;level=level+1) begin: hold_bar
+        wire [15:0] held_at_level;
+        for(key=0;key<16;key=key+1) begin: eligible_keys
+            assign held_at_level[key]=enabled_pressed[key] && key_hold_progress[key*8+level];
+        end
+        // OR of per-key thresholds equals the longest currently held key,
+        // without a cascaded 16-key maximum comparator.
+        assign hold_progress[level]=enable && (&calibrated) && (|held_at_level);
+    end endgenerate
     wire raw_valid, raw_on, raw_update, raw_ready;
     wire [3:0] raw_key;
     wire [6:0] raw_note;

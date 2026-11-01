@@ -5,6 +5,7 @@ module instrument_system #(
     parameter integer PITCH_GROUP_STABLE_CYCLES = 50000,
     parameter integer PRESSURE_CALIBRATION_LOG2 = 5,
     parameter integer PRESSURE_SOFT_TOUCH_BOOST = 1,
+    parameter integer PRESSURE_LONG_HOLD_FRAMES = 1042,
     parameter integer NOTE_GATE_CYCLES = 25000000,
     parameter integer NOTE_TAIL_CYCLES = 50000000,
     parameter SINE_FILE = "src/rom/sine256.hex",
@@ -58,7 +59,7 @@ module instrument_system #(
     output wire [31:0] video_elapsed_ms,
     output wire [87:0] video_keys,
     output wire piano_audio_active,analysis_clear,
-    output wire [3:0] LEDs
+    output wire [7:0] LEDs
 );
     // ringtone_active now means any selected SD score (including piano).
     wire ringtone_active;
@@ -74,6 +75,7 @@ module instrument_system #(
     wire [6:0] pressure_note;
     wire [7:0] pressure_dynamics;
     wire [15:0] pressure_pressed,pressure_enabled_pressed,pressure_calibrated;
+    wire [7:0] pressure_hold_progress;
     wire pressure_overflow,piano_busy,pressure_busy;
     reg pressure_fault;
     assign pressure_enable=PRESSURE_ENABLE && manual_mode && !selected_marimba &&
@@ -92,7 +94,8 @@ module instrument_system #(
             .clk(sys_clk),.reset_n(rst_n),.pitch_group(pitch_group),
             .selected_group(),.base_note(base_note));
         pressure_keyboard #(.CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
-            .SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST)) keyboard(
+            .SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
+            .LONG_HOLD_FRAMES(PRESSURE_LONG_HOLD_FRAMES)) keyboard(
             .clk(sys_clk),.reset_n(rst_n),.enable(pressure_enable),
             .sample_valid(pressure_sample_valid),.sample_key(pressure_sample_key),
             .sample_data(pressure_sample_data),.base_note(base_note),
@@ -100,11 +103,13 @@ module instrument_system #(
             .event_update(pressure_update),.event_note(pressure_note),
             .event_dynamics(pressure_dynamics),.pressed(pressure_pressed),
             .enabled_pressed(pressure_enabled_pressed),.long_held(),
+            .hold_progress(pressure_hold_progress),
             .calibrated(pressure_calibrated),.overflow(pressure_overflow));
     end else begin: no_pressure_input
         assign pressure_valid=0;assign pressure_on=0;assign pressure_update=0;
         assign pressure_note=0;assign pressure_dynamics=0;assign pressure_pressed=0;
         assign pressure_enabled_pressed=0;assign pressure_calibrated=0;
+        assign pressure_hold_progress=0;
         assign pressure_overflow=0;
     end endgenerate
     playback_control #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE)) control (
@@ -165,7 +170,6 @@ module instrument_system #(
                       (manual_mode ? manual_error : (failed || finished));
     wire audio_silence = (manual_mode ? manual_error :
                          (failed || finished || !playing));
-    wire mode_active = manual_mode || (playing && !finished);
     assign dds_event_ready = !manual_mode && synth_event_ready;
     wire signed [15:0] selected_pcm;
     assign pcm = audio_silence ? 16'sd0 : selected_pcm;
@@ -188,6 +192,6 @@ module instrument_system #(
     assign video_active = 1'b0;
     assign video_elapsed_ms = elapsed_ms;
     assign video_keys = 88'd0;
-    assign LEDs = ~{(ringtone_error || (manual_mode ? manual_error : failed)), (mode_active || ringtone_active),
-                    file_found, initialized};
+    // Active-low GPIO LEDs now show only pressure hold duration.
+    assign LEDs = ~pressure_hold_progress;
 endmodule

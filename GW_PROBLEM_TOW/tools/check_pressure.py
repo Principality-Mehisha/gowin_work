@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output/pressure_keyboard"
-BENCHES = ("tb_pressure_curve", "tb_pressure_events", "tb_pressure", "tb_pitch_groups",
+BENCHES = ("tb_pressure_curve", "tb_pressure_events", "tb_pressure", "tb_pitch_groups", "tb_hold_progress",
            "tb_pressure_integration", "tb_play_admission", "tb_instrument_bank", "tb_synth_live")
 
 

@@ -77,8 +77,8 @@ module piano_score_player #(
     reg [199:0] catalog;
     reg catalog_valid;
     wire numbered_request=uart_track>=4 && uart_track<=203;
-    assign uart_play=raw_uart_play && (!numbered_request ||
-        catalog[uart_track-8'd4] || (!catalog_valid && (player_state==0 || player_state==3)));
+    assign uart_play=raw_uart_play && numbered_request && (
+        catalog[uart_track-8'd4] || (!catalog_valid && (player_state==0 || player_state==3 || player_state==4)));
     always @(posedge sys_clk or negedge rst_n) begin
         if(!rst_n) begin catalog<=0; catalog_valid<=0; end
         else begin

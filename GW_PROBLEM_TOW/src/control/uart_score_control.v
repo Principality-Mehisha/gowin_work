@@ -50,10 +50,10 @@ module uart_score_control #(
             end else if (received!=0) timeout_count<=timeout_count+1'b1;
         end
     end
-    wire known=(cmd==8'h01 || cmd==8'h10 || cmd==8'h11 || cmd==8'h12 ||
+    wire known=(cmd==8'h01 || cmd==8'h11 || cmd==8'h12 ||
                 cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 || cmd==8'h50);
     wire args_ok=cmd==8'h12 ? (p0>=1 && p0<=2 && p1>=1 && p1<=100 && p2==0) :
-        (p1==0 && p2==0 && ((cmd==8'h10) ? (p0>=1 && p0<=3) : (cmd==8'h50 ? p0<=2 : p0==0)));
+        (p1==0 && p2==0 && (cmd==8'h50 ? p0<=2 : p0==0));
     // A FIFO slot is reserved while the accepted command changes player state.
     reg [55:0] replies[0:15];
     reg [3:0] wr, rd;
@@ -67,10 +67,10 @@ module uart_score_control #(
             play_request<=0;stop_request<=0;requested_track<=0;
             note_previous<=0;note_next<=0;note_play<=0;note_select_piano<=0;note_select_marimba<=0;
         end else begin
-            play_request<=request && known && args_ok && room && (cmd==8'h10 || cmd==8'h12);
+            play_request<=request && known && args_ok && room && cmd==8'h12;
             // Stop remains effective even when feedback is full.
             stop_request<=request && known && args_ok && cmd==8'h11;
-            requested_track<=cmd==8'h12 ? (p0==1 ? p1+8'd3 : p1+8'd103) : p0;
+            requested_track<=cmd==8'h12 ? (p0==1 ? p1+8'd3 : p1+8'd103) : 8'd0;
             note_previous<=request && args_ok && room && cmd==8'h40;
             note_next<=request && args_ok && room && cmd==8'h41;
             note_play<=request && args_ok && room && cmd==8'h42;

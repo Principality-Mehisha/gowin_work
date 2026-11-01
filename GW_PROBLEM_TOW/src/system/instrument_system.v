@@ -47,7 +47,7 @@ module instrument_system #(
     output wire signed [15:0] pcm,
     output wire video_active,
     output wire [31:0] video_elapsed_ms,
-    output reg [87:0] video_keys,
+    output wire [87:0] video_keys,
     output wire piano_audio_active,analysis_clear,
     output wire [3:0] LEDs
 );
@@ -125,16 +125,11 @@ module instrument_system #(
         (manual_mode ? note_busy : playing);
     assign analysis_clear=synth_stop || !piano_audio_active;
     assign storage_paused=manual_mode || control_restart;
-    // Display observes the same accepted events/time used by the piano synth.
-    assign video_active = storage_enable && selected_track==3 && playing &&
-                          !finished && !failed && !control_restart;
+    // Numbered scores have no matching fixed look-ahead ROM. Keep PCM analysis,
+    // but never attach the old fixed-song waterfall to an uploaded score.
+    assign video_active = 1'b0;
     assign video_elapsed_ms = elapsed_ms;
-    always @(posedge sys_clk or negedge rst_n) begin
-        if (!rst_n) video_keys <= 0;
-        else if (!video_active || synth_stop) video_keys <= 0;
-        else if (synth_event_valid && synth_event_ready && synth_event_note<88)
-            video_keys[synth_event_note] <= synth_event_on;
-    end
+    assign video_keys = 88'd0;
     assign LEDs = ~{(ringtone_error || (manual_mode ? deadline_error : failed)), (mode_active || ringtone_active),
                     file_found, initialized};
 endmodule

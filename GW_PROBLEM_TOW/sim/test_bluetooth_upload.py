@@ -108,7 +108,7 @@ class ProtocolTests(unittest.TestCase):
 class ImageTests(unittest.TestCase):
     def test_geometry_and_names(self):
         layout = layout_for_size(30000 * 1024 * 1024)
-        blocks = image_sectors(layout, legacy=False)
+        blocks = image_sectors(layout)
         self.assertEqual(len(descriptor(layout)), 512)
         self.assertEqual(layout.slot_base, layout.data_base + 64)
         for index in range(200):
@@ -117,6 +117,9 @@ class ImageTests(unittest.TestCase):
             self.assertEqual(entry[:11], slot_name(index))
             self.assertEqual(struct.unpack_from("<I", entry, 28)[0], SLOT_BYTES)
         self.assertEqual(slot_name(199), b"MB100   BIN")
+        # End of directory directly after the 200 reserved entries.
+        self.assertEqual(blocks[layout.data_base + 12][256:], bytes(256))
+        self.assertEqual(struct.unpack_from("<I", blocks[2080 + 6], 803 * 4 % 512)[0], 0)
 
     def test_metadata_crc(self):
         block = metadata(199, tiny_score())

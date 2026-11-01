@@ -18,15 +18,17 @@
 `assets/` 的录音仅供离线拟合或乐谱转写；`sim/` 的 WAV 是仿真结果。
 
 
-## 三首 SD 文件
+## 编号 SD 文件
 
-文件放在开发板 SD 卡根目录，使用 FAT16/FAT32，文件名保持 ASCII 8.3 格式。
+使用离线工具初始化的固定槽位FAT32卡，再经蓝牙上传。不能直接复制小文件到普通FAT卡使用。
 
 | 编号 | 文件 | 格式／音源 |
 | --- | --- | --- |
-| 1 | ANDROID.BIN | M42S／马林巴，三星主题的马林巴声部改编 |
-| 2 | RINGTONE.BIN | M42S／马林巴，苹果 Marimba 参考铃声的音符转写 |
-| 3 | PIANO.BIN | P88S／钢琴，Croatian Rhapsody MIDI 改编 |
+| 1～100 | PN001.BIN～PN100.BIN | P88S／钢琴 |
+| 1～100 | MB001.BIN～MB100.BIN | M42S／马林巴 |
+
+每文件100 KiB，实际正文长度及CRC另存元数据；空占位文件不播放。
+旧三首名字、CMD=0x10及普通FAT文件搜索已移除；已有编号槽位位置不变。
 
 两种格式均为小端序：16 字节头，后接每条 8 字节事件。
 头部为 `magic[4], version=1, event_bytes=8, slots=8, reserved=0, ticks_per_second=1000(u32), event_count(u32)`。
@@ -46,20 +48,14 @@ SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
 - `make_piano_score.py`：从 `source/` 的 MIDI 生成钢琴 BIN；使用 `tools/vendor` 中的 mido。
 - `make_android_ringtone.py`：提取当前三星 MIDI 的马林巴声部生成安卓 BIN。
 - `make_ringtone_score.py`：从保留的苹果参考 WAV 转写音符事件，需要 NumPy/SciPy。
-- `make_test_fixtures.py`：仅从现有 BIN 生成测试夹具，不改写 BIN。
+- `make_upload_fixtures.py`：生成只有200槽的当前集成测试夹具，包含PN/MB和故障样本。
+- `make_test_fixtures.py`：仅供历史离线音频模型及旧卡布局样本，不是当前播放器回归入口。
 - `check_ringtone_synth.py`：逐样本对照完整安卓谱的 RTL 与独立整数模型，输出 WAV 和 JSON。
 - `check_marimba_audio.py`、`export_marimba_wav.py`：校验/导出当前 C2～F5 试听音域。
 
 重新生成音色或乐谱会改写输入文件，应在修改后重新运行检查、仿真和构建。
 马林巴校准使用固定力度 192 和前 300 ms 加权 PCM RMS，低音补偿最大 +3 dB；此指标不是 LUFS 或实际声压。
 
-写卡脚本保留为显式操作入口，重构和回归不会执行写卡：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/copy_score_to_sd.ps1 -DriveLetter H
-powershell -ExecutionPolicy Bypass -File tools/copy_ringtone_to_sd.ps1 -DriveLetter H -FileName ANDROID.BIN
-powershell -ExecutionPolicy Bypass -File tools/copy_ringtone_to_sd.ps1 -DriveLetter H -FileName RINGTONE.BIN
-```
-
-H 仅为示例，使用实际 SD 盘符。写卡脚本检查可移动 FAT 卷并处理已有文件备份/替换；PIANO 替换不同文件时需 `-Replace`。
-历史写卡记录不代表当前卡已插入或与工程同步。
+当前部署、BEGIN/READY及合并正文+END流程见[蓝牙上传](BLUETOOTH_UPLOAD.md)。
+旧copy_score_to_sd/copy_ringtone_to_sd脚本只适用于历史工程，不能用来更新固定槽位卡，
+否则可能改变目录项或簇链。当前修改与回归不会写入物理SD卡。

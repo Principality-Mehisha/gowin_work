@@ -1,4 +1,4 @@
-"""Compare fixed-slot implementation with its archived dynamic-FAT baseline."""
+"""Verify numbered-only implementation against the archived compatibility build."""
 from html.parser import HTMLParser
 from pathlib import Path
 import json
@@ -6,7 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-BEFORE = ROOT / "output/fixed_slots/before"
+BEFORE = ROOT / "output/numbered_only/before"
 
 
 class Rows(HTMLParser):
@@ -71,16 +71,19 @@ def main():
     assert "sector_sector_RAMREG" not in netlist, "Old 4096-register sector expansion returned"
     assert "fifo_fifo_RAMREG" not in netlist, "UART FIFO expanded to registers"
     assert after["bluetooth_bsram"] == 16
-    assert after["bluetooth_lut"] < before["bluetooth_lut"]
-    for name in ("--pROM", "--pROMX9"):
-        assert after["physical"][name] == before["physical"][name], f"Unexpected ROM change: {name}"
-    frozen = json.loads((ROOT / "output/fixed_slots/source_frozen.json").read_text())
+    assert after["physical"]["Logic"] < before["physical"]["Logic"]
+    assert not re.search(r"^\s*module\s+fat_file_reader\b", netlist, re.M), "Legacy reader still synthesized"
+    frozen = json.loads((ROOT / "output/numbered_only/source_frozen.json").read_text())
     import hashlib
     assert all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
                for name, digest in frozen["rtl_and_constraints"].items()), "RTL changed during full build"
+    baseline = json.loads((BEFORE / "build_manifest.json").read_text())
+    assert all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest
+               for name, digest in baseline["inputs"].items() if name.startswith("src/rom/")), "Audio ROM changed"
     result = {"before": before, "after": after, "fifo_sdpb_blocks": len(fifo_blocks),
-              "old_sector_ramreg_count": 0, "rtl_unchanged_during_build": True}
-    out = ROOT / "output/fixed_slots/resources.json"
+              "old_sector_ramreg_count": 0, "rtl_unchanged_during_build": True,
+              "legacy_reader_removed": True, "audio_roms_unchanged": True}
+    out = ROOT / "output/numbered_only/resources.json"
     out.write_text(json.dumps(result, indent=2) + "\n", encoding="ascii")
     print(json.dumps(result, indent=2))
 

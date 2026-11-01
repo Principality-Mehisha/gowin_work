@@ -14,14 +14,13 @@ module playback_control #(
     output wire marimba_mode, storage_enable, storage_rst_n,
     output wire [7:0] player_state
 );
-    reg legacy_autoplay;
     reg storage_restart;
     assign manual_mode = !ringtone_active;
-    assign uart_start = uart_play && !(ringtone_active && selected_track==uart_track);
+    assign uart_start = uart_play && uart_track>=4 && uart_track<=203 &&
+                        !(ringtone_active && selected_track==uart_track);
     assign control_restart = uart_start || uart_stop || uart_note_play || instrument_request;
     assign play_rst_n = rst_n && !control_restart;
-    assign marimba_mode = ringtone_active ? (selected_track==1 || selected_track==2 ||
-                       (selected_track>=104 && selected_track<=203)) :
+    assign marimba_mode = ringtone_active ? (selected_track>=104 && selected_track<=203) :
                        audition_marimba;
     assign storage_enable = ringtone_active;
     assign storage_rst_n = play_rst_n && storage_enable && !storage_restart;
@@ -37,26 +36,23 @@ module playback_control #(
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             ringtone_active <= (SD_SCORE_ENABLE != 0);
-            legacy_autoplay <= (SD_SCORE_ENABLE != 0);
-            selected_track <= (SD_SCORE_ENABLE != 0) ? 8'd3 : 8'd0;
+            // Optional startup playback now selects PN001, never an old filename.
+            selected_track <= (SD_SCORE_ENABLE != 0) ? 8'd4 : 8'd0;
             ringtone_error <= 0; storage_restart <= 0; last_error<=0;
         end else begin
-            storage_restart <= ringtone_active && (finished || failed) && !legacy_autoplay;
+            storage_restart <= ringtone_active && (finished || failed);
             if (uart_stop) begin
-                legacy_autoplay<=0;
                 ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
             end else if (uart_note_play || instrument_request) begin
-                legacy_autoplay<=0;
                 ringtone_active<=0; selected_track<=0; ringtone_error<=0; last_error<=0;
             end else if (uart_start) begin
-                legacy_autoplay<=0;
                 ringtone_active<=1; selected_track<=uart_track; ringtone_error<=0; last_error<=0;
             end else if (control_restart) begin
                 ringtone_error<=0; last_error<=0;
             end else if (ringtone_active && (finished || failed)) begin
-                if (!legacy_autoplay) ringtone_active <= 0;
+                ringtone_active <= 0;
                 if (failed) begin
-                    // Empty numbered slots are normal, unlike legacy deployment errors.
+                    // Empty numbered slots are normal and do not latch an error.
                     if (selected_track>=4 && selected_track<=203 && fat_error==4) begin
                         ringtone_error<=0; last_error<=0; selected_track<=0;
                     end else begin ringtone_error <= 1; last_error<=failure_code; end

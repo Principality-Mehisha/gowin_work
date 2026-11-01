@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'output/no_clarinet'
 BENCHES = ('tb_instrument_bank', 'tb_board_controls', 'tb_note_audition',
            'tb_tjc_status', 'tb_uart_protocol', 'tb_uart_notes', 'tb_uart_player',
-           'tb_video_player', 'tb_sd_ringtone', 'tb_score_full', 'tb_score_player')
+           'tb_video_player', 'tb_score_full', 'tb_score_player')
 
 
 def implementation(path):

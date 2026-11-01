@@ -8,7 +8,7 @@ try {
     if($LASTEXITCODE){throw 'Project check failed'}
     & $PythonExe tools/make_analysis_fixtures.py
     if($LASTEXITCODE){throw 'Analysis fixtures failed'}
-    & $PythonExe tools/make_test_fixtures.py
+    & $PythonExe tools/make_upload_fixtures.py
     if($LASTEXITCODE){throw 'SD/UART fixtures failed'}
     $renderPython=$PythonExe
     if('tb_video_scene' -in $Benches) {

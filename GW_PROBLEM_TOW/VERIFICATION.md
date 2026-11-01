@@ -1,6 +1,55 @@
 # 当前工程验证记录
 
-## 固定槽位连续上传（2026-10-31）
+## 仅PN/MB编号曲目（2026-11-01）
+
+当前42个RTL。删除旧三首CMD=0x10、文件名映射、通用fat_file_reader和FAT回退分支，
+移除旧自动播放及旧第3首显示绑定。只允许PN001～PN100、MB001～MB100。
+初始化工具只建立这200个占位文件，默认3 GiB；未重新生成永久大型镜像，未操作物理SD、COM口或开发板。
+原始曲目文件仅保留为离线样本；固定视频ROM和渲染模块仍在工程中，但不再绑定旧第3首或编号曲目。
+它们不是当前SD文件查找或初始化依赖，本次没有继续删除视频渲染模块。
+
+保留屏幕CMD=0x12及内部编号4～203，蓝牙v2协议、槽位描述符、100 KiB数据区及有效记录不变。
+与改写前源码进行纯内存对比：3 GiB和30000 MiB布局中，200槽地址、目录项、双FAT簇链及描述符完全一致；
+FSInfo空闲计数/提示因不再分配旧三首而相应更新。现有卡和已上传PN001/PN002无需重刷或重传。
+对比结果在`output/numbered_only/card_compatibility.log`。
+默认上电空闲；可选SD_SCORE_ENABLE=1改为PN001单次启动播放。
+修正首次扫描前由单音试听进入编号曲目的准入条件，保留已知空槽不打断当前播放的行为。
+
+已通过11项Python测试和28个不同RTL平台：11个上传/播放、13个显示/分析（其中3个重复），
+另有4个音频基础和3个控制/等价平台。包含旧命令拒绝、200文件名映射、PN/MB真实合成、
+完整PN002的3721个精确事件、CRC/格式错误恢复、100 KiB上传、溢出、复位、清零后READY、
+单音抢占/恢复、共享音源逐样本等价、官方视频原语及三个1600×900场景逐像素对照。
+编号曲目不输出旧固定瀑布流；钢琴频谱/波形保持工作，马林巴不会误入钢琴分析。
+
+五张音频ROM、系统/视频时钟、CST/SDC及已有关键路径寄存器未改。
+完整综合/布局布线通过，当前位流与输入指纹由`output/build_manifest.json`锁定。
+系统/像素Fmax为55.224/111.410 MHz，目标仍为50/108 MHz；三个时钟域setup/hold数据路径违例均为0。
+原有视频异步复位recovery/removal及V22 PR1014告警保留，reset_review_required=true，
+不能描述为全部复位时序通过，也没有为本次删除添加时序豁免。
+
+| 物理资源 | 修改前 | 仅编号曲目 |
+| --- | ---: | ---: |
+| Logic | 25167 | 21097 |
+| Register | 14686 | 13213 |
+| CLS | 18534 | 15886 |
+| BSRAM / 118 | 94 | 93 |
+| DSP | 27.5 | 27.5 |
+| pROM / pROMX9 | 24 / 14 | 24 / 14 |
+
+逻辑下降约16.2%，寄存器下降约10.0%；五张音频ROM逐文件哈希与修改前相同。
+32 KiB上传FIFO仍为16块SDPB。pROM数量本次没有下降，不把资源变化归因于删除全部视频ROM。
+本次归档报告的综合/PnR为3分6秒/3分59秒，总7分5秒；修改前归档报告为2分12秒/4分42秒，总6分54秒。
+PnR缩短但本次总耗时未缩短；机器负载未受控，不将这一次测量解释为确定的性能提升。
+对比与结构断言见`output/numbered_only/resources.json`。
+
+交付`output/GW_PROBLEM_TOW.fs`与`impl/pnr/GW_PROBLEM_TOW.fs`指纹一致：
+`944e104626086b422f50016dbf0301c84c59c36e945f42691cec93cd3ccecf00`。
+`python -B tools/check_upload.py --require-build`和
+`python -B tools/check_analysis_build.py --baseline output/numbered_only/before/GW_PROBLEM_TOW.rpt.txt`均通过。
+构建前源码快照在`output/numbered_only/source_frozen.json`，原始源码与位流备份在`output/numbered_only/before/`。
+当前回归证据在`output/numbered_only/verification.json`；本次代码尚未重新上板验证。
+
+## 固定槽位连续上传（2026-10-31，历史）
 
 当前清单为43个RTL。移除动态FAT文件写入器，使用200个预分配的100 KiB文件。
 BEGIN通过布局/目录/双FAT检查后，使旧记录无效并清零整个目标文件，READY后接收连续原始字节。

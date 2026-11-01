@@ -1,4 +1,4 @@
-// SD sector access -> FAT file stream -> score validation -> timed events.
+// SD sector access -> fixed numbered slot -> score validation -> timed events.
 module sd_score_stream #(
     parameter integer SD_POWER_WAIT_CYCLES = 500000,
     parameter integer SD_INIT_HALF_DIV = 63,
@@ -27,19 +27,9 @@ module sd_score_stream #(
     wire [7:0] sd_data;
     wire [8:0] sd_index;
     wire [87:0] requested_name;
-    wire marimba_format, numbered;
+    wire marimba_format;
     score_file_name name_map(.track(selected_track),.file_name(requested_name),
-        .marimba(marimba_format),.numbered(numbered));
-    reg legacy_phase;
-    wire slot_probe_done;
-    always @(posedge clk or negedge rst_n) begin
-        if(!rst_n)legacy_phase<=0;
-        else if(!numbered && (catalog_cached || slot_probe_done))legacy_phase<=1;
-    end
-    wire legacy_start, slot_start;
-    wire [31:0] legacy_lba, slot_lba;
-    assign sd_start=legacy_phase ? legacy_start : slot_start;
-    assign sd_lba=legacy_phase ? legacy_lba : slot_lba;
+        .marimba(marimba_format),.numbered());
     sd_spi_reader #(
         .POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
         .INIT_HALF_DIV(SD_INIT_HALF_DIV), .READ_HALF_DIV(SD_READ_HALF_DIV)
@@ -57,42 +47,16 @@ module sd_score_stream #(
     wire [7:0] file_data;
     wire file_valid, file_ready, file_done;
     wire [31:0] file_size;
-    wire [7:0] legacy_data,slot_data;
-    wire legacy_valid,legacy_done,legacy_found,slot_valid,slot_done,slot_found;
-    wire [31:0] legacy_size,slot_size;
-    wire [3:0] legacy_error,slot_error;
-    assign file_data=numbered ? slot_data : legacy_data;
-    assign file_valid=numbered ? slot_valid : legacy_valid;
-    assign file_done=numbered ? slot_done : legacy_done;
-    assign file_found=numbered ? slot_found : legacy_found;
-    assign file_size=numbered ? slot_size : legacy_size;
-    assign fat_error=numbered ? slot_error : legacy_error;
     fixed_slot_reader slot_reader(
-        .clk(clk),.rst_n(rst_n),.catalog_only(!numbered),.scan_catalog(!catalog_cached),
-        .slot_index(numbered ? selected_track-8'd4 : 8'd0),.file_name(requested_name),
-        .sd_ready(sd_ready && !legacy_phase),.sd_start(slot_start),.sd_lba(slot_lba),
-        .sd_data(sd_data),.sd_index(sd_index),.sd_valid(sd_valid && !legacy_phase),
-        .sd_done(sd_done && !legacy_phase),.sd_error(sd_error),
-        .data(slot_data),.valid(slot_valid),.ready(file_ready && numbered),
-        .file_found(slot_found),.file_done(slot_done),.probe_done(slot_probe_done),
-        .file_size(slot_size),.error_code(slot_error),
+        .clk(clk),.rst_n(rst_n),.scan_catalog(!catalog_cached),
+        .slot_index(selected_track-8'd4),.file_name(requested_name),
+        .sd_ready(sd_ready),.sd_start(sd_start),.sd_lba(sd_lba),
+        .sd_data(sd_data),.sd_index(sd_index),.sd_valid(sd_valid),
+        .sd_done(sd_done),.sd_error(sd_error),
+        .data(file_data),.valid(file_valid),.ready(file_ready),
+        .file_found(file_found),.file_done(file_done),.probe_done(),
+        .file_size(file_size),.error_code(fat_error),
         .catalog_mask(catalog_mask),.catalog_done(catalog_done));
-    fat_file_reader #(.DYNAMIC_FILE_NAME(1)) file_reader (
-        .requested_file_name(requested_name),
-        .clk(clk), .rst_n(rst_n && legacy_phase), .sd_ready(sd_ready && legacy_phase),
-        .sd_start(legacy_start), .sd_lba(legacy_lba), .sd_data(sd_data), .sd_index(sd_index),
-        .sd_valid(sd_valid && legacy_phase), .sd_done(sd_done && legacy_phase), .sd_error(sd_error),
-        .data(legacy_data), .valid(legacy_valid), .ready(file_ready && !numbered), .mounted(),
-        .file_found(legacy_found), .file_size(legacy_size), .file_done(legacy_done),
-        .error_code(legacy_error),
-        .fs_volume(),.fs_fat_start(),.fs_fat_base(),.fs_fat_sectors(),
-        .fs_data_base(),.fs_clusters(),.fs_root_base(),.fs_root_sectors(),
-        .fs_first_cluster(),.fs_dir_cluster(),.fs_dir_lba(),.fs_dir_offset(),
-        .fs_attributes(),.fs_spc(),.fs_fat_count(),.fs_cluster_shift(),
-        .fs_fat32(),.fs_mirror(),.fs_reserved(),.fs_info(),.fs_backup(),
-        .free_valid(),.free_end(),.free_lba(),.free_offset(),
-        .catalog_mask(),.catalog_done()
-    );
     wire [63:0] event_data;
     wire event_valid, event_ready, format_ok, complete;
     piano_score_reader #(.DYNAMIC_FORMAT(1)) decoder (

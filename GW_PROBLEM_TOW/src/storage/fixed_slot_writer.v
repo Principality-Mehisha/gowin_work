@@ -69,7 +69,7 @@ module fixed_slot_writer #(
     wire [7:0] write_data=source==1 ? (write_index<block_bytes ? fifo_data : 8'd0) :
         (source==2 && write_index<32 ? metadata_byte(write_index[4:0]) : 8'd0);
     slot_card_query query(
-        .clk(clk),.rst_n(rst_n),.for_write(1'b1),.catalog_only(1'b0),.scan_catalog(1'b0),
+        .clk(clk),.rst_n(rst_n),.for_write(1'b1),.scan_catalog(1'b0),
         .slot_index(slot_index),.file_name(file_name),
         .sd_ready(host_ready && state==QUERY),.sd_start(query_start),.sd_lba(query_lba),
         .sd_data(host_data),.sd_index(host_index),.sd_valid(host_valid),

@@ -12,7 +12,7 @@ def main():
     inputs = [ROOT/'GW_PROBLEM_TOW.gprj'] + [ROOT/f.attrib['path']
         for f in project.findall('./FileList/File') if f.attrib.get('enable') == '1']
     inputs += sorted((ROOT/'src/rom').glob('*.hex'))
-    inputs += [ROOT/'src/video/score_metadata.json', ROOT/'sd_card/PIANO.BIN']
+    inputs += [ROOT/'src/video/score_metadata.json']
     inputs += sorted((ROOT/'src/video').glob('analysis_*.hex'))
     inputs += [ROOT/'tools/build.tcl', ROOT/'tools/slot_card.py']
     bitstream = ROOT/'impl/pnr/GW_PROBLEM_TOW.fs'

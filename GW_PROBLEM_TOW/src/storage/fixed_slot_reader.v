@@ -1,6 +1,6 @@
 // Query/verify a fixed file, then expose only its actual score bytes.
 module fixed_slot_reader (
-    input wire clk, rst_n, catalog_only, scan_catalog,
+    input wire clk, rst_n, scan_catalog,
     input wire [7:0] slot_index,
     input wire [87:0] file_name,
     input wire sd_ready,
@@ -49,7 +49,7 @@ module fixed_slot_reader (
         end
     endfunction
     slot_card_query query(
-        .clk(clk),.rst_n(rst_n),.for_write(1'b0),.catalog_only(catalog_only),.scan_catalog(scan_catalog),
+        .clk(clk),.rst_n(rst_n),.for_write(1'b0),.scan_catalog(scan_catalog),
         .slot_index(slot_index),.file_name(file_name),
         .sd_ready(sd_ready && state==QUERY),.sd_start(q_start),.sd_lba(q_lba),
         .sd_data(sd_data),.sd_index(sd_index),.sd_valid(sd_valid),.sd_done(sd_done),.sd_error(sd_error),
@@ -69,8 +69,7 @@ module fixed_slot_reader (
                 QUERY: if(q_done)begin
                     if(q_error!=0)begin
                         error_code<=q_error==4 ? 4'd4 : 4'he;probe_done<=1;state<=DONE;
-                    end else if(catalog_only)begin probe_done<=1;state<=DONE;end
-                    else begin
+                    end else begin
                         remaining<=file_size;read_lba<=file_lba;crc_work<=32'hffffffff;state<=VERIFY_REQ;
                     end
                 end

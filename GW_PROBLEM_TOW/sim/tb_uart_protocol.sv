@@ -108,34 +108,34 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   for(i=0;i<256;i=i+1) seen[i]=0;
   repeat(10) @(negedge clk);rst_n=1;
   wait(snapshots==1);
-  send_frame(1,'h10,1,0,0);expect_reply(1,0,'h10);
-  if(starts!=1 || states[1]!=1 || tracks[1]!=1) $fatal(1,"Play snapshot precedes command execution");
-  send_frame(2,'h10,5,0,0);expect_reply(2,1,'h10);
-  send_frame(3,'h10,2,1,0);expect_reply(3,1,'h10);
+  send_frame(1,'h12,1,1,0);expect_reply(1,0,'h12);
+  if(starts!=1 || states[1]!=1 || tracks[1]!=4) $fatal(1,"Play snapshot precedes command execution");
+  send_frame(2,'h12,1,0,0);expect_reply(2,1,'h12);
+  send_frame(3,'h12,2,1,1);expect_reply(3,1,'h12);
   send_frame(4,'h99,0,0,0);expect_reply(4,2,'h99);
   if(starts!=1) $fatal(1,"Invalid request changed player");
   // Wrong checksum, version and tail, random bytes, overlapping headers.
-  send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(5);send_byte('h10);
-  send_byte(2);send_byte(0);send_byte(0);send_byte(0);send_byte('h0d);
-  send_byte('ha5);send_byte('h5a);send_byte(2);send_byte(6);send_byte('h10);
-  send_byte(2);send_byte(0);send_byte(0);send_byte('h1a);send_byte('h0d);
-  send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(7);send_byte('h10);
-  send_byte(2);send_byte(0);send_byte(0);send_byte('h1a);send_byte('h0e);
+  send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(5);send_byte('h12);
+  send_byte(1);send_byte(2);send_byte(0);send_byte(0);send_byte('h0d);
+  send_byte('ha5);send_byte('h5a);send_byte(2);send_byte(6);send_byte('h12);
+  send_byte(1);send_byte(2);send_byte(0);send_byte('h1d);send_byte('h0d);
+  send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(7);send_byte('h12);
+  send_byte(1);send_byte(2);send_byte(0);send_byte('h1d);send_byte('h0e);
   send_byte('h65);send_byte('hff);send_byte('ha5);
   send_frame(8,'h01,0,0,0);expect_reply(8,0,'h01);
   if(starts!=1 || seen[5] || seen[6] || seen[7]) $fatal(1,"Corrupt frame accepted");
   // A valid-looking frame split by timeout must not execute.
   send_byte('ha5);send_byte('h5a);send_byte(1);send_byte(9);
   repeat(180000) @(negedge clk);
-  send_byte('h10);send_byte(2);send_byte(0);send_byte(0);send_byte('h1c);send_byte('h0d);
+  send_byte('h12);send_byte(1);send_byte(2);send_byte(0);send_byte('h1f);send_byte('h0d);
   send_frame(10,'h11,0,0,0);expect_reply(10,0,'h11);
   if(starts!=1 || stops!=1 || states[10]!=0) $fatal(1,"Timeout/stop handling");
   // Bad stop bit/break and a short low glitch must recover cleanly.
   @(negedge clk);rx=0;repeat(UART_TICKS*12) @(negedge clk);
   rx=1;repeat(UART_TICKS*2) @(negedge clk);
   rx=0;repeat(UART_TICKS/260>0 ? UART_TICKS/260 : 1) @(negedge clk);rx=1;repeat(UART_TICKS*2) @(negedge clk);
-  send_frame(11,'h10,3,0,0);expect_reply(11,0,'h10);
-  if(starts!=2 || selected!=3) $fatal(1,"RX did not recover after framing error");
+  send_frame(11,'h12,1,2,0);expect_reply(11,0,'h12);
+  if(starts!=2 || selected!=5) $fatal(1,"RX did not recover after framing error");
   // Queue several replies while the long native return is still in flight.
   send_frame(12,1,0,0,0);send_frame(13,1,0,0,0);send_frame(14,1,0,0,0);
   expect_reply(12,0,1);expect_reply(13,0,1);expect_reply(14,0,1);
@@ -158,8 +158,11 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   if(piano_count!=1 || marimba_count!=1 || marimba_selected)
    $fatal(1,"Instrument commands accepted invalid parameters");
   send_frame(25,'h45,0,0,0);expect_reply(25,2,'h45);
-  send_frame(29,'h10,4,0,0);expect_reply(29,1,'h10);
-  if(starts!=2 || selected!=3 || tracks[29]!=3 || piano_count!=1 || marimba_count!=1)
+  send_frame(29,'h10,4,0,0);expect_reply(29,2,'h10);
+  for(i=1;i<=3;i=i+1)begin
+   send_frame(90+i,'h10,i,0,0);expect_reply(90+i,2,'h10);
+  end
+  if(starts!=2 || selected!=5 || tracks[29]!=5 || piano_count!=1 || marimba_count!=1)
    $fatal(1,"Removed commands changed track or instrument");
   send_frame(70,'h50,1,0,0);expect_reply(70,0,'h50);
   if(view_mode!=1 || starts!=2)$fatal(1,"Spectrum selection changed playback");

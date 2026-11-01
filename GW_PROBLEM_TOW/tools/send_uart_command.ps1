@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('Android', 'Apple', 'Piano', 'NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform')]
+    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
     [string]$Port,
@@ -7,13 +7,10 @@ param(
     [ValidateRange(1,100)][int]$Number = 1
 )
 $ErrorActionPreference = 'Stop'
-$commandByte = 0x10
+$commandByte = 0x01
 $track = 0
 $p1 = 0
 switch ($Command) {
-    'Android' { $track = 1 }
-    'Apple' { $track = 2 }
-    'Piano' { $track = 3 }
     'NumberedPiano' { $commandByte = 0x12; $track = 1; $p1 = $Number }
     'NumberedMarimba' { $commandByte = 0x12; $track = 2; $p1 = $Number }
     'Stop' { $commandByte = 0x11 }

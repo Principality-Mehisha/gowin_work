@@ -38,9 +38,9 @@ module tb_board_controls;
   toggle_pins();
   if(ons || offs || heard || !dut.score_player.system.manual_mode || cs!==1)
    $fatal(1,"Board pins triggered idle audio or SD access");
-  send_frame(0,'h10,1,0,0);
+  send_frame(0,'h12,1,1,0);
   saved=ons; toggle_pins();
-  if(!dut.score_player.system.ringtone_active || dut.score_player.selected_track!=1 || ons!=saved)
+  if(!dut.score_player.system.ringtone_active || dut.score_player.selected_track!=4 || ons!=saved)
    $fatal(1,"Board pins changed SD loading state");
   send_frame(0,'h11,0,0,0);
   send_frame(0,'h44,0,0,0);

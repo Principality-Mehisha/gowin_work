@@ -19,9 +19,10 @@ module tb_score_file_name;
                 if(file_name!==expected_name || !numbered || marimba!=(kind==2))
                     $fatal(1,"Name mapping track=%0d got=%s expected=%s",track,file_name,expected_name);
             end
-        track=1;#1;if(file_name!="ANDROID BIN" || !marimba || numbered)$fatal(1,"Legacy Android");
-        track=2;#1;if(file_name!="RINGTONEBIN" || !marimba || numbered)$fatal(1,"Legacy ringtone");
-        track=3;#1;if(file_name!="PIANO   BIN" || marimba || numbered)$fatal(1,"Legacy piano");
-        passed=1;$display("PASS: 200 numbered names and legacy mappings");$finish;
+        for(number=0;number<256;number=number+1)if(number<4 || number>203)begin
+            track=number;#1;
+            if(file_name!=0 || marimba || numbered)$fatal(1,"Removed/invalid ID accepted");
+        end
+        passed=1;$display("PASS: all 200 numbered names; old and invalid IDs rejected");$finish;
     end
 endmodule

@@ -4,7 +4,7 @@
 
 蓝牙模块直接例化在顶层 `GW_PROBLEM_TOW.bluetooth_upload`，只上传乐谱，不控制播放。
 50 MHz系统时钟，KEY2复位，115200/8N1，FPGA TX=D15接HC-05 RX，RX=D16接HC-05 TX。
-串口屏仍使用B17/B18，原三首曲目、单音试听及显示命令不变。
+串口屏仍使用B17/B18，只播放PN/MB编号曲目；单音试听及显示命令保留。
 
 | KIND | 编号 | 根目录文件名 | 格式 |
 | --- | --- | --- | --- |
@@ -24,14 +24,15 @@
 本版通过离线工具建立新的标准MBR/FAT32镜像，预先创建200个正常文件并固定其簇链：
 
 ```powershell
-python -B tools/slot_card.py --initialize --image output/slots_30000m.img --size-mib 30000
-python -B tools/slot_card.py --image output/slots_30000m.img
+python -B tools/slot_card.py --initialize --image output/slots_numbered_3GiB.img --size-mib 3072
+python -B tools/slot_card.py --image output/slots_numbered_3GiB.img
 ```
 
 工具仅打开普通`.img`文件，拒绝物理设备路径，默认拒绝覆盖已有镜像。
-30000 MiB通常小于标称32 GB卡的容量，但实际写镜像前必须核对目标卡实际字节数。
-Windows下使用稀疏文件，文件逻辑大小约29.3 GiB，不代表生成时实际占用这么多磁盘空间。
-默认同时放入原ANDROID.BIN、RINGTONE.BIN、PIANO.BIN。
+默认大小3072 MiB，即3 GiB；写镜像前必须核对目标卡实际字节数。
+只建立200个PN/MB占位文件，不再加入原三首。稀疏属性不保证Windows上的实际磁盘占用，生成前预留完整容量。
+已经初始化并成功上传的卡无需重做；前200个槽位地址和有效记录格式保持兼容。
+现有旧镜像不自动改写，卡上即使仍有旧三首目录项，FPGA也不会查找或播放它们。
 
 **本工具不会格式化或写入你的物理SD卡。以后将镜像整盘写入卡会替换该卡原有分区和文件，必须先备份并核对目标盘。**
 本轮没有自动执行写物理卡操作。
@@ -54,7 +55,7 @@ PC直接改数据但不改有效记录会导致播放CRC失败；换卡或外部
 
 写入前硬件检查布局描述、MBR、BPB、选定目录项名称/长度/起始簇和两份FAT的4个链接。
 发现移动、改名、改长度、只读或损坏时，拒绝开始，不清零目标。
-旧普通FAT16/FAT32卡仍可播放原三首固定文件，但不能使用本版蓝牙槽位上传。
+已移除普通FAT16/FAT32卡的旧文件查找回退；播放和上传均要求本固定槽位布局。
 不支持exFAT。
 
 ## 手机与PC发送流程
@@ -73,10 +74,10 @@ BEGIN和END是控制消息，不写进BIN；槽位里只有原文件字节与尾
 
 ```powershell
 # 仅检查，不开串口、不改卡
-python -B tools/bluetooth_upload.py sd_card/PIANO.BIN --instrument piano --number 1
+python -B tools/bluetooth_upload.py D:/scores/PN001.BIN --instrument piano --number 1
 # 实际上传时才需要pyserial和端口参数，COM8仅为示例
 python -m pip install pyserial
-python -B tools/bluetooth_upload.py sd_card/PIANO.BIN --instrument piano --number 1 --port COM8
+python -B tools/bluetooth_upload.py D:/scores/PN001.BIN --instrument piano --number 1 --port COM8
 ```
 
 手机实现相同的BEGIN/READY、原始文件、END/结果流程即可，普通裸文件发送不能省掉首尾控制。
@@ -166,7 +167,7 @@ READY时旧内容已被销毁。上传失败、超时、KEY2或断电不恢复�
 
 ## 串口屏播放
 
-原0x10选曲1/2/3不变；编号选曲CMD=0x12，协议仍是串口屏v1：
+旧0x10选曲命令已移除，返回不支持且不改变播放；编号选曲CMD=0x12，协议仍是串口屏v1：
 
 ```text
 A5 5A 01 SEQ 12 KIND NUMBER 00 SUM 0D
@@ -181,7 +182,7 @@ printh A5 5A 01 00 12 02 64 00 79 0D
 
 NUMBER为十进制1～100，对应十六进制01～64。
 200个按钮脚本仍在`screen/tjc_uart/numbered_buttons.txt`，放入触摸弹起事件并关闭组件ID发送。
-反馈内部ID：旧三首1/2/3，PN为4～103，MB为104～203。
+反馈内部ID：0=无选择，PN为4～103，MB为104～203；保留编号偏移以兼容现有屏幕，不再使用1/2/3。
 首次加载扫描200个有效记录并缓存；后续缺失编号请求忽略，不打断正在播放的曲目。
 换卡后KEY2重新扫描。尚无缓存时只允许在空闲状态探测未知编号。
 

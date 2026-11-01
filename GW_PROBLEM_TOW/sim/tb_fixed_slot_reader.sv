@@ -14,7 +14,7 @@ module tb_fixed_slot_reader;
     wire [87:0] name;
     score_file_name names(.track(slot+8'd4),.file_name(name),.marimba(),.numbered());
     fixed_slot_reader dut(
-        .clk(clk),.rst_n(rst_n),.catalog_only(1'b0),.scan_catalog(scan),
+        .clk(clk),.rst_n(rst_n),.scan_catalog(scan),
         .slot_index(slot),.file_name(name),.sd_ready(sd_ready),.sd_start(sd_start),.sd_lba(sd_lba),
         .sd_data(sd_data),.sd_index(sd_index),.sd_valid(sd_valid),.sd_done(sd_done),.sd_error(1'b0),
         .data(data),.valid(valid),.ready(ready),.file_found(found),.file_done(done),.probe_done(probe),

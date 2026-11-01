@@ -8,7 +8,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'Project check failed'}
     & $PythonExe tools/make_video_fixtures.py
     if($LASTEXITCODE -ne 0){throw 'Video reference generation failed (NumPy/Pillow required)'}
-    & $PythonExe tools/make_test_fixtures.py
+    & $PythonExe tools/make_upload_fixtures.py
     if($LASTEXITCODE -ne 0){throw 'SD fixture generation failed'}
     if(-not(Test-Path sim/video_work)){ & vlib sim/video_work }
     if($LASTEXITCODE -ne 0){throw 'vlib failed'}

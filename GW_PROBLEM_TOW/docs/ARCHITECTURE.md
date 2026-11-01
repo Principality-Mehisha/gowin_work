@@ -1,31 +1,46 @@
-# 当前架构与模块边界
+# 编号曲目架构
 
-板级顶层GW_PROBLEM_TOW连接音频接口层piano_score_player和独立piano_video。仅保留KEY2复位，KEY0和KEY1不连接功能逻辑。没有DDR引脚、控制器、参数种子或运行时外存请求。
+只使用PN001.BIN～PN100.BIN、MB001.BIN～MB100.BIN。
+串口屏v1的CMD=0x12按乐器及编号选曲；旧CMD=0x10返回不支持，不启动SD。
+保留内部编号PN=4～103、MB=104～203，避免改变现有屏幕反馈映射。
 
-顶层另直接例化bluetooth_file_receiver，使用D15/D16独立串口和共享复位；
-内部fixed_slot_writer覆盖预分配的200个100 KiB编号文件，运行时不分配或释放FAT簇链。
-BEGIN校验布局并清零整个槽位，READY后通过32 KiB BSRAM FIFO接收连续原始文件字节，
-END通过整文件CRC和格式检查后提交独立的有效记录。顶层以upload_active选择SD SPI输出，
-不实现同时读写调度。原播放器仍由串口屏控制，新增0x12编号选曲。
-sd_spi_reader保留原读接口并增加CMD24写接口；fat_file_reader增加LOOKUP_ONLY及卷/目录元数据输出。
-详见BLUETOOTH_UPLOAD.md。新编号曲目不使用旧钢琴瀑布流ROM。
-播放器首次SD加载扫描200个私有有效记录，缓存编号有效表；上传失效/成功脉冲更新对应位，
-空编号请求不会打断已经播放的曲目。电脑修改或更换卡后需KEY2复位刷新快照。
+## 存储与上传
 
-piano_score_player负责board_reset、UART串口屏协议、sd_score_stream及PT8211。instrument_system只处理已经解码的控制命令和音符事件，管理播放归属、选音、全局乐器、故障静音及视频状态。
+存储链为sd_spi_byte → sd_spi_reader → fixed_slot_reader/slot_card_query →
+piano_score_reader → piano_score_sequencer。不再有通用FAT16/FAT32文件名搜索或旧三首回退。
+slot_card_query仍校验固定布局、目录项及FAT簇链，防止在被电脑移动或修改的卡上读写错误区域；
+这不等于旧文件搜索分支。乐谱支持P88S和M42S，256项FIFO预填充后按毫秒调度。
 
-playback_control管理SD曲目、手动/SD模式、停止、切换、同曲不重启及错误锁存。uart_note_audition分别记忆钢琴0～87和马林巴15～62的音名索引；马林巴发声时加21，转换为MIDI 36～83。选音与发声音分离，事件遵循ready/valid反压。
+bluetooth_file_receiver直接例化在顶层，独立115200/8N1 UART，FPGA TX=D15、RX=D16。
+BEGIN验证目标并使其无效，清零100 KiB后回复READY；正文经32 KiB BSRAM FIFO接收，
+END校验CRC和格式后提交有效记录。手机可第二次发送“完整乐谱+END”的合并文件。
+上传时顶层选择写入方SD引脚，不支持与播放同时读写。
 
-存储链为sd_spi_byte → sd_spi_reader → fat_file_reader → piano_score_reader → piano_score_sequencer。支持FAT16/FAT32根目录8.3文件、P88S钢琴格式和M42S马林巴格式；256项FIFO默认预填充32项，再按毫秒调度。结束记录本地消费，FIFO断粮、格式或存储错误会停止并静音。
+播放器首次扫描200条有效记录并缓存，上传失效/成功脉冲更新对应位。
+已知空槽点击不打断现有播放；换卡或电脑外部修改后KEY2复位刷新缓存。
+描述符、元数据格式及前200槽位地址保持不变，已有PN001/PN002无需重传或重刷SD。
+新初始化镜像只创建200个PN/MB文件，默认3 GiB；不自动写物理SD卡。
 
-instrument_voice_bank按全局选择分发事件和采样使能。钢琴保留88音独立状态、共享八分音计算通路和adsr_pipeline；马林巴保留48音四模态、短起音噪声、同步状态RAM及marimba_body_filter。两种音色均通过EXTERNAL_LIMITER=1去掉内部限幅器，选中混音经过一个公共output_limiter，保留右移两位的原舍入方式。独立合成器默认仍带内部限幅器，方便原音频模型对照。
+## 控制与音频
 
-PT8211输出16位左右声道相同的PCM。50 MHz系统时钟、BCK半分频48，每帧3072个系统时钟，采样率约16276.041667 Hz；DDS_PITCH_RATIO=193274补偿按48 kHz生成的钢琴频率表。deadline_error检查是否错过下一帧计算期限。
+piano_score_player负责板级复位、串口屏协议、存储及PT8211。
+instrument_system/playback_control负责曲目、试听、乐器选择、同曲不重启、停止及错误静音。
+默认上电空闲；SD_SCORE_ENABLE=1时仅自动播放PN001一次，结束或失败后回空闲。
+uart_note_audition分别记忆钢琴与马林巴的试听音。
 
-piano_video使用108 MHz像素时钟和540 MHz串行时钟。播放器时间与88位亮键状态通过请求/确认快照跨域；瀑布流按实际音频时间重建，未来三秒音符来自内置谱面ROM。替换PIANO.BIN必须同步运行tools/generate_video_score.py并重建位流。显示使用逐行掩码，保留原像素延迟。
+钢琴为88音DDS/ADSR，马林巴为48音四模态及短起音噪声，经过共用output_limiter。
+五张音频ROM及合成运算不改。PT8211双声道输出相同16位PCM，
+50 MHz、BCK半分频48、每帧3072周期，采样率约16276.041667 Hz。
+DDS_PITCH_RATIO=193274及deadline_error检查保留。
 
-board_reset负责上电延时、KEY2异步断言和两级同步释放。GSR及视频PLL/CLKDIV/OSER10仍为Gowin原语。视频使用的PLL_INIT必须保留。SDC继续检查系统、像素和串行三个时钟域；原有视频复位恢复/移除检查单独报告，没有隐藏。
+## 显示与构建
 
-新增或删除RTL修改.gprj；仿真从同一清单读取。tools/check_project.py检查源码、五张ROM、三首乐谱和视频ROM一致性。结构回归及构建证据见VERIFICATION.md和output/no_clarinet/verification.json。
+视频108 MHz像素、540 MHz串行时钟及快照跨域保持不变。
+解除旧第3首与固定谱面ROM绑定，编号曲目不会显示旧谱面的落块或亮键；
+显示模式0保留键盘背景，模式1/2继续分析钢琴实际DAC采样，不采集马林巴。
+固定谱面ROM和通用渲染模块仍保留在工程中，独立仿真可激活；当前播放器不再激活旧谱面。
+它们不是当前SD曲目或上传依赖，本次没有继续删除视频渲染模块。
 
-新增显示模式经playback_video_cdc的同一快照跨域。实际DAC样本由piano_audio_analysis进行Hann/FFT分析，analysis_frame_cdc双缓冲按帧发布，piano_analysis_scene渲染频谱/波形。整个路径只读音频，不反压播放器；见PIANO_ANALYSIS.md。
+board_reset保持KEY2异步断言、同步释放；CST/SDC及已有关键路径寄存器保留。
+.gprj统一列出RTL。check_project检查42个RTL、五张音频ROM、编号按钮与引脚。
+run_upload/run_analysis为当前集成回归，证据见output/numbered_only与VERIFICATION.md。

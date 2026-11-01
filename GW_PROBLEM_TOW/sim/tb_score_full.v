@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../output/score_test/params.vh"
+`include "../output/fixed_slots/full_params.vh"
 module tb_score_full;
     reg passed = 0, clk = 0, rst_n = 0;
     reg sd_ready = 0, sd_valid = 0, sd_done = 0;
@@ -14,13 +14,14 @@ module tb_score_full;
     wire playing, finished, error;
     wire [55:0] notes, velocities;
     wire [7:0] gates, triggers;
-    fat_file_reader #(.FILE_NAME("PIANO   BIN")) fat (
-        .requested_file_name(88'd0),
+    `include "../output/fixed_slots/layout.vh"
+    fixed_slot_reader reader (
+        .slot_index(8'd1),.file_name("PN002   BIN"),.scan_catalog(1'b1),
         .clk(clk), .rst_n(rst_n), .sd_ready(sd_ready), .sd_start(sd_start),
         .sd_lba(sd_lba), .sd_data(sd_data), .sd_index(sd_index), .sd_valid(sd_valid),
         .sd_done(sd_done), .sd_error(1'b0), .data(data), .valid(valid), .ready(ready),
-        .mounted(), .file_found(found), .file_size(file_size), .file_done(done),
-        .error_code(fat_error)
+        .file_found(found), .file_size(file_size), .file_done(done),
+        .error_code(fat_error),.probe_done(),.catalog_mask(),.catalog_done()
     );
     piano_score_reader decoder (
         .marimba_format(1'b0),
@@ -39,15 +40,16 @@ module tb_score_full;
         .playing(playing), .finished(finished), .error(error), .elapsed_ms(elapsed_ms)
     );
     always #10 clk = ~clk;
-    integer disk, result, index, parsed = 0, dispatched = 0;
+    integer index, parsed = 0, dispatched = 0;
+    reg [7:0] image[0:33554431];
     reg [7:0] block [0:511];
     reg [31:0] lba;
     reg [63:0] expected [0:`SCORE_EVENTS-1];
     reg [63:0] dispatched_event;
     initial begin
-        $readmemh("../output/score_test/events.hex", expected);
-        disk = $fopen("../output/score_test/full.img", "rb");
-        if (!disk) $fatal(1, "Cannot open score fixture");
+        for(index=0;index<33554432;index=index+1)image[index]=0;
+        $readmemh("output/fixed_slots/full_events.hex", expected);
+        $readmemh("output/fixed_slots/full.hex", image);
         repeat (5) @(negedge clk);
         rst_n = 1; sd_ready = 1;
         forever begin
@@ -55,11 +57,8 @@ module tb_score_full;
             if (sd_start && sd_ready) begin
                 lba = sd_lba;
                 @(negedge clk); sd_ready = 0;
-                result = $fseek(disk, lba * 512, 0);
-                result = $fread(block, disk);
-                if (result != 512) $fatal(1, "Score sector read failed");
                 for (index = 0; index < 512; index = index + 1) begin
-                    sd_data = block[index]; sd_index = index; sd_valid = 1;
+                    sd_data = image[lba*512+index]; sd_index = index; sd_valid = 1;
                     @(negedge clk);
                 end
                 sd_valid = 0;
@@ -87,7 +86,7 @@ module tb_score_full;
             if (parsed != `SCORE_EVENTS || dispatched != `SCORE_EVENTS ||
                 !complete || file_size != `SCORE_BYTES || gates != 0)
                 $fatal(1, "Full score EOF mismatch");
-            $display("PASS: complete Croatian Rhapsody, %0d exact events through fragmented FAT32 and timed sequencer", dispatched);
+            $display("PASS: full PN002 fixed-slot CRC/length and %0d exact timed events; no legacy filename lookup", dispatched);
             passed = 1;
             $finish;
         end

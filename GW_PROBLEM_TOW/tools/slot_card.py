@@ -26,7 +26,6 @@ META_BASE = 8
 LAYOUT_MAGIC = b"GW100K02"
 META_MAGIC = b"GWSLOT02"
 VALID = 0xA55AA55A
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def slot_index(instrument: str, number: int) -> int:
@@ -117,7 +116,7 @@ def directory_entry(name: bytes, cluster: int, length: int, attributes=0x20) -> 
     return bytes(result)
 
 
-def image_sectors(layout: Layout, legacy=True) -> dict[int, bytes]:
+def image_sectors(layout: Layout) -> dict[int, bytes]:
     sectors = {}
     mbr = bytearray(SECTOR)
     struct.pack_into("<I", mbr, 440, 0x47575332)
@@ -149,19 +148,6 @@ def image_sectors(layout: Layout, legacy=True) -> dict[int, bytes]:
                              first + offset + 1 if offset != 3 else 0x0FFFFFFF)
         directory[index * 32:(index + 1) * 32] = directory_entry(slot_name(index), first, SLOT_BYTES)
     next_cluster = 803
-    if legacy:
-        for entry_index, name in enumerate(("ANDROID.BIN", "RINGTONE.BIN", "PIANO.BIN"), SLOTS):
-            data = (ROOT / "sd_card" / name).read_bytes()
-            count = (len(data) + SPC * SECTOR - 1) // (SPC * SECTOR)
-            short = name.split(".")[0].ljust(8).encode() + b"BIN"
-            directory[entry_index * 32:(entry_index + 1) * 32] = directory_entry(short, next_cluster, len(data))
-            for offset in range(count):
-                struct.pack_into("<I", fat, (next_cluster + offset) * 4,
-                                 next_cluster + offset + 1 if offset + 1 < count else 0x0FFFFFFF)
-            base = layout.data_base + (next_cluster - 2) * SPC
-            for offset in range(0, len(data), SECTOR):
-                sectors[base + offset // SECTOR] = data[offset:offset + SECTOR].ljust(SECTOR, b"\0")
-            next_cluster += count
     for offset in range(0, len(fat), SECTOR):
         block = bytes(fat[offset:offset + SECTOR])
         if any(block):
@@ -199,14 +185,14 @@ def mark_sparse(file):
             raise OSError("Filesystem cannot create a sparse image; use an NTFS destination")
 
 
-def create_image(path: Path, size_mib=30000, *, legacy=True, replace=False) -> Layout:
+def create_image(path: Path, size_mib=3072, *, replace=False) -> Layout:
     regular_image(path)
     layout = layout_for_size(size_mib * 1024 * 1024)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w+b" if replace else "x+b") as file:
         mark_sparse(file)
         file.truncate(layout.total_sectors * SECTOR)
-        for lba, block in image_sectors(layout, legacy).items():
+        for lba, block in image_sectors(layout).items():
             file.seek(lba * SECTOR)
             file.write(block)
         file.flush()
@@ -279,7 +265,7 @@ def inspect_image(path: Path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", type=Path, required=True)
-    parser.add_argument("--size-mib", type=int, default=30000)
+    parser.add_argument("--size-mib", type=int, default=3072)
     parser.add_argument("--initialize", action="store_true", help="Create a new sparse image; never a physical SD card")
     parser.add_argument("--replace", action="store_true", help="Explicitly overwrite an existing image")
     args = parser.parse_args()

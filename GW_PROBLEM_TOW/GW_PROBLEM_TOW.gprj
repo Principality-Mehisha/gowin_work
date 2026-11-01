@@ -13,7 +13,6 @@
         <File path="src/control/uart_note_audition.v" type="file.verilog" enable="1"/>
         <File path="src/storage/sd_spi_byte.v" type="file.verilog" enable="1"/>
         <File path="src/storage/sd_spi_reader.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/fat_file_reader.v" type="file.verilog" enable="1"/>
         <File path="src/storage/piano_score_reader.v" type="file.verilog" enable="1"/>
         <File path="src/storage/piano_score_sequencer.v" type="file.verilog" enable="1"/>
         <File path="src/board/piano_score_player.v" type="file.verilog" enable="1"/>

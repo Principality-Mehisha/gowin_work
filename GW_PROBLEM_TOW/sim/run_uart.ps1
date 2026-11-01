@@ -3,7 +3,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $projectRoot 'tools/project_sources.ps1')
 Push-Location $projectRoot
 try {
-    & python tools/make_test_fixtures.py
+    & python tools/make_upload_fixtures.py
     if ($LASTEXITCODE -ne 0) { throw 'Test fixture generation failed' }
     if (-not (Test-Path sim/uart_work)) {
         & vlib sim/uart_work
@@ -15,7 +15,8 @@ try {
     foreach ($bench in @('tb_tjc_status', 'tb_note_audition', 'tb_uart_protocol', 'tb_uart_player', 'tb_uart_notes')) {
         $commands = 'onfinish stop; run -all; if {[examine -radix unsigned /' +
             $bench + '/passed] != 1} {quit -code 1 -f}; quit -code 0 -f'
-        & vsim -c -voptargs=+acc -lib sim/uart_work $bench -do $commands -l "sim/${bench}.log"
+        $extra=@();if($bench -eq 'tb_uart_protocol'){$extra=@('-gUART_TICKS=8')}
+        & vsim -c -voptargs=+acc -lib sim/uart_work $bench @extra -do $commands -l "sim/${bench}.log"
         if ($LASTEXITCODE -ne 0) { throw "$bench failed" }
     }
 } finally { Pop-Location }

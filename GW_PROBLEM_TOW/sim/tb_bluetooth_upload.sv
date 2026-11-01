@@ -231,10 +231,10 @@ module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output re
             // Reboot catalog from SD metadata, not the upload-complete cache.
             key=0;repeat(16)@(posedge clk);key=1;repeat(32)@(posedge clk);play(1,1);
             saved=events;screen_command('h10,3,0);i=0;
-            while(events==saved && i<10000000)begin @(posedge clk);i=i+1;end
-            if(events==saved || dut.score_player.selected_track!=3)$fatal(1,"Legacy PIANO.BIN on prepared FAT32 card");
-            screen_command('h11,0,0);repeat(200)@(posedge clk);
-            passed=1;$display("PASS reset in raw DATA, destructive invalidation, reboot metadata, reupload and legacy score on prepared FAT32");
+            repeat(10000)@(posedge clk);
+            if(events!=saved || dut.score_player.selected_track!=0 || dut.score_player.system.ringtone_active)
+                $fatal(1,"Removed legacy command started playback");
+            passed=1;$display("PASS reset in raw DATA, destructive invalidation, reboot metadata, reupload and legacy command rejection");
             disable run_cases;
         end
         if(SMALL_FIFO)begin

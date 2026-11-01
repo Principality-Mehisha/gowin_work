@@ -1,7 +1,7 @@
 // Read-only validation of the prepared FAT32 layout and one fixed file.
 // No FAT allocator, mutable sector cache, or full-file buffer is required.
 module slot_card_query (
-    input wire clk, rst_n, for_write, catalog_only, scan_catalog,
+    input wire clk, rst_n, for_write, scan_catalog,
     input wire [7:0] slot_index,
     input wire [87:0] file_name,
     input wire sd_ready,
@@ -185,7 +185,6 @@ module slot_card_query (
                         ((partition_sectors-32-(fat_sectors<<1))>>6)+2>(fat_sectors<<7))
                         fail(8'h21);
                     else if(for_write) read_sector(data_base+({24'd0,slot_index}>>4),DIRECTORY);
-                    else if(catalog_only && !scan_all) begin done<=1; state<=FINISHED; end
                     else begin
                         meta_index<=scan_all ? 8'd0 : slot_index;
                         read_sector(32'd8+(scan_all ? 32'd0 : {24'd0,slot_index}),META);
@@ -210,8 +209,7 @@ module slot_card_query (
                     end
                 end
                 AFTER_META: begin
-                    if(catalog_only) begin done<=1; state<=FINISHED; end
-                    else if(!selected_valid) fail(8'h04);
+                    if(!selected_valid) fail(8'h04);
                     else read_sector(data_base+({24'd0,slot_index}>>4),DIRECTORY);
                 end
                 DIRECTORY: begin

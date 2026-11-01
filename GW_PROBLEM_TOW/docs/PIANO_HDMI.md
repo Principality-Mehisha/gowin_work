@@ -1,5 +1,10 @@
 # 钢琴 SD 播放与 HDMI/DVI 瀑布流
 
+> 历史说明：2026-11-01已删除旧三首选曲及普通FAT回退，并解除旧第3首与固定谱面ROM的绑定。
+> 以下旧第3首、PIANO.BIN、同步生成ROM的部署步骤不适用于当前PN/MB工程。
+> 当前模式0为键盘背景，模式1/2保留实时钢琴频谱/波形；上传曲目的动态瀑布流尚未实现。
+> 当前操作以README、BLUETOOTH_UPLOAD.md和PIANO_ANALYSIS.md为准。
+
 当前主工程已接入原 `dvi_photo` 的 1600×900 / 60 Hz 显示链路。
 默认启用 `GW_PROBLEM_TOW.VIDEO_ENABLE=1`，原按键、UART、SD 文件和三种音源继续使用。
 

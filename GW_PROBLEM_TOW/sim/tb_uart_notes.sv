@@ -106,10 +106,10 @@ module tb_uart_notes;
   displayed_note=-1;send_frame(0,'h01,0,0,0);settle();
   if(displayed_note!=2) $fatal(1,"Query did not refresh unchanged screen note");
   // Single note playback takes over a loading SD song, then UART returns to SD.
-  send_frame(0,'h10,1,0,0);wait(dut.system.ringtone_active);
+  send_frame(0,'h12,1,1,0);wait(dut.system.ringtone_active);
   send_frame(0,'h42,0,0,0);wait(ons==5);
   if(dut.system.ringtone_active || dut.last_error) $fatal(1,"Single note failed to cancel SD loading");
-  send_frame(0,'h10,1,0,0);
+  send_frame(0,'h12,1,1,0);
   if(dut.system.note_busy || !dut.system.ringtone_active) $fatal(1,"UART track failed to preempt single note");
   send_frame(0,'h11,0,0,0);settle();
   @(negedge clk);k2=0;repeat(4)@(negedge clk);k2=1;wait(dut.rst_n);
@@ -117,7 +117,7 @@ module tb_uart_notes;
   wait(displayed_note==0);settle();
   if(displayed_instrument!=0) $fatal(1,"Reset must display piano");
   // Selecting an instrument cancels a loading song and never emits a note.
-  send_frame(0,'h10,1,0,0);wait(dut.system.ringtone_active);
+  send_frame(0,'h12,1,1,0);wait(dut.system.ringtone_active);
   prior_ons=ons;send_frame(0,'h44,0,0,0);settle();
   if(dut.system.ringtone_active || dut.system.note_busy || ons!=prior_ons || dut.pcm!=0 ||
      !dut.selected_marimba || displayed_instrument!=1 || displayed_note!=15)

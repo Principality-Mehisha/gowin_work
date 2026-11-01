@@ -15,8 +15,8 @@ module tb_instrument_bank;
  wire reference_ready=instrument==1 ? mr : pr;
  wire reference_valid=instrument==1 ? mv : pv;
  wire signed [15:0] reference_pcm=instrument==1 ? marimba_pcm : piano_pcm;
- instrument_voice_bank bank(.clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
-  .marimba_mode(instrument==1),.event_valid(valid),.event_on(on),
+ instrument_voice_bank #(.LIVE_DYNAMICS(1)) bank(.clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),
+  .marimba_mode(instrument==1),.event_valid(valid),.event_on(on),.event_update(1'b0),
   .event_note(note),.event_dynamics(velocity),.pitch_ratio(18'd193274),
   .event_ready(ready),.deadline_error(deadline),.pcm(pcm),.pcm_valid(pcm_valid));
  piano_synth piano(.clk(clk),.reset_n(reset_n),.sample_tick(tick),.stop_all(stop_all),

@@ -3,6 +3,11 @@
 工程入口：`GW_PROBLEM_TOW.gprj`；器件：`GW5AT-LV60PG484AC1/I0`；系统时钟50 MHz。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
+新增完整16键压力钢琴：ADC扫描在顶层例化，支持校准、持续力度、松键尾音及七组音高选择。
+默认在手动钢琴状态启用；SD播放、串口屏试听及马林巴选择期间暂停。
+切回后仍按住的键需先松开再按，KEY2重新校准时保持全部松键。
+接线、行为及仿真入口见[压力钢琴](docs/PRESSURE_KEYBOARD.md)。最终综合/布局布线由用户执行，本次不生成新位流。
+
 新增HC-05蓝牙上传：115200/8N1，FPGA TX=D15、RX=D16，模块直接例化在顶层。
 使用预分配的PN001.BIN～PN100.BIN和MB001.BIN～MB100.BIN共200个100 KiB文件槽位，
 BEGIN后先清零目标槽位，回复READY；手机随后连续透传文件字节，DATA阶段不分包、不逐块确认。
@@ -16,7 +21,8 @@ SD卡需先用离线工具生成专用FAT32布局镜像，不能直接在普通�
 | 输入 | 行为 |
 | --- | --- |
 | KEY0 / KEY1 | 仅保留顶层引脚，不参与控制 |
-| KEY2 | 低有效复位，恢复钢琴A0和马林巴C2的试听选择 |
+| KEY2 | 低有效复位，恢复试听选择，并重新校准压力键盘 |
+| 压力键盘 | 手动钢琴状态16键演奏，按住可持续改变力度 |
 | UART选曲 | CMD=0x12：PN001～PN100、MB001～MB100 |
 | UART单音 | 十六进制40=上一个音，41=下一个音，42=播放 |
 | UART乐器 | 十六进制43=钢琴，44=马林巴 |
@@ -46,6 +52,7 @@ GW_PROBLEM_TOW
 ```
 
 `src/board` 保存顶层、复位及CST/SDC；`control` 保存协议与播放控制；`system` 保存演奏集成；
+`input/pressure`保存ADC扫描、分组选择、压力校准和事件处理；
 `storage` 保存SD/FAT/解码/调度；`audio` 保存合成、滤波、限幅及DAC；`rom` 保存五张音频表；`video` 保存视频逻辑。
 `tools` 为数据生成、构建和检查工具；`sim` 为测试；`screen` 为串口屏脚本。
 `sd_card`、`assets` 和 `source` 保留离线历史样本，不是当前SD部署清单，也不再向初始化镜像加入原三首。
@@ -56,9 +63,12 @@ GW_PROBLEM_TOW
 ## 构建与验证
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
+本次压力功能仅完成代码检查与仿真；下面的Gowin编译由用户执行。
+使用IDE时重新载入工程以识别新增六个源文件；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_pressure.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_upload.ps1
 & 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl
 python tools/check_upload.py --require-build

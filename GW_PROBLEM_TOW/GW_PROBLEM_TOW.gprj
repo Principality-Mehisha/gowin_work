@@ -43,6 +43,7 @@
         <File path="src/video/piano_analysis_scene.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_audio_analysis.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_keymap.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_live_roll.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_roll_line.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_scene.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>

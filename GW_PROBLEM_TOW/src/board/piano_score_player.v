@@ -42,7 +42,7 @@ module piano_score_player #(
     output wire sd_cs_n, sd_sck, sd_mosi,
     input wire sd_miso,
     output wire [7:0] LEDs,
-    output wire player_reset_n, video_active,
+    output wire player_reset_n, video_active, video_clear,
     output wire [31:0] video_elapsed_ms,
     output wire [1:0] display_mode,
     output wire piano_audio_active,analysis_clear,analysis_sample_tick,
@@ -207,6 +207,7 @@ module piano_score_player #(
         .dds_event_ready(dds_event_ready),
         .pcm(pcm),
         .video_active(video_active),
+        .video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms),
         .video_keys(video_keys),
         .LEDs(LEDs),.piano_audio_active(piano_audio_active),.analysis_clear(analysis_clear)

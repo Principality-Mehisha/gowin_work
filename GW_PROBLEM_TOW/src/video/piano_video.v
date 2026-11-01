@@ -1,6 +1,7 @@
 // Video remains locked/visible when playback stops. Only the scene is cleared.
 module piano_video (
     input wire sys_clk, reset_n, active,
+    input wire clear,
     input wire [31:0] elapsed_ms,
     input wire [87:0] keys,
     input wire [1:0] display_mode,
@@ -26,10 +27,13 @@ module piano_video (
     wire frame_tick,update,video_active;
     wire [31:0] video_ms;
     wire [87:0] video_keys;
+    wire [87:0] video_activity;
+    wire video_clear;
     wire [1:0] video_mode;
-    playback_video_cdc display_cdc(.sys_clk(sys_clk),.sys_reset_n(sys_release[3]),
+    playback_video_cdc #(.REALTIME(1)) display_cdc(.sys_clk(sys_clk),.sys_reset_n(sys_release[3]),
         .pixel_clk(pixel_clk),.pixel_reset_n(video_reset_n),.frame_tick(frame_tick),
-        .active(active),.elapsed_ms(elapsed_ms),.keys(keys),.display_mode(display_mode),.video_mode(video_mode),
+        .active(active),.clear(clear),.elapsed_ms(elapsed_ms),.keys(keys),.display_mode(display_mode),.video_mode(video_mode),
+        .video_clear(video_clear),.video_activity(video_activity),
         .update(update),.video_active(video_active),.video_ms(video_ms),.video_keys(video_keys));
     wire analysis_ready,analysis_write_valid,analysis_visible;
     wire [8:0] analysis_write_address,analysis_read_address;
@@ -45,8 +49,9 @@ module piano_video (
         .read_address(analysis_read_address),.read_data(analysis_read_data),.visible_valid(analysis_visible));
     wire [7:0] red,green,blue;
     wire hsync,vsync,de;
-    video_source source(.pixel_clk(pixel_clk),.reset_n(video_reset_n),.test_pattern(1'b0),
+    video_source #(.REALTIME(1)) source(.pixel_clk(pixel_clk),.reset_n(video_reset_n),.test_pattern(1'b0),
         .update(update),.active(video_active),.elapsed_ms(video_ms),.lit_keys(video_keys),
+        .clear(video_clear),.activity(video_activity),
         .display_mode(video_mode),.analysis_valid(analysis_visible),.analysis_data(analysis_read_data),
         .analysis_address(analysis_read_address),.frame_tick(frame_tick),.red(red),.green(green),.blue(blue),
         .hsync(hsync),.vsync(vsync),.de(de));

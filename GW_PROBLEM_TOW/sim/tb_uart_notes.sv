@@ -13,6 +13,9 @@ module tb_uart_notes;
   .sys_clk(clk),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(),.sd_sck(),.sd_mosi(),.sd_miso(1'b1),.LEDs());
  `include "uart_test_tasks.vh"
+ always @(negedge clk)if(dut.rst_n && !dut.system.marimba_mode &&
+   dut.video_keys!==dut.system.voices.piano.gates)
+  $fatal(1,"UART audition waterfall keys differ from sounding piano gates");
  // Simulate the screen receiving real UART bytes, independently of DUT TX.
  reg [7:0] screen_byte;
  reg [287:0] screen_command=0;

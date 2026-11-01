@@ -55,7 +55,7 @@ module instrument_system #(
     output wire storage_paused,
     output wire dds_event_ready,
     output wire signed [15:0] pcm,
-    output wire video_active,
+    output wire video_active, video_clear,
     output wire [31:0] video_elapsed_ms,
     output wire [87:0] video_keys,
     output wire piano_audio_active,analysis_clear,
@@ -187,11 +187,23 @@ module instrument_system #(
         (manual_mode ? (note_busy || pressure_busy) : playing);
     assign analysis_clear=synth_stop || !piano_audio_active;
     assign storage_paused=manual_mode || control_restart;
-    // Numbered scores have no matching fixed look-ahead ROM. Keep PCM analysis,
-    // but never attach the old fixed-song waterfall to an uploaded score.
-    assign video_active = 1'b0;
+    // Observe only events actually accepted by the piano synthesizer. Updates
+    // change pressure dynamics without making another note or ending its bar.
+    reg [87:0] held_piano_keys;
+    always @(posedge sys_clk or negedge play_rst_n) begin
+        if(!play_rst_n) held_piano_keys<=0;
+        else if(synth_stop || marimba_mode) held_piano_keys<=0;
+        else if(synth_event_valid && synth_event_ready && !synth_event_update && synth_event_note<88)
+            held_piano_keys[synth_event_note]<=synth_event_on;
+    end
+    // Release/tail expiry leaves the recent history scrolling. Explicit stop,
+    // a new SD score, leaving SD for audition, instrument changes and errors
+    // invalidate history, even if the command lasts less than one video frame.
+    assign video_clear = uart_start || uart_stop || instrument_request ||
+                         (uart_note_play && !manual_mode) || marimba_mode || failed;
+    assign video_active = !marimba_mode && !failed;
     assign video_elapsed_ms = elapsed_ms;
-    assign video_keys = 88'd0;
+    assign video_keys = held_piano_keys;
     // Active-low GPIO LEDs now show only pressure hold duration.
     assign LEDs = ~pressure_hold_progress;
 endmodule

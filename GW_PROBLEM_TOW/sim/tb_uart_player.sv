@@ -23,7 +23,6 @@ module uart_player_case #(
     always @(posedge clk)if(dut.rst_n)begin
         if(dut.system.deadline_error)$fatal(1,"Numbered player compute deadline");
         if(dut.pcm!==dut.pcm_right)$fatal(1,"Stereo mismatch");
-        if(dut.video_active || dut.video_keys!=0)$fatal(1,"Old fixed-score display became active");
         if(dut.pcm!=0)heard=heard+1;
         if(dut.system.uart_start)starts=starts+1;
         if(dut.system.synth_event_valid && dut.system.synth_event_ready)begin
@@ -33,6 +32,12 @@ module uart_player_case #(
             if(dut.system.voices.marimba.event_valid && dut.system.voices.piano.event_valid)
                 $fatal(1,"Both instruments received the same event");
         end
+    end
+    always @(negedge clk)if(dut.rst_n)begin
+        if(dut.system.marimba_mode)begin
+            if(dut.video_active || dut.video_keys)$fatal(1,"Marimba leaked into live piano waterfall");
+        end else if(dut.video_keys!==dut.system.voices.piano.gates)
+            $fatal(1,"SD waterfall keys differ from actual piano gates");
     end
     task select_score(input integer kind,input integer number);
         begin send_frame(0,'h12,kind,number,0);end

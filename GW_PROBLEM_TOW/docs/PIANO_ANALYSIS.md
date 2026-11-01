@@ -1,7 +1,9 @@
-# 钢琴 HDMI：键盘、频谱与波形
+# 钢琴 HDMI：实时瀑布流、频谱与波形
 
-默认模式0保留键盘背景，不再绑定旧固定曲目的瀑布流。频谱图和波形图只观察钢琴实际送入PT8211的16位PCM，
-支持PN001～PN100和UART钢琴单音试听，不采集马林巴；编号曲目的动态瀑布流尚未实现。
+默认模式0为实时演奏瀑布流：观察钢琴合成器实际接受的开关音符，支持压力键盘、
+UART钢琴单音试听及PN001～PN100。按下从顶部出现并向下滚动，按住时长决定条长；
+键盘亮键同步当前音符，保留最近约3秒轨迹，详见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
+频谱图和波形图只观察钢琴实际送入PT8211的16位PCM；三种视图均不采集马林巴。
 三种显示共用原来的1600×900/60 Hz输出、TMDS引脚及显示器接线。
 
 ## 串口屏按钮
@@ -10,7 +12,7 @@
 
 | 显示 | 完整printh指令 | 事件脚本 |
 | --- | --- | --- |
-| 键盘背景 | printh A5 5A 01 00 50 00 00 00 51 0D | screen/tjc_uart/view_waterfall_release.txt |
+| 实时瀑布流 | printh A5 5A 01 00 50 00 00 00 51 0D | screen/tjc_uart/view_waterfall_release.txt |
 | 频谱图 | printh A5 5A 01 00 50 01 00 00 52 0D | screen/tjc_uart/view_spectrum_release.txt |
 | 波形图 | printh A5 5A 01 00 50 02 00 00 53 0D | screen/tjc_uart/view_waveform_release.txt |
 
@@ -42,6 +44,9 @@ piano_score_player从DAC已锁存的样本输出分析接口；instrument_system
 生产者在整块写完后发布银行及代次信息，消费者只在垂直消隐期交换，并回传确认。写侧在确认前不会重用可见银行。停止、重触发、切曲和复位清除当前采集；Gray代次计数避免旧的未确认结果重新出现。模式沿用原请求/确认快照跨域，数据/控制保持原五拍像素延迟。
 
 ## 验证与构建
+
+实时瀑布流的当前回归入口为sim/run_live_waterfall.ps1，见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
+下述频谱/波形资源及时序数据来自此前实现报告；本轮瀑布流尚未重新综合，需以新构建报告为准。
 
 ```powershell
 python tools/check_project.py

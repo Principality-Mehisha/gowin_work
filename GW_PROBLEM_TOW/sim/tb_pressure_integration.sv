@@ -46,6 +46,9 @@ module tb_pressure_integration;
     `include "uart_test_tasks.vh"
     always @(negedge clk)begin
         #1;
+        if(dut.player_reset_n && !dut.score_player.system.marimba_mode &&
+           dut.video_keys!==dut.score_player.system.voices.piano.gates)
+            $fatal(1,"Pressure/audition waterfall keys differ from sounding piano gates");
         if((!dut.player_reset_n || !dut.score_player.system.pressure_enable ||
             dut.score_player.system.pressure_calibrated!=16'hffff) && leds!==8'hff)
             $fatal(1,"LEDs retained old status/mode/reset indication");

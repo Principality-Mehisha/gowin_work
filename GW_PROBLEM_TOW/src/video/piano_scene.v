@@ -1,9 +1,11 @@
 `timescale 1ns/1ps
-module piano_scene (
+module piano_scene #(parameter integer REALTIME=0) (
     input wire clk, input wire reset_n, input wire frame_tick,
     input wire update, active,
     input wire [31:0] elapsed_ms,
     input wire [87:0] lit_keys,
+    input wire clear,
+    input wire [87:0] activity,
     input wire [10:0] x, input wire [9:0] y,
     input wire test_pattern,
     output reg [23:0] rgb
@@ -12,9 +14,14 @@ module piano_scene (
     wire [447:0] pitch_bus;
     wire [1023:0] top_bus, bottom_bus;
     wire engine_busy, overflow, line_overflow;
+    generate if(!REALTIME)begin: fixed_score
     waterfall_engine engine(.clk(clk), .reset_n(reset_n), .update(update),
         .active(active), .elapsed_ms(elapsed_ms), .valid(valid), .pitch_bus(pitch_bus),
         .top_bus(top_bus), .bottom_bus(bottom_bus), .busy(engine_busy), .overflow(overflow));
+    end else begin: live_score
+        assign valid=0;assign pitch_bus=0;assign top_bus=0;assign bottom_bus=0;
+        assign engine_busy=0;assign overflow=0;
+    end endgenerate
     wire [23:0] column;
     piano_keymap keymap(.clk(clk), .x(x), .column(column));
     reg [10:0] x1,x2;
@@ -24,9 +31,15 @@ module piano_scene (
     reg white_lit2,black_lit2;
     wire [6:0] white_note=column[6:0],black_note=column[13:7];
     wire [1:0] roll_pixel;
+    generate if(!REALTIME)begin: fixed_line
     piano_roll_line line_builder(.clk(clk),.reset_n(reset_n),.x(x),.y(y),
         .valid(valid),.pitch_bus(pitch_bus),.top_bus(top_bus),.bottom_bus(bottom_bus),
         .read_pitch(column[22:16]),.pixel(roll_pixel),.overflow(line_overflow),.busy());
+    end else begin: live_line
+        piano_live_roll live(.clk(clk),.reset_n(reset_n),.update(update),.active(active),
+            .clear(clear),.activity(activity),.y(y),.read_pitch(column[22:16]),.pixel(roll_pixel));
+        assign line_overflow=0;
+    end endgenerate
     reg [23:0] color;
     always @* begin
         color = 24'h0b1020;

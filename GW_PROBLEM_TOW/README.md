@@ -35,9 +35,11 @@ UART默认115200/8N1。选音不发声；播放约0.5秒后释放，再保留约
 旧三首选曲命令0x10及旧乐器命令0x45均返回不支持，不改变播放状态。
 协议和接线见 [UART接口](docs/UART_SCREEN.md)、[单音试听](docs/UART_THREE_KEYS.md)。
 
-HDMI使用UART命令0x50、参数0/1/2切换键盘背景、实时频谱和实时波形，详见 [三种显示与按钮帧](docs/PIANO_ANALYSIS.md)。
-分析直接使用钢琴DAC采样，无需SD查表。已解除旧第3首与固定瀑布流ROM的绑定；
-编号曲目不显示旧乐谱，当前也没有上传曲目的动态瀑布流。声音仍由PT8211输出。
+HDMI使用UART命令0x50、参数0/1/2切换实时瀑布流、实时频谱和实时波形，详见 [三种显示与按钮帧](docs/PIANO_ANALYSIS.md)。
+瀑布流观察钢琴合成器实际接受的开关音符，压力键盘、UART单音试听和SD编号钢琴曲目共用；
+按下后在下一视频帧从顶部出现并向下滚动，条长跟随按住时长，琴键跟随当前音符亮灭。
+保留最近约3秒轨迹，不依赖固定乐谱ROM、未来音符预读或新增SD文件。频谱/波形仍使用实际DAC采样。
+详见 [实时瀑布流](docs/LIVE_WATERFALL.md)。声音仍由PT8211输出。
 
 ## 结构
 
@@ -51,7 +53,7 @@ GW_PROBLEM_TOW
 │  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
 │     └─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
 ├─ bluetooth_file_receiver：独立UART连续流、32 KiB FIFO及固定槽位写入
-└─ piano_video：视频时钟、快照跨域、键盘/频谱/波形与TMDS
+└─ piano_video：视频时钟、快照跨域、实时瀑布流/频谱/波形与TMDS
 ```
 
 `src/board` 保存顶层、复位及CST/SDC；`control` 保存协议与播放控制；`system` 保存演奏集成；
@@ -66,11 +68,12 @@ GW_PROBLEM_TOW
 ## 构建与验证
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
-本次压力功能仅完成代码检查与仿真；下面的Gowin编译由用户执行。
+新增压力和实时瀑布流功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
 使用IDE时重新载入工程以识别新增六个源文件；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_live_waterfall.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_pressure.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_upload.ps1
 & 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl

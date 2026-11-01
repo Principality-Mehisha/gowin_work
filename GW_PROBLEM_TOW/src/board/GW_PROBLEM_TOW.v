@@ -1,7 +1,8 @@
 // Board-level shell: keep logic in named submodules for isolated verification.
 module GW_PROBLEM_TOW #(
     parameter integer SD_SCORE_ENABLE = 0,
-    parameter integer VIDEO_ENABLE = 1
+    parameter integer VIDEO_ENABLE = 1,
+    parameter [7:0] LED_STATIC_LEVEL = 8'd64
 ) (
     input wire sys_clk, KEY0, KEY1, KEY2,
     input wire uart_rx,
@@ -13,7 +14,8 @@ module GW_PROBLEM_TOW #(
     input wire sd_miso,
     output wire [3:0] LEDs,
     output wire [2:0] tmds_data_p, tmds_data_n,
-    output wire tmds_clk_p, tmds_clk_n
+    output wire tmds_clk_p, tmds_clk_n,
+    output LED_indicator_static
 );
     wire player_reset_n, video_active;
     wire [31:0] video_elapsed_ms;
@@ -31,6 +33,10 @@ module GW_PROBLEM_TOW #(
         .upload_active(upload_active),.sd_cs_n(upload_sd_cs_n),
         .sd_sck(upload_sd_sck),.sd_mosi(upload_sd_mosi),.sd_miso(sd_miso));
     // Mode selection only: the operator must not upload during SD playback.
+
+    ws2812_static #(.COLOR_LEVEL(LED_STATIC_LEVEL)) static_leds (
+        .clk(sys_clk), .reset_n(player_reset_n), .data_out(LED_indicator_static));
+
     assign sd_cs_n=upload_active ? upload_sd_cs_n : player_sd_cs_n;
     assign sd_sck=upload_active ? upload_sd_sck : player_sd_sck;
     assign sd_mosi=upload_active ? upload_sd_mosi : player_sd_mosi;

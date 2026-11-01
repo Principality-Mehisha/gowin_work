@@ -1,53 +1,54 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1" encoding="UTF-8"?>
 <!DOCTYPE gowin-fpga-project>
 <Project>
     <Template>FPGA</Template>
     <Version>5</Version>
     <Device name="GW5AT-60B" pn="GW5AT-LV60PG484AC1/I0">gw5at60b-002</Device>
     <FileList>
+        <File path="src/audio/adsr_pipeline.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/instrument_voice_bank.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/marimba_body_filter.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/marimba_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/output_limiter.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/piano_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/pt8211_score_tx.v" type="file.verilog" enable="1"/>
         <File path="src/board/GW_PROBLEM_TOW.v" type="file.verilog" enable="1"/>
-        <File path="src/control/uart_rx.v" type="file.verilog" enable="1"/>
-        <File path="src/control/uart_tx.v" type="file.verilog" enable="1"/>
+        <File path="src/board/board_reset.v" type="file.verilog" enable="1"/>
+        <File path="src/board/piano_score_player.v" type="file.verilog" enable="1"/>
+        <File path="src/control/bluetooth_file_receiver.v" type="file.verilog" enable="1"/>
+        <File path="src/control/playback_control.v" type="file.verilog" enable="1"/>
         <File path="src/control/tjc_status_tx.v" type="file.verilog" enable="1"/>
-        <File path="src/control/uart_score_control.v" type="file.verilog" enable="1"/>
         <File path="src/control/uart_note_audition.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/sd_spi_byte.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/sd_spi_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/control/uart_rx.v" type="file.verilog" enable="1"/>
+        <File path="src/control/uart_score_control.v" type="file.verilog" enable="1"/>
+        <File path="src/control/uart_tx.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/fixed_slot_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/fixed_slot_writer.v" type="file.verilog" enable="1"/>
         <File path="src/storage/piano_score_reader.v" type="file.verilog" enable="1"/>
         <File path="src/storage/piano_score_sequencer.v" type="file.verilog" enable="1"/>
-        <File path="src/board/piano_score_player.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/pt8211_score_tx.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/adsr_pipeline.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/piano_synth.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/marimba_synth.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/marimba_body_filter.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/output_limiter.v" type="file.verilog" enable="1"/>
-        <File path="src/board/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>
-        <File path="src/board/GW_PROBLEM_TOW.sdc" type="file.sdc" enable="1"/>
-        <File path="src/board/board_reset.v" type="file.verilog" enable="1"/>
-        <File path="src/control/playback_control.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/score_file_name.v" type="file.verilog" enable="1"/>
         <File path="src/storage/sd_score_stream.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/sd_spi_byte.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/sd_spi_reader.v" type="file.verilog" enable="1"/>
+        <File path="src/storage/slot_card_query.v" type="file.verilog" enable="1"/>
+        <File path="src/system/instrument_system.v" type="file.verilog" enable="1"/>
+        <File path="src/video/analysis_frame_cdc.v" type="file.verilog" enable="1"/>
         <File path="src/video/dvi_tx.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_analysis_scene.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_audio_analysis.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_keymap.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_roll_line.v" type="file.verilog" enable="1"/>
         <File path="src/video/piano_scene.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>
+        <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
         <File path="src/video/playback_video_cdc.v" type="file.verilog" enable="1"/>
         <File path="src/video/pll_init.v" type="file.verilog" enable="1"/>
         <File path="src/video/tmds_encoder.v" type="file.verilog" enable="1"/>
         <File path="src/video/video_clock.v" type="file.verilog" enable="1"/>
         <File path="src/video/video_source.v" type="file.verilog" enable="1"/>
         <File path="src/video/waterfall_engine.v" type="file.verilog" enable="1"/>
-        <File path="src/video/piano_score_rom.v" type="file.verilog" enable="1"/>
-        <File path="src/video/piano_video.v" type="file.verilog" enable="1"/>
-        <File path="src/system/instrument_system.v" type="file.verilog" enable="1"/>
-        <File path="src/audio/instrument_voice_bank.v" type="file.verilog" enable="1"/>
-        <File path="src/video/piano_audio_analysis.v" type="file.verilog" enable="1"/>
-        <File path="src/video/analysis_frame_cdc.v" type="file.verilog" enable="1"/>
-        <File path="src/video/piano_analysis_scene.v" type="file.verilog" enable="1"/>
-        <File path="src/control/bluetooth_file_receiver.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/fixed_slot_writer.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/fixed_slot_reader.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/slot_card_query.v" type="file.verilog" enable="1"/>
-        <File path="src/storage/score_file_name.v" type="file.verilog" enable="1"/>
+        <File path="src/ws2812_static.v" type="file.verilog" enable="1"/>
+        <File path="src/board/GW_PROBLEM_TOW.cst" type="file.cst" enable="1"/>
+        <File path="src/board/GW_PROBLEM_TOW.sdc" type="file.sdc" enable="1"/>
     </FileList>
 </Project>

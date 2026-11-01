@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "vendor"))
 import mido
 
 
-def read_notes(path: Path) -> tuple[list[dict], float]:
+def read_notes(path: Path, *, min_notes: int = 1000,
+               min_duration: float = 150) -> tuple[list[dict], float]:
     midi = mido.MidiFile(path)
     active = collections.defaultdict(collections.deque)
     released = collections.defaultdict(list)
@@ -67,6 +68,6 @@ def read_notes(path: Path) -> tuple[list[dict], float]:
     for queue in released.values():
         for note in queue:
             finish(note, time)
-    if len(notes) < 1000 or time < 150:
-        raise ValueError("Expected a complete multi-minute piano arrangement")
+    if len(notes) < min_notes or time < min_duration:
+        raise ValueError(f"Expected at least {min_notes} notes and {min_duration:g} seconds")
     return sorted(notes, key=lambda note: note["start"]), time

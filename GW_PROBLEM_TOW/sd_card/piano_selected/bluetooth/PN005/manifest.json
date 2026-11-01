@@ -1,0 +1,21 @@
+{
+  "target": "PN005.BIN",
+  "instrument": "piano",
+  "number": 5,
+  "score_bytes": 25848,
+  "score_crc32": "D14F495F",
+  "score_sha256": "185ebae44cb9f4535394dff736467d66f97c27ec1178205b6a9414eca9d2a375",
+  "begin_hex": "A5 5A 02 01 00 00 0A 00 01 05 F8 64 00 00 5F 49 4F D1 15 FC",
+  "files": {
+    "BEGIN.bin": {
+      "bytes": 20,
+      "sha256": "41545a26d276ea6d7c2ed89c49824d9ffbccbe0a795d532ced444d6bcf6d721b"
+    },
+    "PN005_DATA_END.bin": {
+      "bytes": 25858,
+      "sha256": "9dc49c494865111069ac6b144fe563f5d2a7b559b992e7d423c8851bcea7f1ef"
+    }
+  },
+  "physical_device_accessed": false,
+  "title": "土耳其进行曲"
+}

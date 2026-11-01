@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "converter_unit_tests": 6,
+  "bluetooth_host_unit_tests": 11,
+  "source_comparison": [
+    {
+      "file": "PN003.BIN",
+      "matched_notes": 905,
+      "all_timings_pitches_velocities_match": true
+    },
+    {
+      "file": "PN004.BIN",
+      "matched_notes": 549,
+      "all_timings_pitches_velocities_match": true
+    },
+    {
+      "file": "PN005.BIN",
+      "matched_notes": 1614,
+      "all_timings_pitches_velocities_match": true
+    }
+  ],
+  "zip_integrity": true,
+  "hardware_tested": false
+}

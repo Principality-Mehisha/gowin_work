@@ -1,0 +1,21 @@
+{
+  "target": "PN003.BIN",
+  "instrument": "piano",
+  "number": 3,
+  "score_bytes": 14504,
+  "score_crc32": "F7113DA2",
+  "score_sha256": "1b7d0722b56183715c77c053b22110d6face3eba6ebaeb49ad49c23d8d6cdde8",
+  "begin_hex": "A5 5A 02 01 00 00 0A 00 01 03 A8 38 00 00 A2 3D 11 F7 12 1E",
+  "files": {
+    "BEGIN.bin": {
+      "bytes": 20,
+      "sha256": "51ff93e6a09b574a82eb0283c4ef7edbd178eae3a1871b1f304544c48ed9c212"
+    },
+    "PN003_DATA_END.bin": {
+      "bytes": 14514,
+      "sha256": "c9c3119d6bb0804d31c0b30f4adf723f1ccb556e1f68beeef9af38876b3c805a"
+    }
+  },
+  "physical_device_accessed": false,
+  "title": "致爱丽丝"
+}

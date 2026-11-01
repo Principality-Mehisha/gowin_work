@@ -1,0 +1,21 @@
+{
+  "target": "PN004.BIN",
+  "instrument": "piano",
+  "number": 4,
+  "score_bytes": 8808,
+  "score_crc32": "46E69392",
+  "score_sha256": "aa934ac05ccca63183f66fe56d088349b7008b04867d39e7c5325fcfb96b6514",
+  "begin_hex": "A5 5A 02 01 00 00 0A 00 01 04 68 22 00 00 92 93 E6 46 05 D7",
+  "files": {
+    "BEGIN.bin": {
+      "bytes": 20,
+      "sha256": "9ba29aba9c35ee1fe3208a726e882c2f03f0393cbc5675f00f184dbac8e20cb4"
+    },
+    "PN004_DATA_END.bin": {
+      "bytes": 8818,
+      "sha256": "c8e7649ebd1e3b0240d79da998fd115d317eb134fd52f4559da0574328a4550b"
+    }
+  },
+  "physical_device_accessed": false,
+  "title": "C大调前奏曲 BWV 846"
+}

@@ -1,0 +1,89 @@
+{
+  "format": "P88S v1",
+  "bluetooth_protocol": 2,
+  "physical_device_accessed": false,
+  "offline_validation_passed": true,
+  "songs": [
+    {
+      "number": 3,
+      "title": "致爱丽丝",
+      "composer": "Ludwig van Beethoven",
+      "file": "PN003.BIN",
+      "format": "P88S v1",
+      "protocol": 2,
+      "bytes": 14504,
+      "event_count": 1811,
+      "source_note_count": 905,
+      "note_count": 905,
+      "peak_polyphony": 6,
+      "duration_ms": 131917,
+      "midi_note_range": [
+        33,
+        100
+      ],
+      "crc32": "F7113DA2",
+      "sha256": "1b7d0722b56183715c77c053b22110d6face3eba6ebaeb49ad49c23d8d6cdde8",
+      "midi_file": "fur_elise.mid",
+      "midi_sha256": "1c12c21c7bbf4cf163896732672648a69d497636059837abd153c71abe50215a",
+      "source_page": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931",
+      "source_midi_url": "https://www.mutopiaproject.org/ftp/BeethovenLv/WoO59/fur_Elise_WoO59/fur_Elise_WoO59.mid",
+      "source_notice": "Mutopia marks this edition Public Domain; typeset by Stelios Samelis.",
+      "merged_unisons": 0,
+      "shortened_same_pitch_retriggers": 0
+    },
+    {
+      "number": 4,
+      "title": "C大调前奏曲 BWV 846",
+      "composer": "Johann Sebastian Bach",
+      "file": "PN004.BIN",
+      "format": "P88S v1",
+      "protocol": 2,
+      "bytes": 8808,
+      "event_count": 1099,
+      "source_note_count": 549,
+      "note_count": 549,
+      "peak_polyphony": 5,
+      "duration_ms": 141500,
+      "midi_note_range": [
+        36,
+        81
+      ],
+      "crc32": "46E69392",
+      "sha256": "aa934ac05ccca63183f66fe56d088349b7008b04867d39e7c5325fcfb96b6514",
+      "midi_file": "bach_prelude_c_major.mid",
+      "midi_sha256": "874e07d0479542971bfceaf420d6117da8d602d89d26eea4610e7dd1ef58bf26",
+      "source_page": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=117",
+      "source_midi_url": "https://www.mutopiaproject.org/ftp/BachJS/BWV846/wtk1-prelude1/wtk1-prelude1.mid",
+      "source_notice": "Mutopia edition by Jeff Covey, 2009-12-22; CC BY 3.0: https://creativecommons.org/licenses/by/3.0/ . MIDI converted to P88S with millisecond timing; no notes removed.",
+      "merged_unisons": 0,
+      "shortened_same_pitch_retriggers": 0
+    },
+    {
+      "number": 5,
+      "title": "土耳其进行曲",
+      "composer": "Wolfgang Amadeus Mozart",
+      "file": "PN005.BIN",
+      "format": "P88S v1",
+      "protocol": 2,
+      "bytes": 25848,
+      "event_count": 3229,
+      "source_note_count": 1614,
+      "note_count": 1614,
+      "peak_polyphony": 8,
+      "duration_ms": 256500,
+      "midi_note_range": [
+        38,
+        88
+      ],
+      "crc32": "D14F495F",
+      "sha256": "185ebae44cb9f4535394dff736467d66f97c27ec1178205b6a9414eca9d2a375",
+      "midi_file": "turkish_march.mid",
+      "midi_sha256": "c14299cbdd34c8b2081da84dc06519ef8a52a0d589ee53c758d28b8e3d727d1c",
+      "source_page": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=108",
+      "source_midi_url": "https://www.mutopiaproject.org/ftp/MozartWA/KV331/KV331_3_RondoAllaTurca/KV331_3_RondoAllaTurca.mid",
+      "source_notice": "Mutopia marks this edition Public Domain; typeset by Rune Zedeler and Chris Sawer.",
+      "merged_unisons": 0,
+      "shortened_same_pitch_retriggers": 0
+    }
+  ]
+}

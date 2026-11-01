@@ -1,5 +1,9 @@
 `timescale 1ns/1ps
-module tb_analysis_render;
+module tb_analysis_render #(
+ parameter DATA_FILE="output/piano_analysis/render_data.hex",
+ parameter SPECTRUM_FILE="output/piano_analysis/spectrum.ppm",
+ parameter WAVEFORM_FILE="output/piano_analysis/waveform.ppm"
+);
  reg clk=0,rst=0,passed=0;
  always #4.63 clk=~clk;
  reg [1:0] mode=1;
@@ -15,11 +19,11 @@ module tb_analysis_render;
   .hsync(hs),.vsync(vs),.de(de));
  always @(posedge clk)data<=points[address];
  initial begin
-  $readmemh("output/piano_analysis/render_data.hex",points);
+  $readmemh(DATA_FILE,points);
   for(frame=1;frame<=2;frame=frame+1)begin
    rst=0;repeat(4)@(negedge clk);mode=frame;rst=1;
-   if(frame==1)fd=$fopen("output/piano_analysis/spectrum.ppm","wb");
-   else fd=$fopen("output/piano_analysis/waveform.ppm","wb");
+   if(frame==1)fd=$fopen(SPECTRUM_FILE,"wb");
+   else fd=$fopen(WAVEFORM_FILE,"wb");
    $fwrite(fd,"P6\n1600 900\n255\n");
    for(cycle=0;cycle<1800004;cycle=cycle+1)begin
     @(posedge clk);#1;n=cycle-4;

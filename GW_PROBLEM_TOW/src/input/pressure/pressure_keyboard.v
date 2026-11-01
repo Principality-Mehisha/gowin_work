@@ -10,6 +10,7 @@ module pressure_keyboard #(
 ) (
     input wire clk, reset_n, sample_valid,
     input wire enable,
+    input wire marimba_mode,
     input wire [6:0] base_note,
     input wire [3:0] sample_key,
     input wire [11:0] sample_data,
@@ -28,6 +29,8 @@ module pressure_keyboard #(
     wire [127:0] gains;
     wire [191:0] forces;
     wire [127:0] key_hold_progress;
+    wire pitch_valid=!marimba_mode || base_note<48;
+    wire [6:0] mapped_base=marimba_mode ? (base_note<48 ? 7'd36+base_note : 7'd36) : base_note;
     reg [15:0] armed;
     wire event_reset_n=reset_n && enable;
     assign enabled_pressed=pressed & armed;
@@ -36,7 +39,12 @@ module pressure_keyboard #(
     always @(posedge clk or negedge reset_n) begin
         if(!reset_n) armed<=0;
         else if(!enable) armed<=0;
-        else armed<=armed | ~pressed;
+        else begin
+            armed<=armed | ~pressed;
+            // Invalid marimba groups reject only new presses. Earlier held
+            // notes retain their captured pitch, including their release.
+            if(edge_valid && edge_on && !pitch_valid)armed[edge_key]<=0;
+        end
     end
     pressure_keys #(.CALIBRATION_LOG2(CALIBRATION_LOG2),
         .FILTER_SHIFT(FILTER_SHIFT), .PRESS_THRESHOLD(PRESS_THRESHOLD),
@@ -64,8 +72,8 @@ module pressure_keyboard #(
     wire [6:0] raw_note;
     wire [7:0] raw_dynamics;
     pressure_events events (
-        .clk(clk), .reset_n(event_reset_n), .base_note(base_note),
-        .edge_valid(edge_valid && armed[edge_key]), .edge_on(edge_on),
+        .clk(clk), .reset_n(event_reset_n), .base_note(mapped_base),
+        .edge_valid(edge_valid && armed[edge_key] && (!edge_on || pitch_valid)), .edge_on(edge_on),
         .edge_key(edge_key), .edge_gain(edge_gain), .pressed(enabled_pressed), .gains(gains),
         .event_ready(raw_ready), .event_valid(raw_valid), .event_on(raw_on),
         .event_update(raw_update), .event_key(raw_key), .event_note(raw_note),

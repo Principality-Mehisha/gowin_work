@@ -45,7 +45,7 @@ module piano_score_player #(
     output wire player_reset_n, video_active, video_clear,
     output wire [31:0] video_elapsed_ms,
     output wire [1:0] display_mode,
-    output wire piano_audio_active,analysis_clear,analysis_sample_tick,
+    output wire audio_analysis_active,analysis_clear,analysis_sample_tick,
     output wire signed [15:0] analysis_pcm,
     output wire [87:0] video_keys
 );
@@ -210,6 +210,6 @@ module piano_score_player #(
         .video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms),
         .video_keys(video_keys),
-        .LEDs(LEDs),.piano_audio_active(piano_audio_active),.analysis_clear(analysis_clear)
+        .LEDs(LEDs),.audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear)
     );
 endmodule

@@ -1,7 +1,7 @@
-"""Check actual-piano FFT output and every RGB pixel against an independent scene."""
+"""Check DAC/FFT output and every RGB pixel against an independent scene."""
 from pathlib import Path
+import argparse
 import struct
-import sys
 import zlib
 from make_analysis_fixtures import packed_frame
 
@@ -10,6 +10,7 @@ OUT = ROOT/'output/piano_analysis'
 FONT = {
  'A':'01110 10001 10001 11111 10001 10001 10001',
  'C':'01111 10000 10000 10000 10000 10000 01111',
+ 'D':'11110 10001 10001 10001 10001 10001 11110',
  'E':'11111 10000 10000 11110 10000 10000 11111',
  'F':'11111 10000 10000 11110 10000 10000 10000',
  'G':'01111 10000 10000 10111 10001 10001 01110',
@@ -76,7 +77,7 @@ def reference(mode, points):
             put(x, y, color)
     axis = {0:'0',16:'2',17:'K',32:'4',33:'K',48:'6',49:'K',62:'8',63:'K',65:'H',66:'Z'} if mode == 1 else {
             0:'0',16:'8',32:'1',33:'6',48:'2',49:'4',62:'3',63:'1',65:'M',66:'S'}
-    labels = [(96, dict(enumerate('PIANO SPECTRUM' if mode == 1 else 'PIANO WAVEFORM'))),
+    labels = [(96, dict(enumerate('AUDIO SPECTRUM' if mode == 1 else 'AUDIO WAVEFORM'))),
               (736, axis), (800, dict(enumerate('1024 FFT / HANN   LOG' if mode == 1 else '512  SAMPLES / 31 MS')))]
     for top, letters in labels:
         for index, letter in letters.items():
@@ -90,18 +91,24 @@ def reference(mode, points):
 
 
 def main():
-    samples = [int(x, 16) for x in (OUT/'piano_input.hex').read_text().split()]
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--data-dir', type=Path, default=OUT)
+    parser.add_argument('--prefix', default='piano')
+    parser.add_argument('--prepare-render', action='store_true')
+    args = parser.parse_args()
+    out = args.data_dir
+    samples = [int(x, 16) for x in (out/(args.prefix+'_input.hex')).read_text().split()]
     samples = [v-65536 if v >= 32768 else v for v in samples]
-    actual = [int(x, 16) for x in (OUT/'piano_result.hex').read_text().split()]
+    actual = [int(x, 16) for x in (out/(args.prefix+'_result.hex')).read_text().split()]
     assert len(samples) == 1024 and len(actual) == 512
-    assert actual == packed_frame(samples), 'Actual piano/DAC analysis differs from reference'
-    (OUT/'render_data.hex').write_text(''.join(f'{v:08x}\n' for v in actual))
-    print('PASS: actual UART C4 piano PCM -> 512 exact waveform/spectrum rows')
-    if '--prepare-render' in sys.argv:
+    assert actual == packed_frame(samples), 'Actual DAC analysis differs from reference'
+    (out/'render_data.hex').write_text(''.join(f'{v:08x}\n' for v in actual))
+    print(f'PASS: actual {args.prefix} DAC PCM -> 512 exact waveform/spectrum rows')
+    if args.prepare_render:
         return
     previews = []
     for mode, name in enumerate(('spectrum', 'waveform'), 1):
-        content = (OUT/(name+'.ppm')).read_bytes()
+        content = (out/(name+'.ppm')).read_bytes()
         header = b'P6\n1600 900\n255\n'
         assert content.startswith(header)
         pixels = content[len(header):]
@@ -110,11 +117,11 @@ def main():
         if pixels != expected:
             mismatches = [i//3 for i, (a, b) in enumerate(zip(pixels, expected)) if a != b][:10]
             raise AssertionError(f'{name}: pixel mismatch at {[(p%1600,p//1600) for p in mismatches]}')
-        png(OUT/(name+'.png'), pixels, 1600, 900)
+        png(out/(name+'.png'), pixels, 1600, 900)
         previews.append(b''.join(pixels[(y*1600+x)*3:(y*1600+x)*3+3]
                                  for y in range(0, 900, 2) for x in range(0, 1600, 2)))
         print(f'PASS: {name}, all 1,440,000 RTL RGB pixels match independent geometry/font reference')
-    png(OUT/'preview.png', b''.join(previews), 800, 900)
+    png(out/'preview.png', b''.join(previews), 800, 900)
 
 
 if __name__ == '__main__':

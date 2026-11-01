@@ -1,9 +1,10 @@
-# 钢琴 HDMI：实时瀑布流、频谱与波形
+# HDMI：钢琴瀑布流与双音源分析
 
 默认模式0为实时演奏瀑布流：观察钢琴合成器实际接受的开关音符，支持压力键盘、
 UART钢琴单音试听及PN001～PN100。按下从顶部出现并向下滚动，按住时长决定条长；
 键盘亮键同步当前音符，保留最近约3秒轨迹，详见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
-频谱图和波形图只观察钢琴实际送入PT8211的16位PCM；三种视图均不采集马林巴。
+频谱图和波形图观察当前音源实际送入PT8211的16位PCM，支持钢琴和马林巴的压力演奏、串口屏试听及SD播放。
+只有模式0实时瀑布流属于钢琴；马林巴不产生瀑布流和钢琴亮键。
 三种显示共用原来的1600×900/60 Hz输出、TMDS引脚及显示器接线。
 
 ## 串口屏按钮
@@ -19,7 +20,9 @@ UART钢琴单音试听及PN001～PN100。按下从顶部出现并向下滚动，
 CMD=0x50，P0为0/1/2，P1/P2必须为0。无效参数返回原反馈结果1，保持当前画面；有效命令返回原反馈结果0，page0.n5回显命令80。无需增加新的状态控件。
 模式选择不停止、重播或切换乐器；停止/切曲也不会自动改变所选画面。KEY2复位恢复模式0。显示选择在下一次垂直消隐期通过快照更新，避免半帧切换。
 
-可在没有SD卡时先选择频谱或波形，再选择钢琴、用UART单音按钮试听。没有钢琴数据或播放马林巴时，两种分析画面显示空坐标和WAITING FOR PIANO，不沿用旧波形。
+可在没有SD卡时先选择频谱或波形，再选择钢琴/马林巴，用压力键盘或UART单音按钮演奏。
+标题为AUDIO SPECTRUM/AUDIO WAVEFORM；没有当前音源数据时显示WAITING FOR AUDIO，不沿用旧音色波形。
+马林巴松键后继续显示自然衰减，模态/噪声结束后保留128音频帧滤波清尾窗口。
 
 主机工具只打印帧，显式指定-Port才发送到串口：
 
@@ -39,7 +42,9 @@ powershell -File tools/send_uart_command.ps1 -Command ViewWaveform
 
 ## 模块边界
 
-piano_score_player从DAC已锁存的样本输出分析接口；instrument_system仅输出钢琴有效标志及清除状态。piano_video在50 MHz运行piano_audio_analysis，在像素域使用analysis_frame_cdc双缓冲读取，piano_analysis_scene渲染频谱/波形，video_source选择三种场景。
+piano_score_player从DAC已锁存的样本输出分析接口；instrument_system输出audio_analysis_active及清除状态。
+已有piano_audio_analysis/piano_analysis_scene名称保留，但FFT/波形逻辑本身不限定乐器，两种音源共用一套。
+piano_video在50 MHz运行分析，在像素域使用analysis_frame_cdc双缓冲读取，video_source选择三种场景。
 
 生产者在整块写完后发布银行及代次信息，消费者只在垂直消隐期交换，并回传确认。写侧在确认前不会重用可见银行。停止、重触发、切曲和复位清除当前采集；Gray代次计数避免旧的未确认结果重新出现。模式沿用原请求/确认快照跨域，数据/控制保持原五拍像素延迟。
 
@@ -51,11 +56,15 @@ piano_score_player从DAC已锁存的样本输出分析接口；instrument_system
 ```powershell
 python tools/check_project.py
 powershell -ExecutionPolicy Bypass -File sim/run_analysis.ps1
+powershell -ExecutionPolicy Bypass -File sim/run_marimba_pressure.ps1
 & 'D:/Gowin/Gowin_V1.9.12.03_x64/IDE/bin/gw_sh.exe' tools/build.tcl
 python tools/check_analysis_build.py
 ```
 
 FFT六类向量共3072行和真实UART钢琴C4的512行结果均与定点参考逐字相同，参考另与浮点复数FFT交叉检查。
+真实压力马林巴B5的1024个DAC样本、512行分析数据也与相同独立参考逐字一致，
+且经真实analysis_frame_cdc完整换帧读取验证。马林巴的频谱和波形各1,440,000个RTL RGB像素匹配独立参考，
+数据和图片在output/marimba_pressure。本文的Gowin编译仍由用户执行，不由仿真脚本调用。
 两个新增画面各144万个RGB像素与独立字体/几何参考完全一致。截图来自真实钢琴合成器RTL数据，不是开发板实拍：
 
 ![频谱与波形RTL预览](../output/piano_analysis/preview.png)

@@ -36,7 +36,7 @@ module GW_PROBLEM_TOW #(
     wire [31:0] video_elapsed_ms;
     wire [87:0] video_keys;
     wire [1:0] display_mode;
-    wire piano_audio_active,analysis_clear,analysis_sample_tick;
+    wire audio_analysis_active,analysis_clear,analysis_sample_tick;
     wire signed [15:0] analysis_pcm;
     wire player_sd_cs_n, player_sd_sck, player_sd_mosi;
     wire upload_active, upload_sd_cs_n, upload_sd_sck, upload_sd_mosi;
@@ -85,13 +85,13 @@ module GW_PROBLEM_TOW #(
         .sd_cs_n(player_sd_cs_n), .sd_sck(player_sd_sck), .sd_mosi(player_sd_mosi), .sd_miso(sd_miso),
         .LEDs(LEDs), .player_reset_n(player_reset_n), .video_active(video_active),.video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms), .video_keys(video_keys),
-        .display_mode(display_mode),.piano_audio_active(piano_audio_active),.analysis_clear(analysis_clear),
+        .display_mode(display_mode),.audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear),
         .analysis_sample_tick(analysis_sample_tick),.analysis_pcm(analysis_pcm)
     );
     generate if (VIDEO_ENABLE != 0) begin: display_enabled
         piano_video video(.sys_clk(sys_clk), .reset_n(player_reset_n),
             .active(video_active), .clear(video_clear),.elapsed_ms(video_elapsed_ms), .keys(video_keys),
-            .display_mode(display_mode),.audio_active(piano_audio_active),.analysis_clear(analysis_clear),
+            .display_mode(display_mode),.audio_active(audio_analysis_active),.analysis_clear(analysis_clear),
             .sample_tick(analysis_sample_tick),.sample_pcm(analysis_pcm),
             .tmds_data_p(tmds_data_p), .tmds_data_n(tmds_data_n),
             .tmds_clk_p(tmds_clk_p), .tmds_clk_n(tmds_clk_n));

@@ -15,7 +15,7 @@ module tb_piano_views;
  wire [31:0] result_data;
  piano_score_player #(.POWER_ON_CYCLES(8),.UART_CLK_HZ(76800),.UART_BAUD(9600)) dut (
   .sys_clk(clk),.KEY2(k2),.uart_rx(rx),.uart_tx(),.sd_miso(1'b1),
-  .display_mode(mode),.piano_audio_active(enabled),.analysis_clear(clear),
+  .display_mode(mode),.audio_analysis_active(enabled),.analysis_clear(clear),
   .analysis_sample_tick(tick),.analysis_pcm(pcm));
  piano_score_player #(.POWER_ON_CYCLES(8),.UART_CLK_HZ(76800),.UART_BAUD(9600)) reference (
   .sys_clk(clk),.KEY2(k2),.uart_rx(reference_rx),.uart_tx(),.sd_miso(1'b1));
@@ -61,11 +61,11 @@ module tb_piano_views;
   if(enabled || !clear)$fatal(1,"Stop left piano analysis enabled");
   send_frame(0,'h44,0,0,0);settle();send_frame(0,'h42,0,0,0);wait(dut.system.note_busy);
   heard=0;repeat(16)@(posedge tick);
-  if(enabled || !clear || !heard)$fatal(1,"Marimba leaked into piano analysis or audio stopped");
+  if(!enabled || clear || !heard)$fatal(1,"Marimba missing from shared analysis or audio stopped");
   view(2);
   @(negedge clk);k2=0;repeat(5)@(negedge clk);k2=1;wait(dut.rst_n);
   if(mode || enabled)$fatal(1,"KEY2 did not restore waterfall/idle");
-  passed=1;$display("PASS piano views: UART 0/1/2 and invalid arguments, unchanged PCM/DAC, 1024 real piano samples, marimba exclusion, stop/reset");$finish;
+  passed=1;$display("PASS audio views: UART 0/1/2 and invalid arguments, unchanged PCM/DAC, 1024 real piano samples, shared marimba analysis, stop/reset");$finish;
  end
  initial begin #300000000;$fatal(1,"Piano view integration timeout");end
 endmodule

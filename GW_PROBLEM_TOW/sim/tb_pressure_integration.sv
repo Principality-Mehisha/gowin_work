@@ -73,8 +73,8 @@ module tb_pressure_integration;
             end
             if(dut.score_player.system.storage_enable && dut.score_player.system.pressure_enable)
                 $fatal(1,"Pressure and SD both own the synth");
-            if(dut.score_player.selected_marimba && dut.score_player.system.pressure_enable)
-                $fatal(1,"Pressure reached marimba");
+            if(dut.score_player.system.marimba_mode && (dut.video_keys || dut.video_active))
+                $fatal(1,"Marimba reached piano waterfall");
         end
     end
     reg [31:0] dac_frame;
@@ -104,7 +104,7 @@ module tb_pressure_integration;
         for(i=0;i<16;i=i+1)voltages[i]=1900+i*3;
         scans(20);
         if(pressure_ons!=16 || dut.score_player.system.voices.piano.active_voices!=16 || !heard ||
-           !dut.piano_audio_active || dut.score_player.player_state!=4 || leds==8'hff)
+           !dut.audio_analysis_active || dut.score_player.player_state!=4 || leds==8'hff)
             $fatal(1,"Integrated pressure chord/status/analysis");
         for(i=0;i<16;i=i+1)voltages[i]=2700+i*3;
         scans(35);
@@ -117,7 +117,7 @@ module tb_pressure_integration;
         for(i=0;i<16;i=i+1)voltages[i]=3510+i*3;
         scans(18);
         if(offs!=16 || dut.score_player.system.voices.piano.gates!=0 ||
-           !dut.score_player.system.voices.piano_busy || !dut.piano_audio_active || leds!==8'hff)
+           !dut.score_player.system.voices.piano_busy || !dut.audio_analysis_active || leds!==8'hff)
             $fatal(1,"Mapped release/tail ownership");
         repeat(300)@(posedge dut.score_player.sample_tick);
         if(dut.score_player.system.voices.piano_busy)$fatal(1,"Pressure tail did not finish");
@@ -132,7 +132,7 @@ module tb_pressure_integration;
                 pressure_ons,saved,per_note[48],dut.score_player.system.pressure_pressed);
         send_frame(0,'h44,0,0,0);saved=pressure_ons;
         voltages[1]=1903;scans(8);
-        if(pressure_ons!=saved || dut.score_player.pcm!=0)$fatal(1,"Pressure played marimba");
+        if(pressure_ons!=saved || dut.score_player.pcm!=0)$fatal(1,"Invalid fourth marimba group sounded");
         send_frame(0,'h43,0,0,0);scans(8);
         if(pressure_ons!=saved || leds!==8'hff)$fatal(1,"Held key replayed/lit LEDs after instrument switch");
         // First SD selection must also work while pressure is actively
@@ -149,7 +149,7 @@ module tb_pressure_integration;
         wait(dut.score_player.playing);wait(!dut.score_player.system.ringtone_active);scans(6);
         if(pressure_ons!=saved || dut.score_player.last_error)$fatal(1,"SD/pressure stale event or error");
         send_frame(0,'h12,2,1,0);wait(dut.score_player.playing);
-        if(dut.piano_audio_active)$fatal(1,"MB entered piano analysis");
+        if(!dut.audio_analysis_active)$fatal(1,"MB missing from shared analysis");
         wait(!dut.score_player.system.ringtone_active);scans(4);
         for(i=0;i<16;i=i+1)voltages[i]=3510+i*3;
         scans(20);voltages[0]=1900;scans(12);

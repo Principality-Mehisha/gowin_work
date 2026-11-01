@@ -58,7 +58,7 @@ module instrument_system #(
     output wire video_active, video_clear,
     output wire [31:0] video_elapsed_ms,
     output wire [87:0] video_keys,
-    output wire piano_audio_active,analysis_clear,
+    output wire audio_analysis_active,analysis_clear,
     output wire [7:0] LEDs
 );
     // ringtone_active now means any selected SD score (including piano).
@@ -76,11 +76,11 @@ module instrument_system #(
     wire [7:0] pressure_dynamics;
     wire [15:0] pressure_pressed,pressure_enabled_pressed,pressure_calibrated;
     wire [7:0] pressure_hold_progress;
-    wire pressure_overflow,piano_busy,pressure_busy;
+    wire pressure_overflow,piano_busy,audio_busy,pressure_busy;
     reg pressure_fault;
-    assign pressure_enable=PRESSURE_ENABLE && manual_mode && !selected_marimba &&
+    assign pressure_enable=PRESSURE_ENABLE && manual_mode &&
                            !note_busy && !control_restart && !pressure_fault;
-    assign pressure_busy=pressure_enable && ((|pressure_enabled_pressed) || piano_busy);
+    assign pressure_busy=pressure_enable && ((|pressure_enabled_pressed) || audio_busy);
     assign last_error=pressure_fault ? 8'h61 : control_error;
     assign player_state=pressure_fault ? 8'd3 : control_state;
     always @(posedge sys_clk or negedge rst_n) begin
@@ -96,7 +96,7 @@ module instrument_system #(
         pressure_keyboard #(.CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
             .SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
             .LONG_HOLD_FRAMES(PRESSURE_LONG_HOLD_FRAMES)) keyboard(
-            .clk(sys_clk),.reset_n(rst_n),.enable(pressure_enable),
+            .clk(sys_clk),.reset_n(rst_n),.enable(pressure_enable),.marimba_mode(selected_marimba),
             .sample_valid(pressure_sample_valid),.sample_key(pressure_sample_key),
             .sample_data(pressure_sample_data),.base_note(base_note),
             .event_ready(pressure_ready),.event_valid(pressure_valid),.event_on(pressure_on),
@@ -182,10 +182,10 @@ module instrument_system #(
         .event_note(synth_event_note),
         .event_dynamics(synth_event_dynamics),.pitch_ratio(DDS_PITCH_RATIO),
         .event_ready(bank_event_ready),.deadline_error(deadline_error),.pcm(selected_pcm),
-        .piano_busy(piano_busy));
-    assign piano_audio_active=!marimba_mode && !audio_silence && !synth_stop &&
-        (manual_mode ? (note_busy || pressure_busy) : playing);
-    assign analysis_clear=synth_stop || !piano_audio_active;
+        .piano_busy(piano_busy),.audio_busy(audio_busy));
+    assign audio_analysis_active=!audio_silence && !synth_stop &&
+        (manual_mode ? (marimba_mode ? audio_busy : (note_busy || pressure_busy)) : playing);
+    assign analysis_clear=synth_stop || !audio_analysis_active;
     assign storage_paused=manual_mode || control_restart;
     // Observe only events actually accepted by the piano synthesizer. Updates
     // change pressure dynamics without making another note or ending its bar.

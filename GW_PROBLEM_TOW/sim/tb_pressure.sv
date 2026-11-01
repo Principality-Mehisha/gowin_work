@@ -24,7 +24,8 @@ module tb_pressure;
         .select(select), .select_n(select_n), .adc_clk(adc_clk),
         .sample_valid(sample_valid), .sample_key(sample_key), .sample_data(sample_data));
     pressure_keyboard #(.CALIBRATION_LOG2(1), .LONG_HOLD_FRAMES(12)) keyboard (
-        .clk(clk), .reset_n(reset_n), .enable(1'b1), .sample_valid(sample_valid), .base_note(7'd39),
+        .clk(clk), .reset_n(reset_n), .enable(1'b1), .marimba_mode(1'b0),
+        .sample_valid(sample_valid), .base_note(7'd39),
         .sample_key(sample_key), .sample_data(sample_data),
         .event_ready(ready && allow_events),
         .event_valid(valid), .event_on(on_value), .event_update(update_value),

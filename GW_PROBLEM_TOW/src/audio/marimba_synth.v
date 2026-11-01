@@ -18,7 +18,8 @@ module marimba_synth #(
     output wire pcm_valid, limiting, saturated,
     output wire signed [31:0] output_mix,
     output wire output_mix_valid,
-    output reg deadline_error
+    output reg deadline_error,
+    output wire voice_busy
 );
     localparam NOTE_FIRST = 7'd36;
     localparam NOTE_COUNT = 48;
@@ -34,6 +35,7 @@ module marimba_synth #(
     reg [1:0] mode_index;
     reg [NOTE_COUNT-1:0] pending, active_noise;
     reg [NOTE_COUNT*4-1:0] active_modes;
+    assign voice_busy=(|pending) || (|active_modes) || (|active_noise);
     reg [7:0] dynamics_by_note [0:NOTE_COUNT-1] /* synthesis syn_ramstyle="registers" */;
     // One synchronous read port and one write port per state memory. Keep
     // reset/stop on the small validity vectors, never on the RAM contents.

@@ -34,7 +34,7 @@ module piano_analysis_scene #(parameter FONT_FILE="src/video/analysis_font.hex")
             label_char=" ";
             case(line)
                 0:case(index)
-                    0:label_char="P";1:label_char="I";2:label_char="A";3:label_char="N";4:label_char="O";
+                    0:label_char="A";1:label_char="U";2:label_char="D";3:label_char="I";4:label_char="O";
                     6:label_char=mode==1 ? "S" : "W";7:label_char=mode==1 ? "P" : "A";
                     8:label_char=mode==1 ? "E" : "V";9:label_char=mode==1 ? "C" : "E";
                     10:label_char=mode==1 ? "T" : "F";11:label_char=mode==1 ? "R" : "O";
@@ -53,7 +53,7 @@ module piano_analysis_scene #(parameter FONT_FILE="src/video/analysis_font.hex")
                 2:if(!valid)case(index)
                     0:label_char="W";1:label_char="A";2:label_char="I";3:label_char="T";4:label_char="I";
                     5:label_char="N";6:label_char="G";8:label_char="F";9:label_char="O";10:label_char="R";
-                    12:label_char="P";13:label_char="I";14:label_char="A";15:label_char="N";16:label_char="O";
+                    12:label_char="A";13:label_char="U";14:label_char="D";15:label_char="I";16:label_char="O";
                     default:label_char=" ";
                 endcase else case(index)
                     0:label_char=mode==1 ? "1" : "5";1:label_char=mode==1 ? "0" : "1";

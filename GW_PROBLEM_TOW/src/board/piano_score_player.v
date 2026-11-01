@@ -2,6 +2,10 @@
 // All modules run directly from the board's 50 MHz sys_clk.
 module piano_score_player #(
     parameter integer SD_SCORE_ENABLE = 0,
+    parameter integer PRESSURE_ENABLE = 0,
+    parameter integer PITCH_GROUP_STABLE_CYCLES = 50000,
+    parameter integer PRESSURE_CALIBRATION_LOG2 = 5,
+    parameter integer PRESSURE_SOFT_TOUCH_BOOST = 1,
     parameter integer UART_ENABLE = 1,
     parameter integer UART_CLK_HZ = 50000000,
     parameter integer UART_BAUD = 115200,//
@@ -25,6 +29,10 @@ module piano_score_player #(
     parameter [17:0] DDS_PITCH_RATIO = 18'd193274
 ) (
     input wire sys_clk, KEY2,
+    input wire [6:0] pitch_group,
+    input wire pressure_sample_valid,
+    input wire [3:0] pressure_sample_key,
+    input wire [11:0] pressure_sample_data,
     input wire uart_rx,
     input wire upload_complete, upload_invalidated,
     input wire [7:0] uploaded_track,
@@ -72,13 +80,16 @@ module piano_score_player #(
     wire [6:0] selected_note;
     wire selected_marimba;
     wire [7:0] player_state;
+    wire sd_active;
     wire [199:0] scanned_catalog;
     wire scanned_catalog_done;
     reg [199:0] catalog;
     reg catalog_valid;
     wire numbered_request=uart_track>=4 && uart_track<=203;
+    // Cold probing uses the registered SD owner. player_state includes
+    // pressure busy, which depends on this request's restart signal.
     assign uart_play=raw_uart_play && numbered_request && (
-        catalog[uart_track-8'd4] || (!catalog_valid && (player_state==0 || player_state==3 || player_state==4)));
+        catalog[uart_track-8'd4] || (!catalog_valid && !sd_active));
     always @(posedge sys_clk or negedge rst_n) begin
         if(!rst_n) begin catalog<=0; catalog_valid<=0; end
         else begin
@@ -144,6 +155,10 @@ module piano_score_player #(
     );
     instrument_system #(
         .SD_SCORE_ENABLE(SD_SCORE_ENABLE),
+        .PRESSURE_ENABLE(PRESSURE_ENABLE),
+        .PITCH_GROUP_STABLE_CYCLES(PITCH_GROUP_STABLE_CYCLES),
+        .PRESSURE_CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
+        .PRESSURE_SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
         .NOTE_GATE_CYCLES(NOTE_GATE_CYCLES),
         .NOTE_TAIL_CYCLES(NOTE_TAIL_CYCLES),
         .SINE_FILE(SINE_FILE),
@@ -156,6 +171,8 @@ module piano_score_player #(
         .sys_clk(sys_clk),
         .rst_n(rst_n),
         .sample_tick(sample_tick),
+        .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),
+        .pressure_sample_key(pressure_sample_key),.pressure_sample_data(pressure_sample_data),
         .uart_play(uart_play),
         .uart_stop(uart_stop),
         .uart_note_previous(uart_note_previous),
@@ -182,6 +199,7 @@ module piano_score_player #(
         .selected_note(selected_note),
         .selected_marimba(selected_marimba),
         .player_state(player_state),
+        .sd_active(sd_active),
         .storage_rst_n(storage_rst_n),
         .storage_paused(storage_paused),
         .dds_event_ready(dds_event_ready),

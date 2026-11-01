@@ -2,6 +2,7 @@
 // event_note=0..87 means A0..C8; note-off addresses the original note.
 module piano_synth #(
     parameter integer EXTERNAL_LIMITER=0,
+    parameter integer LIVE_DYNAMICS=0,
     parameter SINE_FILE="src/rom/sine256.hex",
     parameter FREQ_FILE="src/rom/frequency88.hex",
     parameter VOICING_FILE="src/rom/voicing88.hex",
@@ -17,6 +18,7 @@ module piano_synth #(
 ) (
     input wire clk, reset_n, sample_tick, stop_all,
     input wire event_valid, event_on,
+    input wire event_update,
     input wire [6:0] event_note,
     input wire [7:0] event_dynamics,
     // Unsigned Q2.16 global pitch multiplier; 65536 is concert pitch.
@@ -42,11 +44,18 @@ module piano_synth #(
     reg [87:0] gates, pending;
     reg [7:0] dynamics [0:87];
     // One synchronous state RAM; clearing validity avoids resetting RAM cells.
-    // Packed state: {phase[31:0], envelope[23:0], release_step[23:0], state[2:0]}.
-    reg [82:0] voice_ram [0:127];
-    reg [82:0] voice_data;
-    reg [82:0] state_snapshot /* synthesis syn_preserve=1 */;
+    // Live pressure adds applied gain above the unchanged low 83 state bits.
+    localparam STATE_BITS=LIVE_DYNAMICS ? 91 : 83;
+    reg [STATE_BITS-1:0] voice_ram [0:127];
+    reg [STATE_BITS-1:0] voice_data;
+    reg [STATE_BITS-1:0] state_snapshot /* synthesis syn_preserve=1 */;
     reg [7:0] dynamics_data;
+    wire [7:0] applied_gain;
+    generate if(LIVE_DYNAMICS) begin: live_gain
+        assign applied_gain=voice_data[90:83];
+    end else begin: fixed_gain
+        assign applied_gain=dynamics_data;
+    end endgenerate
     // Eight phases per voice allow true stiff-string partials without phase
     // discontinuities when the fundamental accumulator wraps.
     // Packed partial state: {partial_levels[191:0], noise[15:0],
@@ -291,9 +300,14 @@ module piano_synth #(
         if (state==ADD && env_state_reg!=0)
             partial_ram[voice]<={partial_levels,noise_lfsr,unison_phase,
                                 strike_level,tone_level,voice_phases};
-        if (state==COMMIT)
-            voice_ram[voice]<={base_phase+voice_step, voice_env,
-                              release_step_reg, env_state_reg};
+        if (state==COMMIT) begin
+            if(LIVE_DYNAMICS)
+                voice_ram[voice]<={voice_dynamics, base_phase+voice_step, voice_env,
+                                  release_step_reg, env_state_reg};
+            else
+                voice_ram[voice]<={base_phase+voice_step, voice_env,
+                                  release_step_reg, env_state_reg};
+        end
         // Data pipelines need no reset or stop fanout. Valid bits/FSM flush
         // them; every operand is replaced before its next valid use.
         interpolation_product<=difference_reg * $signed({1'b0,fraction_reg});
@@ -381,10 +395,14 @@ module piano_synth #(
             if(sum_high_valid)
                 harmonic_sum[31:16]<=sum_high_left+sum_high_right+sum_carry;
             if (event_valid && event_ready && event_note<88) begin
-                gates[event_note]<=event_on;
-                if (event_on) begin
-                    pending[event_note]<=1;
-                    dynamics[event_note]<=event_dynamics;
+                if(LIVE_DYNAMICS && event_update) begin
+                    if(gates[event_note]) dynamics[event_note]<=event_dynamics;
+                end else begin
+                    gates[event_note]<=event_on;
+                    if (event_on) begin
+                        pending[event_note]<=1;
+                        dynamics[event_note]<=event_dynamics;
+                    end
                 end
             end
             if (sample_tick && state!=IDLE) deadline_error<=1;
@@ -402,7 +420,16 @@ module piano_synth #(
                 end
                 PREPARE: begin
                     state_snapshot<=voice_data;
-                    voice_dynamics<=dynamics_data;
+                    // Updates never retrigger phase/ADSR; freeze gain on release.
+                    if(!LIVE_DYNAMICS || trigger_reg || !voice_valid)
+                        voice_dynamics<=dynamics_data;
+                    else if(!gate_reg)
+                        voice_dynamics<=applied_gain;
+                    else if(applied_gain<dynamics_data)
+                        voice_dynamics<=applied_gain+1'b1;
+                    else if(applied_gain>dynamics_data)
+                        voice_dynamics<=applied_gain-1'b1;
+                    else voice_dynamics<=applied_gain;
                     voice_decay_step<=decay_data[23:0];
                     voice_decay_threshold<=decay_data[47:24];
                     previous_tone<=partial_data[271:256];

@@ -23,6 +23,18 @@ assert not (ROOT/'src/storage/fat_file_reader.v').exists(), 'Obsolete legacy fil
 cst = (ROOT/'src/board/GW_PROBLEM_TOW.cst').read_text()
 assert 'IO_LOC "uart_rx" B17;' in cst and 'IO_LOC "uart_tx" B18;' in cst
 assert 'IO_LOC "bt_rx" D16;' in cst and 'IO_LOC "bt_tx" D15;' in cst
+locations = re.findall(r'IO_LOC\s+"([^"]+)"\s+([^;]+);', cst)
+pins = [pin.strip() for _, values in locations for pin in values.split(',')]
+assert len(pins) == len(set(pins)), 'Duplicate physical pin assignment'
+assert len(locations) == len({port for port, _ in locations}), 'Duplicate port assignment'
+pressure_pins = dict(zip(
+    [f'ADC_DATA[{bit}]' for bit in range(11, -1, -1)],
+    'E14 C15 B13 A14 B16 A16 A20 A21 E13 C14 C13 A13'.split()))
+pressure_pins.update(dict(zip(
+    ['S[3]', 'S[2]', 'S[1]', 'S[0]', 'S_EN', 'CLK_500kHz'] +
+    [f'pitch_group[{bit}]' for bit in range(6, -1, -1)],
+    'F13 E16 D14 A18 D17 B15 F16 F15 D20 E19 C18 C17 A19'.split())))
+assert all(dict(locations).get(port) == pin for port, pin in pressure_pins.items()), 'Pressure pin mismatch'
 subprocess.run([sys.executable, str(ROOT/'tools/generate_analysis_tables.py'), '--check'], check=True)
 subprocess.run([sys.executable, str(ROOT/'tools/generate_numbered_buttons.py'), '--check'], check=True)
-print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, 200 numbered slots/buttons, no legacy file reader and both UART pin pairs')
+print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, 200 numbered slots/buttons, no legacy reader, both UARTs and 25 pressure/group pins without collisions')

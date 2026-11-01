@@ -2,9 +2,22 @@
 module GW_PROBLEM_TOW #(
     parameter integer SD_SCORE_ENABLE = 0,
     parameter integer VIDEO_ENABLE = 1,
+    parameter integer PRESSURE_ENABLE = 1,
+    parameter integer PITCH_GROUP_STABLE_CYCLES = 50000,
+    parameter integer PRESSURE_SLOT_CYCLES = 1500,
+    parameter integer PRESSURE_ADC_HALF_CYCLES = 50,
+    parameter integer PRESSURE_SAMPLE_CYCLE = PRESSURE_SLOT_CYCLES-10,
+    parameter integer PRESSURE_CALIBRATION_LOG2 = 5,
+    parameter integer PRESSURE_SOFT_TOUCH_BOOST = 1,
+    parameter integer POWER_ON_CYCLES = 65536,
+    parameter integer AUDIO_START_CYCLES = 2500000,
     parameter [7:0] LED_STATIC_LEVEL = 8'd64
 ) (
     input wire sys_clk, KEY0, KEY1, KEY2,
+    input wire [11:0] ADC_DATA,
+    input wire [6:0] pitch_group,
+    output wire [3:0] S,
+    output wire S_EN, CLK_500kHz,
     input wire uart_rx,
     output wire uart_tx,
     input wire bt_rx,
@@ -12,7 +25,7 @@ module GW_PROBLEM_TOW #(
     output wire HP_BCK, HP_WS, HP_DIN, PA_EN,
     output wire sd_cs_n, sd_sck, sd_mosi,
     input wire sd_miso,
-    output wire [3:0] LEDs,
+    output wire [7:0] LEDs,
     output wire [2:0] tmds_data_p, tmds_data_n,
     output wire tmds_clk_p, tmds_clk_n,
     output LED_indicator_static
@@ -27,6 +40,22 @@ module GW_PROBLEM_TOW #(
     wire upload_active, upload_sd_cs_n, upload_sd_sck, upload_sd_mosi;
     wire upload_complete,upload_invalidated;
     wire [7:0] uploaded_track;
+    wire pressure_sample_valid;
+    wire [3:0] pressure_sample_key;
+    wire [11:0] pressure_sample_data;
+    generate if(PRESSURE_ENABLE) begin: pressure_adc_enabled
+        pressure_adc_scan #(.SLOT_CYCLES(PRESSURE_SLOT_CYCLES),
+            .ADC_HALF_CYCLES(PRESSURE_ADC_HALF_CYCLES),
+            .SAMPLE_CYCLE(PRESSURE_SAMPLE_CYCLE)) adc_interface(
+            .clk(sys_clk),.reset_n(player_reset_n),.adc_data(ADC_DATA),
+            .select(S),.select_n(S_EN),.adc_clk(CLK_500kHz),
+            .sample_valid(pressure_sample_valid),.sample_key(pressure_sample_key),
+            .sample_data(pressure_sample_data));
+    end else begin: pressure_adc_disabled
+        assign S=0;assign S_EN=1;assign CLK_500kHz=0;
+        assign pressure_sample_valid=0;assign pressure_sample_key=0;
+        assign pressure_sample_data=0;
+    end endgenerate
     bluetooth_file_receiver bluetooth_upload (
         .clk(sys_clk),.reset_n(player_reset_n),.rx(bt_rx),.tx(bt_tx),
         .upload_complete(upload_complete),.upload_invalidated(upload_invalidated),.uploaded_track(uploaded_track),
@@ -40,8 +69,14 @@ module GW_PROBLEM_TOW #(
     assign sd_cs_n=upload_active ? upload_sd_cs_n : player_sd_cs_n;
     assign sd_sck=upload_active ? upload_sd_sck : player_sd_sck;
     assign sd_mosi=upload_active ? upload_sd_mosi : player_sd_mosi;
-    piano_score_player #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE)) score_player (
+    piano_score_player #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE),.PRESSURE_ENABLE(PRESSURE_ENABLE),
+        .PITCH_GROUP_STABLE_CYCLES(PITCH_GROUP_STABLE_CYCLES),
+        .PRESSURE_CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
+        .PRESSURE_SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
+        .POWER_ON_CYCLES(POWER_ON_CYCLES),.AUDIO_START_CYCLES(AUDIO_START_CYCLES)) score_player (
         .sys_clk(sys_clk), .KEY2(KEY2), .uart_rx(uart_rx), .uart_tx(uart_tx),
+        .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),
+        .pressure_sample_key(pressure_sample_key),.pressure_sample_data(pressure_sample_data),
         .upload_complete(upload_complete),.upload_invalidated(upload_invalidated),.uploaded_track(uploaded_track),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN),
         .sd_cs_n(player_sd_cs_n), .sd_sck(player_sd_sck), .sd_mosi(player_sd_mosi), .sd_miso(sd_miso),

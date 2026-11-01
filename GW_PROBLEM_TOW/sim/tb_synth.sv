@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module tb_synth;
+module tb_synth #(parameter integer LIVE_DYNAMICS=0);
     reg clk=0;
     always #3.255208333 clk=~clk;
     reg reset_n=0, stop_all=0, tick=0, valid=0, note_on=0;
@@ -21,10 +21,11 @@ module tb_synth;
     integer n,h,fd,frames=0,nonzero=0,max_cycles=0;
     reg [31:0] previous_partial [0:87][0:7];
     reg [63:0] expected_step,expected_stiffness,expected_phase;
-    piano_synth #(.ATTACK_STEP(24'd4194304), .DECAY_STEP(24'd1048576),
+    piano_synth #(.LIVE_DYNAMICS(LIVE_DYNAMICS),
+        .ATTACK_STEP(24'd4194304), .DECAY_STEP(24'd1048576),
         .SUSTAIN_LEVEL(24'd4194304), .RELEASE_SHIFT(4)) dut (
         .clk(clk), .reset_n(reset_n), .sample_tick(tick), .stop_all(stop_all),
-        .event_valid(valid), .event_on(note_on), .event_note(note),
+        .event_valid(valid), .event_on(note_on), .event_update(1'b0), .event_note(note),
         .event_dynamics(dynamics), .pitch_ratio(pitch), .event_ready(ready),
         .mix_sample(mix), .mix_valid(mix_valid), .pcm(pcm), .pcm_valid(pcm_valid),
         .limiting(limiting), .saturated(saturated), .deadline_error(deadline),

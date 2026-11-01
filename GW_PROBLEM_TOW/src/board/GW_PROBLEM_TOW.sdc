@@ -1,5 +1,9 @@
 create_clock -name sys_clk -period 20.000 [get_ports {sys_clk}]
 set_false_path -from [get_ports {KEY0 KEY1 KEY2}]
+# Only the first group-switch synchronizer stages are asynchronous.
+set_false_path -from [get_ports {pitch_group[0] pitch_group[1] pitch_group[2] pitch_group[3] pitch_group[4] pitch_group[5] pitch_group[6]}] -to [get_pins {score_player/system/pressure_input.groups/group_meta*_s0/D}]
+# ADC capture/dividers remain timed at 50 MHz. External ADC tCO/settling
+# must be measured; no fabricated input delays or blanket ADC exceptions.
 # Only the asynchronous RX pad -> first synchronizer stage is excepted.
 # The synchronizer and all UART/parser/audio logic remain timed at 50 MHz.
 set_false_path -from [get_ports {uart_rx}] -to [get_pins {score_player/uart_control.link/receiver/rx_meta_s0/D}]

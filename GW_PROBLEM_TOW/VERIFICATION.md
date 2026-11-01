@@ -1,6 +1,67 @@
 # 当前工程验证记录
 
-## 仅PN/MB编号曲目（2026-11-01）
+## 选曲组合反馈修正（2026-11-01，当前源码，未重新综合）
+
+修正用户综合日志中的AG0100相关依赖：
+uart_play → uart_start → control_restart → pressure_enable → pressure_busy →
+player_state → uart_play。虽然原状态编码中的空闲/压力忙都允许冷启动请求，
+功能仿真可以稳定通过，但RTL仍存在结构性反馈，不能以此忽略综合告警。
+
+仅修改两个RTL文件：instrument_system输出sd_active，直连playback_control已有的
+ringtone_active寄存器；piano_score_player用目录有效表和sd_active进行选曲准入，
+不再读取显示用player_state。没有新增状态寄存器、延迟控制动作或修改反馈协议，
+没有改动CST/SDC/时钟、音频运算、蓝牙协议及SD布局。
+
+新增tb_play_admission：主动将反馈状态设为播放、空闲或非法值，
+验证冷启动请求、SD加载期阻止未知槽位抢占、已上传槽位切换、同曲不重启、
+串口屏试听转入SD及复位。修改前在“Cold selection depends on display state”
+断言处失败，修改后通过；红/绿日志为output/logical_loop_fix/admission_before.log及admission_after.log。
+扩展tb_pressure_integration，验证尚未扫描目录时从正在发声的压力钢琴首次选曲，
+转交SD后清音，并在返回时抑制仍按住的键。
+
+压力/兼容回归8项（包含新增准入测试）、上传/播放11项、PCM分析/显示归属2项，
+合计21项仿真配置和11项Python测试通过。完整日志/指纹索引为output/logical_loop_fix/verification.json。
+八项压力证据在output/pressure_keyboard/verification.json；原上传/播放证据重新收集。
+本次不运行Gowin综合/PnR、不更新位流；CST/SDC与修正前逐字节核对。
+EDA是否不再报告AG0100仍需用户重新综合确认，不能将功能仿真等同于物理时序验证。
+
+## 完整压力钢琴（2026-11-01，组合反馈修正前历史）
+
+当前49个RTL，包含用户此前添加的静态LED模块及本次新增的六个ADC/压力/分组模块。
+参考D:\GW_basic_KEYBOARD复用采样、校准、滤波、力度曲线、边沿队列、分组与同音高持有者处理，
+只为钢琴增加event_update及平滑增益状态，不合入旧FAT播放器或其他历史音源。
+顶层默认PRESSURE_ENABLE=1；SD_SCORE_ENABLE仍只控制可选启动播放。
+压力仅在手动钢琴状态运行，SD、试听及马林巴选择互斥；校准连续保留。
+切换清除待发事件，已按住的键需先松再按，防止返回时突然重放。
+压力FIFO溢出锁存0x61、清音并暂停，停止/重新选择/KEY2可恢复。
+KEY2恢复默认试听选择，并重新进行16键基线校准。
+
+七项压力/兼容仿真配置通过：tb_pressure_curve、tb_pressure_events、tb_pressure、
+tb_pitch_groups、tb_pressure_integration、tb_instrument_bank，以及tb_synth的LIVE_DYNAMICS=1配置。
+包括4096力度值扫描、16键和弦、持续增减力度、释放尾音、128组输入掩码、
+共享C8最大力度/最后持有者释放、反压与溢出、实际顶层ADC/UART/SD/PT8211、
+模式切换、仍按住键的抑制和KEY2复位/重新校准。
+新实时力度与旧固定力度常规事件1152帧PCM逐样本一致。
+开启实时力度的88音测试最大计算延迟仍为2861周期，低于3072周期音频帧预算；
+这是周期预算验证，不是布局布线后的物理时序通过。
+
+现有11项上传/播放、13项显示/分析、5项音频基础配置及11项Python测试也通过。
+其中上传/显示共有3项重复，音频基础与上传共有1项重复；合计32项不同仿真配置。
+覆盖原PN/MB播放、100 KiB上传、覆盖、清零、CRC、溢出、复位、试听、完整3721事件、
+实际PCM分析、三个1600×900场景及官方视频原语。
+五张音频ROM、马林巴引擎、蓝牙协议、固定槽位读写及全部原有球位逐文件/逐项核对未改。
+新增25个ADC/分组球位与参考工程一致；分组加下拉，无重复球位。
+保留50/108/540 MHz时钟目标，只增加分组异步输入到首级同步寄存器的例外，
+未给ADC添加整条false path或捏造外部时序值。
+
+备份为output/pressure_keyboard/before/sources.zip，不含大型磁盘镜像。
+压力回归及当前输入指纹在output/pressure_keyboard/verification.json；
+仿真入口sim/run_pressure.ps1和sim/run_all.ps1均不会运行Gowin综合/PnR。
+**按用户要求，本次没有综合、布局布线或生成新位流，也没有写卡/打开串口/下载FPGA。**
+当前impl/pnr与output中的既有位流均不能当作已包含压力功能的新交付。
+最终编译、资源和时序确认由用户执行，实际ADC时序/阈值与声音仍需上板验证。
+
+## 仅PN/MB编号曲目（2026-11-01，压力接入前历史）
 
 当前42个RTL。删除旧三首CMD=0x10、文件名映射、通用fat_file_reader和FAT回退分支，
 移除旧自动播放及旧第3首显示绑定。只允许PN001～PN100、MB001～MB100。

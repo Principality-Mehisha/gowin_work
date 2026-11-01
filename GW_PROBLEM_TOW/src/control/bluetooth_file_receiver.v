@@ -19,10 +19,9 @@ module bluetooth_file_receiver #(
 );
     localparam SYNC_A=0, SYNC_B=1, HEADER=2, PAYLOAD=3, CRC_LOW=4, CRC_HIGH=5,
         DISPATCH=6, PREPARE=7, ARMED=8, RAW=9, WAIT_FINISH=10, WAIT_CANCEL=11,
-        RESPONSE_CRC=12, RESPONSE_PACK=13, RESPONSE_SEND=14,
-        PING_I=15, PING_N=16, PING_G=17, PING_SEND=18;
+        RESPONSE_CRC=12, RESPONSE_PACK=13, RESPONSE_SEND=14;
     localparam integer FIFO_BYTES=1<<FIFO_BITS;
-    reg [4:0] state, after_response;
+    reg [3:0] state, after_response;
     wire [7:0] rx_data;
     wire rx_valid, framing_error, tx_ready;
     reg active;
@@ -58,15 +57,11 @@ module bluetooth_file_receiver #(
     reg [95:0] response;
     reg [15:0] response_crc;
     reg [3:0] response_index;
-    reg [47:0] ping_response;
-    reg [2:0] ping_index;
-    wire [7:0] tx_data = state==PING_SEND ? ping_response[(5-ping_index)*8+:8] :
-        response[response_index*8+:8];
     uart_rx #(.CLK_HZ(CLK_HZ),.BAUD(BAUD)) receiver(
         .clk(clk),.rst_n(reset_n),.rx(rx),.data(rx_data),.valid(rx_valid),.framing_error(framing_error));
     uart_tx #(.CLK_HZ(CLK_HZ),.BAUD(BAUD)) transmitter(
-        .clk(clk),.rst_n(reset_n),.data(tx_data),
-        .valid(state==RESPONSE_SEND || state==PING_SEND),.ready(tx_ready),.tx(tx));
+        .clk(clk),.rst_n(reset_n),.data(response[response_index*8+:8]),
+        .valid(state==RESPONSE_SEND),.ready(tx_ready),.tx(tx));
     score_file_name names(.track(session_track),.file_name(requested_name),.marimba(marimba),.numbered());
     wire [7:0] slot_index=session_track-8'd4;
     fixed_slot_writer #(.FIFO_BITS(FIFO_BITS),.SD_POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
@@ -129,7 +124,6 @@ module bluetooth_file_receiver #(
             file_crc<=32'hffffffff;received_bytes<=0;wait_count<=0;fault_status<=0;fault_detail<=0;
             writer_finish<=0;cancel_request<=0;last_success<=0;fifo_write_pointer<=0;
             response_head<=0;response<=0;response_crc<=0;response_index<=0;
-            ping_response<="PONG\015\012";ping_index<=0;
         end else begin
             writer_finish<=0;cancel_request<=0;upload_complete<=0;upload_invalidated<=writer_invalidated;
             if(rx_valid || state==PREPARE || state==WAIT_FINISH || state==WAIT_CANCEL ||
@@ -145,8 +139,7 @@ module bluetooth_file_receiver #(
                 received_bytes<=received_bytes+1'b1;file_crc<=crc32(file_crc,rx_data);
                 if(fifo_push)fifo_write_pointer<=fifo_write_pointer+1'b1;
             end
-            if((state==SYNC_B || state==HEADER || state==PAYLOAD || state==CRC_LOW || state==CRC_HIGH ||
-                state==PING_I || state==PING_N || state==PING_G) &&
+            if((state==SYNC_B || state==HEADER || state==PAYLOAD || state==CRC_LOW || state==CRC_HIGH) &&
                 (framing_error || wait_count>=PACKET_TIMEOUT_CYCLES-1))begin
                 state<=control_resume;wait_count<=0;
             end else if(active && (state==SYNC_A || state==ARMED || state==RAW) &&
@@ -154,10 +147,7 @@ module bluetooth_file_receiver #(
                 operation<=4;sequence_number<=0;
                 abort_upload(fault_status!=0 ? fault_status : 8'd10,fault_detail);wait_count<=0;
             end else case(state)
-                SYNC_A:if(rx_valid)begin
-                    if(rx_data==8'ha5)begin packet_crc<=crc16(0,rx_data);state<=SYNC_B;end
-                    else if(rx_data=="P")state<=PING_I;
-                end
+                SYNC_A:if(rx_valid && rx_data==8'ha5)begin packet_crc<=crc16(0,rx_data);state<=SYNC_B;end
                 SYNC_B:if(rx_valid)begin
                     if(rx_data==8'h5a)begin packet_crc<=crc16(packet_crc,rx_data);header_index<=0;state<=HEADER;end
                     else if(rx_data==8'ha5)packet_crc<=crc16(0,rx_data);
@@ -258,22 +248,6 @@ module bluetooth_file_receiver #(
                 RESPONSE_SEND:if(tx_ready)begin
                     if(response_index==11)state<=after_response;
                     else response_index<=response_index+1'b1;
-                end
-                PING_I:if(rx_valid)begin
-                    if(rx_data=="I")state<=PING_N;
-                    else state<=SYNC_A;
-                end
-                PING_N:if(rx_valid)begin
-                    if(rx_data=="N")state<=PING_G;
-                    else state<=SYNC_A;
-                end
-                PING_G:if(rx_valid)begin
-                    if(rx_data=="G")begin ping_index<=0;state<=PING_SEND;end
-                    else state<=SYNC_A;
-                end
-                PING_SEND:if(tx_ready)begin
-                    if(ping_index==5)begin ping_index<=0;state<=SYNC_A;end
-                    else ping_index<=ping_index+1'b1;
                 end
                 default:state<=SYNC_A;
             endcase

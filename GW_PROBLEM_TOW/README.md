@@ -10,6 +10,12 @@ SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅�
 两种压力音色均支持长按灯；SD/试听及校准期间全灭，旧状态灯用途已移除；独立静态彩灯保持不变。
 接线、行为及仿真入口见[压力钢琴](docs/PRESSURE_KEYBOARD.md)。当前构建与验证结果见[验证记录](VERIFICATION.md)。
 
+新增16灯SD钢琴演奏指引：LED_indicator_dynamic接C19、3.3 V，灯位置对应物理键，
+颜色沿用静态灯前六种配色。最高音所在组优先，同组和弦同时亮灯，其余组仅播放不指引。
+PN曲目自动启用，休止/结束/停止/切到马林巴或手动模式后熄灭；原七灯静态配色与八灯长按功能不变。
+无需修改已有BIN或串口屏，接线、规则及仿真见[动态指引灯](docs/KEY_GUIDE.md)。
+本轮仅做代码检查与仿真，未更新位流，最终Gowin编译由用户执行。
+
 共用数字效果器：原声、延迟、震音（音量调制）、颤音（音高调制）四种互斥模式，效果量0～100，
 串口屏命令0x51/0x52控制，适用于两种音色及压力/试听/SD播放。频谱和波形观察处理后的DAC样本，
 钢琴瀑布流逻辑不变。默认原声；所有模式增加固定一音频帧约61.44 us流水延迟。
@@ -32,6 +38,7 @@ SD卡需先用离线工具生成专用FAT32布局镜像，不能直接在普通�
 | KEY2 | 低有效复位，恢复试听选择，并重新校准压力键盘 |
 | 压力键盘 | 手动钢琴状态16键演奏，按住可持续改变力度 |
 | LEDs[7:0] | 低有效长按进度条，0.5～4秒八档累计点亮 |
+| LED_indicator_dynamic | C19，16灯SD钢琴同步指引，最高音所在组优先 |
 | UART选曲 | CMD=0x12：PN001～PN100、MB001～MB100 |
 | UART单音 | 十六进制40=上一个音，41=下一个音，42=播放 |
 | UART乐器 | 十六进制43=钢琴，44=马林巴 |
@@ -78,10 +85,11 @@ GW_PROBLEM_TOW
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
 新增压力、实时瀑布流及数字效果功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
-使用IDE时重新载入工程以识别当前51个RTL文件（含audio_effects）；现有位流未因仿真而更新。
+使用IDE时重新载入工程以识别当前52个RTL文件（含ws2812_key_guide）；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_key_guide.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_effects.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_live_waterfall.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_pressure.ps1

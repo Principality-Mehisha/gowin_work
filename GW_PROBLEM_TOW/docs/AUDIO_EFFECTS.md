@@ -123,7 +123,8 @@ powershell -ExecutionPolicy Bypass -File sim/run_effects.ps1
 检测震音包络深度、颤音实际过零周期/音高范围和周期峰值，覆盖正负满幅持续输入、所有模式互切及零效果量直通。
 真实UART集成验证压力钢琴演奏不中断、马林巴、自然SD结束后回声、停止/切音色清除和实际DAC双声道。
 output/audio_effects下有日志、参考/RTL WAV和输入指纹。WAV是数字仿真，不是板上实录。
-verification.json核对音频ROM、原合成器、其余存储/蓝牙、瀑布流及CST/SDC与备份逐字节一致。
+verification.json核对音频ROM、原合成器、其余存储/蓝牙、瀑布流及SDC与备份逐字节一致。
+后续动态指引灯对顶层和CST的改动另由tools/check_key_guide.py核对，不再与效果器加入前顶层作相等断言。
 音频门控寄存及SD几何检查寄存对应的两份源码单列于timing_pipeline_changes，不列入未修改文件。
 最终综合、布局布线和资源用量以Gowin报告为准，构建入口为tools/build.tcl。
 实际听感及TJC屏幕工程仍需实机确认；仿真通过不能代替上板试听。

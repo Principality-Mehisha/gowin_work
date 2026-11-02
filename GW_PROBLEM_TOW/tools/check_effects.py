@@ -55,8 +55,8 @@ def main():
     timer = (scripts / "effect_timer.txt").read_text()
     assert "if(hFx.val!=vaFxSent.val)" in timer and "if(vaFxDrag.val==1)" in timer
     assert "tmFx.tim=100" in (scripts / "effect_page_postinitialize.txt").read_text()
+    # Board/CST additions are audited against the newer guide backup separately.
     preserved = [
-        "src/board/GW_PROBLEM_TOW.v", "src/board/GW_PROBLEM_TOW.cst",
         "src/board/GW_PROBLEM_TOW.sdc", "src/audio/piano_synth.v",
         "src/audio/marimba_synth.v", "src/audio/marimba_body_filter.v",
         "src/audio/instrument_voice_bank.v", "src/audio/output_limiter.v",

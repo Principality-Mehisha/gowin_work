@@ -47,7 +47,8 @@ module piano_score_player #(
     output wire [1:0] display_mode,
     output wire audio_analysis_active,analysis_clear,analysis_sample_tick,
     output wire signed [15:0] analysis_pcm,
-    output wire [87:0] video_keys
+    output wire [87:0] video_keys,
+    output wire guide_active
 );
     GSR GSR_INST (.GSRI(1'b1));
     wire rst_n;
@@ -113,6 +114,8 @@ module piano_score_player #(
     wire signed [15:0] pcm_right=pcm;
     wire [55:0] notes,velocities;
     wire [7:0] gates,triggers;
+    assign guide_active=sd_active && playing && selected_track>=4 && selected_track<=103 &&
+                        !storage_paused && last_error==0;
     generate if (UART_ENABLE != 0) begin: uart_control
         uart_score_control #(.CLK_HZ(UART_CLK_HZ),.BAUD(UART_BAUD),
                              .TIMEOUT_CYCLES(UART_TIMEOUT_CYCLES)) link (

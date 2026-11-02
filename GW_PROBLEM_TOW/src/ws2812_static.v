@@ -16,8 +16,10 @@ module ws2812_static #(
     parameter integer REFRESH_CYCLES=1000000
 ) (
     input wire clk, reset_n,
-    output reg data_out
+    output reg data_out,
+    output wire [143:0] group_palette
 );
+    assign group_palette={LED5_RGB,LED4_RGB,LED3_RGB,LED2_RGB,LED1_RGB,LED0_RGB};
     localparam integer DATA_CYCLES=7*24*BIT_CYCLES;
     localparam integer IDLE_CYCLES=REFRESH_CYCLES-DATA_CYCLES;
     localparam integer WAIT_LIMIT=IDLE_CYCLES>RESET_CYCLES ? IDLE_CYCLES : RESET_CYCLES;

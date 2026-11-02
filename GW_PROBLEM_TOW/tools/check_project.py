@@ -38,10 +38,13 @@ assert all(dict(locations).get(port) == pin for port, pin in pressure_pins.items
 led_pins = dict(zip([f'LEDs[{bit}]' for bit in range(8)],
                     'AB20 AA19 AA21 AA20 AB22 AB21 Y22 Y21'.split()))
 assert all(dict(locations).get(port) == pin for port, pin in led_pins.items()), 'Eight-LED pin mismatch'
+assert dict(locations).get('LED_indicator_dynamic') == 'C19', 'Dynamic guide pin mismatch'
+assert re.search(r'IO_PORT\s+"LED_indicator_dynamic"\s+[^;]*IO_TYPE=LVCMOS33[^;]*BANK_VCCIO=3\.3;',
+                 cst), 'Dynamic guide must use 3.3 V I/O'
 for name in ('src/board/GW_PROBLEM_TOW.v', 'src/board/piano_score_player.v',
              'src/system/instrument_system.v'):
     assert re.search(r'output\s+wire\s+\[7:0\]\s+LEDs\b', (ROOT/name).read_text()), \
         f'LED bus must remain eight bits end-to-end: {name}'
 subprocess.run([sys.executable, str(ROOT/'tools/generate_analysis_tables.py'), '--check'], check=True)
 subprocess.run([sys.executable, str(ROOT/'tools/generate_numbered_buttons.py'), '--check'], check=True)
-print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, 200 numbered slots/buttons, no legacy reader, both UARTs, pressure/group pins and eight LED pins/bus widths without collisions')
+print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, 200 numbered slots/buttons, no legacy reader, both UARTs, pressure/group pins, eight LEDs and C19/3.3 V dynamic guide without collisions')

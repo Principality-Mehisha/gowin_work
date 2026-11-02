@@ -48,6 +48,15 @@ instrument_system统一取反输出低有效LED。所有中间LED端口已扩为
 独立静态彩灯、音高分组、CST/SDC及既有sd_active解耦修正保持不变。
 完整接线及校准说明见PRESSURE_KEYBOARD.md。
 
+顶层ws2812_key_guide增加16灯SD钢琴同步指引，C19/3.3 V输出。
+piano_score_player只导出旁路guide_active，条件为PN曲目实际播放且未暂停/报错；
+灯带读取已有video_keys门控状态，不改变事件调度或音频握手。
+每2 ms锁存快照，88周期顺序扫描选最高音所在组，只显示该组全部有效键位。
+六色从ws2812_static新增的常量group_palette端口取得，原静态灯序列不变；
+八路长按灯与所有音频/视频源保持原行为，不增加SD文件或UART控制命令。
+第6组只提示前8键；停止/休止/结束/马林巴/手动模式在下一完整LED刷新帧清灯。
+详细限制、颜色冲突规则及测试见KEY_GUIDE.md。
+
 钢琴为88音DDS/ADSR，马林巴为48音四模态及短起音噪声，经过共用output_limiter。
 五张音频ROM及合成运算不改。PT8211双声道输出相同16位PCM，
 50 MHz、BCK半分频48、每帧3072周期，采样率约16276.041667 Hz。
@@ -83,7 +92,8 @@ piano_live_roll在像素域保存180帧×88键的循环历史，每帧向下移�
 
 board_reset保持KEY2异步断言、同步释放；保留已有关键路径寄存器及原引脚/时钟约束。
 CST新增25个ADC/分组IO；SDC只为分组输入到首级同步寄存器增加例外，未放宽ADC内部时序。
-.gprj统一列出RTL。check_project检查51个RTL、五张音频ROM、编号按钮及无冲突引脚。
+.gprj统一列出RTL。check_project检查52个RTL、五张音频ROM、编号按钮及无冲突引脚。
 run_effects/run_upload/run_analysis/run_pressure为当前集成回归；效果证据在output/audio_effects/verification.json。
 压力证据见output/pressure_keyboard/verification.json。
-本次未运行综合或PnR，最后编译及物理时序确认由用户执行，旧位流不代表包含新增效果。
+run_key_guide覆盖动态灯、真实SD与原压力/播放显示兼容，证据在output/key_guide/verification.json。
+本轮指引灯未运行综合或PnR，最后编译及物理时序确认由用户执行，旧位流不包含新增指引灯。

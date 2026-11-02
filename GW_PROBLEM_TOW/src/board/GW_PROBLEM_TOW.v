@@ -30,11 +30,14 @@ module GW_PROBLEM_TOW #(
     output wire [7:0] LEDs,
     output wire [2:0] tmds_data_p, tmds_data_n,
     output wire tmds_clk_p, tmds_clk_n,
-    output LED_indicator_static
+    output LED_indicator_static,
+    output wire LED_indicator_dynamic
 );
     wire player_reset_n, video_active, video_clear;
     wire [31:0] video_elapsed_ms;
     wire [87:0] video_keys;
+    wire guide_active;
+    wire [143:0] guide_palette;
     wire [1:0] display_mode;
     wire audio_analysis_active,analysis_clear,analysis_sample_tick;
     wire signed [15:0] analysis_pcm;
@@ -66,7 +69,11 @@ module GW_PROBLEM_TOW #(
     // Mode selection only: the operator must not upload during SD playback.
 
     ws2812_static #(.COLOR_LEVEL(LED_STATIC_LEVEL)) static_leds (
-        .clk(sys_clk), .reset_n(player_reset_n), .data_out(LED_indicator_static));
+        .clk(sys_clk), .reset_n(player_reset_n), .data_out(LED_indicator_static),
+        .group_palette(guide_palette));
+    ws2812_key_guide dynamic_leds (
+        .clk(sys_clk),.reset_n(player_reset_n),.active(guide_active && !upload_active),
+        .keys(video_keys),.palette_rgb(guide_palette),.data_out(LED_indicator_dynamic));
 
     assign sd_cs_n=upload_active ? upload_sd_cs_n : player_sd_cs_n;
     assign sd_sck=upload_active ? upload_sd_sck : player_sd_sck;
@@ -85,7 +92,8 @@ module GW_PROBLEM_TOW #(
         .sd_cs_n(player_sd_cs_n), .sd_sck(player_sd_sck), .sd_mosi(player_sd_mosi), .sd_miso(sd_miso),
         .LEDs(LEDs), .player_reset_n(player_reset_n), .video_active(video_active),.video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms), .video_keys(video_keys),
-        .display_mode(display_mode),.audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear),
+        .display_mode(display_mode),.guide_active(guide_active),
+        .audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear),
         .analysis_sample_tick(analysis_sample_tick),.analysis_pcm(analysis_pcm)
     );
     generate if (VIDEO_ENABLE != 0) begin: display_enabled

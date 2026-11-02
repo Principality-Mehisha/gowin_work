@@ -4,7 +4,7 @@ Push-Location $projectRoot
 try {
     & python tools/check_project.py
     if ($LASTEXITCODE -ne 0) { throw 'Project check failed' }
-    foreach ($suite in @('run.ps1','run_upload.ps1','run_analysis.ps1','run_pressure.ps1','run_marimba_pressure.ps1','run_effects.ps1')) {
+    foreach ($suite in @('run.ps1','run_upload.ps1','run_analysis.ps1','run_pressure.ps1','run_marimba_pressure.ps1','run_effects.ps1','run_key_guide.ps1')) {
         & (Join-Path $PSScriptRoot $suite)
         if ($LASTEXITCODE -ne 0) { throw "$suite failed" }
     }

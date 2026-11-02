@@ -10,6 +10,12 @@ SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅�
 两种压力音色均支持长按灯；SD/试听及校准期间全灭，旧状态灯用途已移除；独立静态彩灯保持不变。
 接线、行为及仿真入口见[压力钢琴](docs/PRESSURE_KEYBOARD.md)。最终综合/布局布线由用户执行，本次不生成新位流。
 
+新增共用数字效果器：原声、延迟、混响、合唱四种互斥模式，效果量0～100，
+串口屏命令0x51/0x52控制，适用于两种音色及压力/试听/SD播放。频谱和波形观察处理后的DAC样本，
+钢琴瀑布流逻辑不变。默认原声；所有模式增加固定一音频帧约61.44 us流水延迟。
+HMI需增加n6/n7、四个模式按钮、一个滑块及定时器，事件脚本和接入说明见[数字效果器](docs/AUDIO_EFFECTS.md)；
+本仓库未提供用户实际.HMI/.TFT，脚本尚需在屏幕IDE编译。最终FPGA资源/时序及板上听感仍待用户确认。
+
 新增HC-05蓝牙上传：115200/8N1，FPGA TX=D15、RX=D16，模块直接例化在顶层。
 使用预分配的PN001.BIN～PN100.BIN和MB001.BIN～MB100.BIN共200个100 KiB文件槽位，
 BEGIN后先清零目标槽位，回复READY；手机随后连续透传文件字节，DATA阶段不分包、不逐块确认。
@@ -29,6 +35,7 @@ SD卡需先用离线工具生成专用FAT32布局镜像，不能直接在普通�
 | UART选曲 | CMD=0x12：PN001～PN100、MB001～MB100 |
 | UART单音 | 十六进制40=上一个音，41=下一个音，42=播放 |
 | UART乐器 | 十六进制43=钢琴，44=马林巴 |
+| UART效果 | 十六进制51：0原声、1延迟、2混响、3合唱；52：效果量0～100 |
 
 UART默认115200/8N1。选音不发声；播放约0.5秒后释放，再保留约1秒尾音窗口。
 钢琴支持A0～C8共88音，马林巴支持C2～B5共48音，分别记忆选择，单音试听无需SD卡。
@@ -52,7 +59,8 @@ GW_PROBLEM_TOW
 │  ├─ sd_score_stream：SPI → 固定槽位读取/CRC → 解码 → FIFO/定时事件
 │  ├─ pt8211_score_tx：采样节拍与DAC串行输出
 │  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
-│     └─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
+│     ├─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
+│     └─ audio_effects：共享16 KiB缓存 → 平滑干湿混合/饱和 → DAC
 ├─ bluetooth_file_receiver：独立UART连续流、32 KiB FIFO及固定槽位写入
 └─ piano_video：视频时钟、快照跨域、实时瀑布流/频谱/波形与TMDS
 ```
@@ -69,11 +77,12 @@ GW_PROBLEM_TOW
 ## 构建与验证
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
-新增压力和实时瀑布流功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
-使用IDE时重新载入工程以识别新增六个源文件；现有位流未因仿真而更新。
+新增压力、实时瀑布流及数字效果功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
+使用IDE时重新载入工程以识别当前51个RTL文件（含audio_effects）；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_effects.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_live_waterfall.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_pressure.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_upload.ps1
@@ -84,8 +93,10 @@ python tools/check_upload.py --require-build
 位流为 `impl/pnr/GW_PROBLEM_TOW.fs`，通过构建检查后复制到 `output/GW_PROBLEM_TOW.fs`。
 基础及原有完整音频回归入口为 `sim/run_all.ps1`；三模式显示回归为 `sim/run_analysis.ps1`，
 蓝牙上传及编号曲目回归为 `sim/run_upload.ps1`。
-验证结果见 [VERIFICATION.md](VERIFICATION.md)，当前证据在 `output/numbered_only/verification.json`。
-本次修改前的源码和位流备份在 `output/numbered_only/before/`，不包含大型磁盘镜像。
+验证结果见 [VERIFICATION.md](VERIFICATION.md)，效果专项证据在 `output/audio_effects/verification.json`，
+上传证据在 `output/numbered_only/verification.json`。
+效果器修改前源码备份在 `output/audio_effects/before/sources.zip`，不包含大型磁盘镜像。
+此前编号槽位修改前的源码和位流备份在 `output/numbered_only/before/`。
 此前版本的源代码、已删除素材和位流备份在 `output/no_clarinet/before/`。
 
 默认 `SD_SCORE_ENABLE=0`，上电等待UART操作；设为1可在复位后自动播放PN001一次。

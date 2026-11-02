@@ -1,0 +1,57 @@
+// tmFx interval: 100 ms. Only changed values are sent while dragging.
+if(vaFxDrag.val==1)
+{
+  if(hFx.val!=vaFxSent.val)
+  {
+    vaFxValue.val=hFx.val
+    vaFxSum.val=83+vaFxValue.val
+    printh A5 5A 01 00 52
+    prints vaFxValue.val,1
+    printh 00 00
+    prints vaFxSum.val,1
+    printh 0D
+    vaFxSent.val=vaFxValue.val
+    vaFxWait.val=10
+  }
+}
+if(vaFxDrag.val==0)
+{
+  if(vaFxWait.val>0)
+  {
+    vaFxWait.val--
+    if(n7.val==vaFxSent.val)
+    {
+      vaFxWait.val=0
+    }
+  }
+  if(vaFxWait.val==0)
+  {
+    hFx.val=n7.val
+    vaFxSent.val=n7.val
+  }
+}
+// Highlight actual FPGA-accepted mode, not an optimistic local choice.
+if(vaFxShown.val!=n6.val)
+{
+  bFx0.bco=52857
+  bFx1.bco=52857
+  bFx2.bco=52857
+  bFx3.bco=52857
+  if(n6.val==0)
+  {
+    bFx0.bco=2016
+  }
+  if(n6.val==1)
+  {
+    bFx1.bco=2016
+  }
+  if(n6.val==2)
+  {
+    bFx2.bco=2016
+  }
+  if(n6.val==3)
+  {
+    bFx3.bco=2016
+  }
+  vaFxShown.val=n6.val
+}

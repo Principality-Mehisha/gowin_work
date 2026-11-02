@@ -15,6 +15,8 @@ module uart_score_control #(
     output reg note_previous, note_next, note_play,
     output reg note_select_piano, note_select_marimba,
     output reg [1:0] display_mode,
+    output reg [1:0] effect_mode,
+    output reg [6:0] effect_amount,
     output reg [7:0] requested_track,
     output reg overflow
 );
@@ -51,11 +53,13 @@ module uart_score_control #(
         end
     end
     wire known=(cmd==8'h01 || cmd==8'h11 || cmd==8'h12 ||
-                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 || cmd==8'h50);
+                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 ||
+                cmd==8'h50 || cmd==8'h51 || cmd==8'h52);
     wire args_ok=cmd==8'h12 ? (p0>=1 && p0<=2 && p1>=1 && p1<=100 && p2==0) :
-        (p1==0 && p2==0 && (cmd==8'h50 ? p0<=2 : p0==0));
+        (p1==0 && p2==0 && (cmd==8'h50 ? p0<=2 :
+                           cmd==8'h51 ? p0<=3 : cmd==8'h52 ? p0<=100 : p0==0));
     // A FIFO slot is reserved while the accepted command changes player state.
-    reg [55:0] replies[0:15];
+    reg [71:0] replies[0:15];
     reg [3:0] wr, rd;
     reg [4:0] count;
     reg pending, waiting_apply;
@@ -82,14 +86,22 @@ module uart_score_control #(
         if(!rst_n)display_mode<=0;
         else if(request && known && args_ok && room && cmd==8'h50)display_mode<=p0[1:0];
     end
-    reg [31:0] observed;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin effect_mode<=0;effect_amount<=30;end
+        else if(request && known && args_ok && room)begin
+            if(cmd==8'h51)effect_mode<=p0[1:0];
+            if(cmd==8'h52)effect_amount<=p0[6:0];
+        end
+    end
+    reg [47:0] observed;
     reg dirty;
     wire [7:0] reported_error=player_error!=0 ? player_error : (overflow ? 8'h60 : 8'h00);
-    wire [31:0] current={selected_marimba,selected_note,player_state,player_track,reported_error};
+    wire [47:0] current={6'd0,effect_mode,1'b0,effect_amount,
+                        selected_marimba,selected_note,player_state,player_track,reported_error};
     wire push=pending || (dirty && room && !request && !waiting_apply);
     wire response_ready;
     wire pop=count!=0 && response_ready;
-    wire [55:0] push_data=pending ? {current,ack_result,ack_seq,ack_cmd} :
+    wire [71:0] push_data=pending ? {current,ack_result,ack_seq,ack_cmd} :
                                                   {current,(overflow ? 8'd3 : 8'd0),8'd0,8'h81};
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

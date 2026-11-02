@@ -1,0 +1,13 @@
+// Add to page0 postinitialize. Query; do not overwrite a running FPGA preset.
+n6.val=0
+n7.val=30
+hFx.val=30
+vaFxDrag.val=0
+vaFxSent.val=30
+vaFxValue.val=30
+vaFxSum.val=113
+vaFxWait.val=0
+vaFxShown.val=255
+tmFx.tim=100
+tmFx.en=1
+printh A5 5A 01 00 01 00 00 00 02 0D

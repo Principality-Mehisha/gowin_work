@@ -4,6 +4,8 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  always #10 clk=~clk;
  wire tx,play,stop,overflow;
  wire [1:0] view_mode;
+ wire [1:0] fx_mode;
+ wire [6:0] fx_amount;
  wire note_previous,note_next,note_play;
  wire select_piano,select_marimba;
  reg marimba_selected=0;
@@ -13,7 +15,8 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  reg [7:0] state=0,selected=0,error=0;
  reg [6:0] note_selected=0;
  integer starts=0,stops=0,snapshots=0,reply_count=0;
- integer fields[0:5];
+ integer fields[0:7];
+ integer modes[0:255],amounts[0:255];
  integer results[0:255],commands[0:255],states[0:255],tracks[0:255];
  reg seen[0:255];
  reg overflow_reported=0;
@@ -23,6 +26,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   .selected_note(note_selected),
   .selected_marimba(marimba_selected),.note_select_piano(select_piano),.note_select_marimba(select_marimba),
   .stop_request(stop),.requested_track(track),.display_mode(view_mode),.overflow(overflow),
+  .effect_mode(fx_mode),.effect_amount(fx_amount),
   .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
  always @(posedge clk) if(rst_n) begin
@@ -53,15 +57,15 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
    if(ff==3) begin
     if(pos==0) begin
      // A leading FF fence discards a partial command after FPGA reset.
-    end else if(field==6) begin
+    end else if(field==8) begin
      if(text_command!="every.tNote.txt=\"A0\"" && text_command!="every.tNote.txt=\"C8\"")
       $fatal(1,"Native note command invalid: %s",text_command);
      if(fields[5]=='h40 && fields[4]==16 && text_command!="every.tNote.txt=\"C8\"")
       $fatal(1,"Previous note reply did not contain C8");
      if(fields[5]=='h41 && fields[4]==17 && text_command!="every.tNote.txt=\"A0\"")
       $fatal(1,"Next note reply did not contain A0");
-     field=7;
-    end else if(field==7) begin
+     field=9;
+    end else if(field==9) begin
      if(text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""} &&
         text_command!={"every.tInstrument.txt=\"",64'hc2edc1d6b0cdc7d9,"\""})
       $fatal(1,"Native instrument command invalid: %h",text_command);
@@ -76,6 +80,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
      if(fields[5]!=8'h81) begin
       seen[fields[4]]=1; results[fields[4]]=fields[3];commands[fields[4]]=fields[5];
       states[fields[4]]=fields[0];tracks[fields[4]]=fields[1];reply_count=reply_count+1;
+      modes[fields[4]]=fields[6];amounts[fields[4]]=fields[7];
      end
      field=0;
     end else begin
@@ -87,7 +92,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
    end
   end else begin
    if(ff!=0) $fatal(1,"Missing three FF terminators");
-   if(field>=6) text_command={text_command[279:0],c};
+   if(field>=8) text_command={text_command[279:0],c};
    else if(pos<13) prefix={prefix[95:0],c};
    else begin
     if(c<"0" || c>"9") $fatal(1,"Non-decimal native value");
@@ -184,6 +189,21 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   send_frame(81,'h12,1,101,0);expect_reply(81,1,'h12);
   send_frame(82,'h12,1,1,1);expect_reply(82,1,'h12);
   if(starts!=4 || selected!=203)$fatal(1,"Invalid numbered command changed playback");
+  if(fx_mode!=0 || fx_amount!=30)$fatal(1,"FX reset defaults");
+  for(i=0;i<4;i=i+1)begin
+   send_frame(100+i,'h51,i,0,0);expect_reply(100+i,0,'h51);
+   if(fx_mode!=i || modes[100+i]!=i)$fatal(1,"FX mode snapshot precedes execution");
+  end
+  send_frame(104,'h52,100,0,0);expect_reply(104,0,'h52);
+  if(fx_amount!=100 || amounts[104]!=100)$fatal(1,"FX amount snapshot");
+  send_frame(105,'h51,4,0,0);expect_reply(105,1,'h51);
+  send_frame(106,'h52,101,0,0);expect_reply(106,1,'h52);
+  send_frame(107,'h52,50,1,0);expect_reply(107,1,'h52);
+  send_frame(108,'h51,1,0,1);expect_reply(108,1,'h51);
+  if(fx_mode!=3 || fx_amount!=100 || starts!=4 || stops!=1 ||
+     piano_count!=1 || marimba_count!=1 || view_mode!=0)$fatal(1,"Effects affected transport/view/instrument");
+  send_frame(109,'h52,0,0,0);expect_reply(109,0,'h52);
+  if(fx_amount || amounts[109])$fatal(1,"FX amount zero");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

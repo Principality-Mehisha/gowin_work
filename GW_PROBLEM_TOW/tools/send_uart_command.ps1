@@ -1,10 +1,11 @@
 param(
-    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform')]
+    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform', 'EffectOriginal', 'EffectDelay', 'EffectReverb', 'EffectChorus', 'EffectAmount')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
     [string]$Port,
     [ValidateRange(1200,1000000)][int]$BaudRate = 115200,
-    [ValidateRange(1,100)][int]$Number = 1
+    [ValidateRange(1,100)][int]$Number = 1,
+    [ValidateRange(0,100)][int]$Amount = 30
 )
 $ErrorActionPreference = 'Stop'
 $commandByte = 0x01
@@ -23,6 +24,11 @@ switch ($Command) {
     'ViewWaterfall' { $commandByte = 0x50; $track = 0 }
     'ViewSpectrum' { $commandByte = 0x50; $track = 1 }
     'ViewWaveform' { $commandByte = 0x50; $track = 2 }
+    'EffectOriginal' { $commandByte = 0x51; $track = 0 }
+    'EffectDelay' { $commandByte = 0x51; $track = 1 }
+    'EffectReverb' { $commandByte = 0x51; $track = 2 }
+    'EffectChorus' { $commandByte = 0x51; $track = 3 }
+    'EffectAmount' { $commandByte = 0x52; $track = $Amount }
 }
 $checksum = (1 + $Sequence + $commandByte + $track + $p1) -band 255
 [byte[]]$frame = 0xA5,0x5A,1,$Sequence,$commandByte,$track,$p1,0,$checksum,0x0D

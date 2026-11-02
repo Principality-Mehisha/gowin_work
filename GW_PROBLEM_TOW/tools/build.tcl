@@ -3,10 +3,10 @@ cd $project_dir
 puts [exec python tools/check_project.py 2>@1]
 open_project [file join $project_dir GW_PROBLEM_TOW.gprj]
 set_option -top_module GW_PROBLEM_TOW
-# Keep the validated placement/routing settings for the pipelined display.
-# SUG100/SUG1220: routability-first placement, timing-driven route, wider
-# routing fanout allowance and resource replication avoid local congestion.
-set_option -place_option 1
+# Placement algorithm 2 for the modulation-effects implementation; retain
+# timing-driven routing, fanout allowance and resource replication.
+set_option -place_option 2
+set_option -timing_driven 1
 set_option -route_option 1
 set_option -route_maxfan 60
 set_option -replicate_resources 1

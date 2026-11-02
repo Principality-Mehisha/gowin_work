@@ -53,6 +53,18 @@ instrument_system统一取反输出低有效LED。所有中间LED端口已扩为
 50 MHz、BCK半分频48、每帧3072周期，采样率约16276.041667 Hz。
 DDS_PITCH_RATIO=193274及deadline_error检查保留。
 
+公共限幅器后增加audio_effects，所有音源共用一条处理链：
+selected_pcm → audio_effects共享同步RAM → 干湿混合/16位饱和 → PCM门控寄存器 → PT8211。
+原声/延迟/震音/颤音互斥，延迟和颤音复用8192×16缓存，震音直接调制音量。
+指针和有效长度隐藏旧内容，不复位整块RAM；颤音稳定后仅输出调制延迟信号。
+效果模式/量分别由UART 0x51/0x52控制，n6/n7回显已接受设置，默认0/30。
+参数逐样本平滑；普通松键和SD自然结束保留尾音，停止/新曲/切乐器清除旧效果状态，
+但不改变所选效果。原声也固定增加一帧流水延迟约61.44 us，DAC采样率不变。
+audio_analysis_active包含效果尾音；瀑布流和长按LED仍观察原音符和按压。
+效果器处理超期锁存0x62，静音，停止/KEY2恢复；与音源错误分开清除，避免故障自清组合环。
+音频门控增加一个系统时钟寄存级；SD几何检查提前寄存，缩短控制信号到DAC和读卡状态机的长路径。
+算法和屏幕脚本见AUDIO_EFFECTS.md；资源/时序以VERIFICATION.md及最新Gowin报告为准。
+
 ## 显示与构建
 
 视频108 MHz像素、540 MHz串行时钟及快照跨域保持不变。
@@ -71,6 +83,7 @@ piano_live_roll在像素域保存180帧×88键的循环历史，每帧向下移�
 
 board_reset保持KEY2异步断言、同步释放；保留已有关键路径寄存器及原引脚/时钟约束。
 CST新增25个ADC/分组IO；SDC只为分组输入到首级同步寄存器增加例外，未放宽ADC内部时序。
-.gprj统一列出RTL。check_project检查50个RTL、五张音频ROM、编号按钮及无冲突引脚。
-run_upload/run_analysis/run_pressure为当前集成回归。压力证据见output/pressure_keyboard/verification.json。
-本次未运行综合或PnR，最后编译及物理时序确认由用户执行，旧位流不代表包含压力功能。
+.gprj统一列出RTL。check_project检查51个RTL、五张音频ROM、编号按钮及无冲突引脚。
+run_effects/run_upload/run_analysis/run_pressure为当前集成回归；效果证据在output/audio_effects/verification.json。
+压力证据见output/pressure_keyboard/verification.json。
+本次未运行综合或PnR，最后编译及物理时序确认由用户执行，旧位流不代表包含新增效果。

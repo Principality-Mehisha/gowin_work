@@ -17,7 +17,7 @@ bkcmd=0
 page 0
 ```
 
-在 `page0` 创建全局数字控件 `n0`～`n5`，在 `every` 创建全局文本控件 `tNote` 和 `tInstrument`。
+在 `page0` 创建全局数字控件 `n0`～`n7`，在 `every` 创建全局文本控件 `tNote` 和 `tInstrument`。
 `tInstrument` 显示当前虚拟试听乐器，使用包含“钢琴马林巴琴”的 GB2312 字库，文本容量至少 8 字节。
 名称是协议的一部分。关闭按钮默认“发送组件 ID”，仅在触摸弹起事件发送一条 `printh`。
 页面后初始化事件发送查询，保证屏幕进入页面后同步状态。
@@ -45,6 +45,8 @@ SEQ 回显且不去重；固定按钮可用 00。除编号选曲0x12使用P1外�
 | 43 | 切换试听乐器为钢琴，停止当前播放 | 00 |
 | 44 | 切换试听乐器为马林巴琴，停止当前播放 | 00 |
 | 50 | 切换HDMI显示，不改变播放 | 00钢琴实时瀑布流、01双音源频谱、02双音源波形 |
+| 51 | 选择数字效果，不改变音色/曲目 | 00原声、01延迟、02震音、03颤音 |
+| 52 | 设置效果量，不重触发音符 | 十进制0～100 |
 
 可直接复制的按钮命令：
 
@@ -78,11 +80,15 @@ FPGA 返回原生控件赋值（命令/数字为 ASCII，汉字为 GB2312），�
 | page0.n3.val | 0=接受，1=参数错，2=不支持；主动快照 3=反馈溢出 |
 | page0.n4.val | 请求 SEQ；主动快照为 0 |
 | page0.n5.val | 请求 CMD；主动快照为 129（0x81） |
+| page0.n6.val | FPGA接受的效果模式：0原声、1延迟、2震音、3颤音 |
+| page0.n7.val | FPGA接受的效果量，0～100 |
 | every.tNote.txt | FPGA 当前选中音名，如 C#4 |
 | every.tInstrument.txt | 虚拟试听键选择的乐器：钢琴或马林巴琴 |
 
-数字为十进制文本，音名使用 ASCII `#`，乐器名使用 GB2312。上电、复位、状态或选择变化会主动回传；查询也会回传。同一快照锁存状态、音符和乐器。
+数字为十进制文本，音名使用 ASCII `#`，乐器名使用 GB2312。上电、复位、状态或选择变化会主动回传；查询也会回传。同一快照锁存状态、音符、乐器和效果设置。
 返回“命令接受”并不代表 SD 加载成功，应继续观察加载、播放或错误状态。
+效果参数回显是已接受的目标值，DSP会平滑过渡。音源自然结束后n0可回空闲，效果尾音仍继续；
+明确停止则清除尾音。完整模式、滑块、节流与回显脚本见[AUDIO_EFFECTS.md](AUDIO_EFFECTS.md)。
 
 | n2 错误码（十六进制） | 含义 |
 | --- | --- |
@@ -92,13 +98,20 @@ FPGA 返回原生控件赋值（命令/数字为 ASCII，汉字为 GB2312），�
 | 40 | 事件调度错误 |
 | 50 | 合成计算超时 |
 | 60 | UART 反馈队列溢出 |
+| 61 | 压力事件队列溢出 |
+| 62 | 效果器样本处理超期 |
 
 反馈 FIFO 深度 16，控制器预留槽位以等待命令结果入队。
 过载时无法排队的普通请求被丢弃，停止仍执行；溢出标志保持到 KEY2 复位。
-建议按钮间隔至少 300 ms，查询约每秒一次。半帧 20 ms 没有新字节会丢弃。
+建议普通按钮间隔至少 300 ms，查询约每秒一次；效果量滑块最多每100 ms发送一次变化值，
+松手补发最终值。半帧 20 ms 没有新字节会丢弃。
 校验、版本、帧尾或停止位错误的帧不执行也不回复；有效但不支持的命令返回结果 2。
 
-主机示例：`powershell -File tools/send_uart_command.ps1 -Command InstrumentMarimba` 仅打印帧；`InstrumentPiano` 切回钢琴。原 `Piano` 命令仍代表 SD 第三首曲目。显式指定 `-Port COMx` 才访问串口，默认 115200，`-BaudRate 9600` 可匹配其他编译配置。
+主机示例：`powershell -File tools/send_uart_command.ps1 -Command InstrumentMarimba` 仅打印帧；
+`InstrumentPiano` 切回钢琴，`NumberedPiano -Number 1`选择PN001，
+`EffectTremolo`选择震音，`EffectVibrato`选择颤音，`EffectAmount -Amount 50`设置效果量。
+旧命令名称EffectReverb/EffectChorus仅作为模式2/3的兼容别名，现分别选择震音/颤音。
+显式指定 `-Port COMx` 才访问串口，默认 115200，`-BaudRate 9600` 可匹配其他编译配置。
 验证：`powershell -ExecutionPolicy Bypass -File sim/run_uart.ps1`。
 
 显示按钮与钢琴/马林巴分析范围见 [PIANO_ANALYSIS.md](PIANO_ANALYSIS.md)，协议帧不变。

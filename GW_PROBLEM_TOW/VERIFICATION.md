@@ -1,6 +1,105 @@
 # 当前工程验证记录
 
-## 压力马林巴与共享分析（当前源码，未重新综合）
+## 震音/颤音替换（2026-11-02，当前源码与位流）
+
+模式2替换为震音（约5 Hz音量调制），模式3替换为颤音（约5 Hz音高调制）。
+原声/延迟继续使用模式0/1，UART模式编号、效果量0～100和屏幕n6/n7反馈不变。
+颤音经256样本淡入后只输出调制信号，效果量控制音高摆幅；效果量0平滑恢复逐样本原声直通。
+震音不产生尾音，颤音仅保留114样本短缓存尾音；停止/切音色/复位清除旧声音。
+
+`sim/run_effects.ps1`五项回归全部通过，251,045个样本与Python定点参考逐字一致。
+覆盖全部硬件输入效果量0～127、全部模式互切、正负满幅、清除/复位、尾音超时和超期检测，
+并通过真实UART/压力输入、演奏中切换、效果量归零、马林巴、SD自然结束、双声道DAC串行解码。
+为达到50 MHz时序，音频门控增加一个系统时钟寄存级（20 ns），SD几何检查提前寄存。
+补充固定槽读取回归，覆盖FAT大小为0/1的无效几何拒绝、正常32/102400字节读取、目录扫描及CRC。
+效果FSM实测最多8个系统时钟。
+
+`tools/build.tcl`完成综合和布局布线，系统/像素Fmax为50.450/128.964 MHz，
+目标50/108 MHz，系统、像素、串行域的数据路径setup/hold违例均为0。
+Logic 23712/59904、Register 14002/60780、BSRAM 104/118、DSP 27.5/118。
+视频异步复位仍有4条recovery及4条removal负路径，reset_review_required=true；
+未放宽SDC约束，也不能宣称全部时序通过。详情见`sim/timing_report.json`。
+`verification.json`中的synthesis_run/pnr_run=false仅描述仿真检查器范围，
+实际构建证据为`output/build_manifest.json`；已核对65项构建输入和78项仿真输入指纹。
+
+新下载文件为`output/GW_PROBLEM_TOW_tremolo_vibrato.fs`，与
+`output/GW_PROBLEM_TOW.fs`和`impl/pnr/GW_PROBLEM_TOW.fs`逐字节相同。
+SHA256：`db87590ebf00440ca8550270ed18fe81c3f4f75dc3549aabfb2d051f9aa488d3`。
+本次构建日志为`output/audio_effects/build_pipelined.log`。
+
+独立听感指标：效果量30/100时震音最低音量为71.206%/2.725%，最高均为100%。
+效果量100的440 Hz颤音测试，周期频率423.062～456.932 Hz，周期峰值15912～16000，
+稳定干湿权重为256/256，确认音高变化且幅度接近恒定。
+证据见`output/audio_effects/verification.json`和`reference.json`，音频示例为
+`tremolo_rtl.wav`/`vibrato_rtl.wav`，均为数字仿真，不是实板录音。
+
+主机命令改为EffectTremolo/EffectVibrato，旧EffectReverb/EffectChorus保留模式编号兼容别名。
+屏幕事件脚本新增effect_tremolo_release.txt/effect_vibrato_release.txt，旧模式2/3的帧仍可使用，
+实际HMI中的“混响/合唱”按钮文字需改为“震音/颤音”，字库需包含新文字。
+本轮未提供或修改实际.HMI/.TFT，也未下载开发板。
+上一版源码和位流备份在`output/modulation_effects_before/`。
+
+## 混响响度补偿（2026-11-02，上一版记录）
+
+混响末级全通输出增加4倍（约12 dB）湿声补偿，使用32位有符号移位后饱和到16位。
+补偿不写回反馈缓存，保留原有反馈系数、衰减时间、干湿比例及模式淡入淡出。
+原声、延迟和合唱算法保持原设置。
+
+`sim/run_effects.ps1`四项回归全部通过：300,450个音频样本与Python定点参考逐字一致，
+覆盖默认/最大效果量的尾音增益、正负满幅持续输入、和弦、零效果量直通、
+模式切换、清除、尾音过期，以及UART/屏幕反馈/压力演奏/实际DAC串行输出。
+幅度16000的单脉冲，效果量30/100的第一处反射从36/122提高为144/488；
+前约0.74秒尾音能量分别增加12.010/12.042 dB。
+日志、参考/RTL WAV与输入指纹见`output/audio_effects/verification.json`；
+该JSON中的synthesis_run/pnr_run=false仅描述仿真检查器的范围，本轮实际构建证据另存于`output/build_manifest.json`。
+
+`tools/build.tcl`完成综合和布局布线，系统/像素Fmax为50.343/115.327 MHz，
+目标50/108 MHz，系统、像素、串行域的数据路径setup/hold违例均为0。
+Logic 23957/59904、Register 14236/60780、BSRAM 104/118、DSP 27.5/118。
+视频复位仍有12条负recovery路径（部分端点同时记录上升沿/下降沿检查），
+reset_review_required=true；没有通过放宽约束忽略这些路径，不能宣称全部时序通过。
+
+新下载文件为`output/GW_PROBLEM_TOW.fs`，与`impl/pnr/GW_PROBLEM_TOW.fs`逐字节相同。
+SHA256：`ac808a358234b40991576448367792ce7dbbe0088d9131d75edf338fcbd1b9dd`。
+旧位流保存在`output/audio_effects/before/build/`。本轮未下载开发板或改写串口屏，听感尚需上板确认。
+
+## 共用数字效果器（2026-11-02，初始实现阶段记录）
+
+增加audio_effects并接在原公共限幅器之后，钢琴/马林巴的压力、UART试听及PN/MB播放共用。
+原声/延迟/混响/合唱互斥，串口屏0x51选择模式、0x52设置0～100效果量；
+n6/n7锁存回显已接受目标，原n0～n5及文本字段保持含义。参数平滑，不重触发原音符。
+上电/KEY2为原声和30。自然松键/SD结束保留尾音，停止/新曲/切音色清除旧尾音并保留选择。
+频谱/波形观察最终DAC样本及尾音；瀑布流/长按LED继续观察原音符与物理按压。
+
+共享8192×16同步RAM，不复位整块RAM；指针/有效长度隐藏旧数据。
+三种算法均作干湿混合和16位饱和，全部模式固定增加一音频帧约61.44 us延迟，
+不改50 MHz时钟或DAC采样率。效果FSM实测最多20周期，但这不是物理时序证明。
+效果器deadline故障0x62独立锁存，不通过错误自清形成组合反馈。
+
+sim/run_effects.ps1四项仿真通过：
+
+- tb_audio_effects：178,966样本与独立Python定点模型逐字一致，含全部0～127硬件输入量、缓存回卷、淡入淡出、饱和、清除、尾音过期和超期故障。
+- tb_tjc_status：88音×两种乐器、n0～n7、GB2312、FF边界、反压及原子快照。
+- tb_uart_protocol：新增51/52有效/无效参数、设置后ACK；保留原坏帧、超时、重同步、FIFO溢出与停止优先测试。
+- tb_effects_integration：真实UART/压力扫描，钢琴按住切换效果不重敲，马林巴演奏、停止/切音色、自然SD结束后回声与分析、实际双声道DAC串行解码及KEY2。
+
+四个模式按钮和101个效果量帧检查通过。output/audio_effects/verification.json
+记录51个RTL与测试/脚本输入指纹，并逐字节确认原合成器、限幅器、音频ROM、蓝牙/存储、
+实时瀑布流和CST/SDC未变。WAV导出来自RTL数字样本，不是开发板录音。
+最终RTL另通过9项压力/兼容、11项蓝牙上传/播放、5项压力马林巴、
+6项实时瀑布流和13项分析/视频配置（含官方视频器件模型），连同效果专项共48项配置。
+频谱和波形的钢琴/马林巴数据及完整RGB像素仍匹配独立参考；
+日志保存在output/audio_effects/*_final.log，完整索引由
+`python -B tools/check_effects.py --full-regression`生成。
+集成测试仍有原调试输出及测试台未连接输出的ModelSim告警；不能将功能通过表述为综合零告警。
+
+屏幕事件脚本在screen/tjc_uart/effect_*.txt，控件清单见docs/AUDIO_EFFECTS.md。
+未提供或修改用户实际.HMI/.TFT，未在TJC IDE编译或实屏验证。
+源码备份output/audio_effects/before/sources.zip，不包含大型卡镜像。
+没有运行Gowin综合/PnR、生成位流、打开物理串口、写卡或烧录；
+RAM/DSP最终映射、50/108/540 MHz物理时序及实际听感由用户最终构建和上板确认。
+
+## 压力马林巴与共享分析（效果器加入前历史）
 
 开放手动压力马林巴，使用原CMD=0x44/0x43切换乐器，校准/ADC/引脚不变。
 马林巴前三组分别映射MIDI 36～51、52～67、68～83，4～7组不产生新音符或灯光；

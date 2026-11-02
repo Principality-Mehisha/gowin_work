@@ -29,6 +29,7 @@ module slot_card_query (
     reg [223:0] meta_record;
     reg [1:0] fat_index;
     reg fat_copy;
+    reg [4:0] geometry_ok;
     wire [31:0] first_cluster=32'd3+({24'd0,slot_index}<<2);
     wire [31:0] tested_cluster=first_cluster+{30'd0,fat_index};
     wire [8:0] fat_offset={tested_cluster[6:0],2'b00};
@@ -99,8 +100,17 @@ module slot_card_query (
             selected_valid<=0; meta_index<=0; mbr_base<=0; mbr_size<=0; boot_size<=0;
             entry_size<=0; entry_cluster<=0; fat_word<=0; signature<=0; mbr_type<=0;
             meta_record<=0; fat_index<=0; fat_copy<=0;
+            geometry_ok<=0;
             done<=0; error<=0; catalog_mask<=0; catalog_done<=0; file_size<=0; file_crc<=0;
         end else begin
+            // Descriptor values and FAT size are received long before the
+            // boot sector's final signature/CRC. Register the independent
+            // geometry checks before their result fans out to sector setup.
+            geometry_ok[0]<=fat_sectors!=0 && fat_sectors<=32'h00100000;
+            geometry_ok[1]<=data_base==32'd2080+(fat_sectors<<1) && slots_base==data_base+64;
+            geometry_ok[2]<=!volume_end[32] && last_slot_end<volume_end;
+            geometry_ok[3]<=volume_end>=({1'b0,data_base}+33'd4193600);
+            geometry_ok[4]<=((partition_sectors-32-(fat_sectors<<1))>>6)+2<=(fat_sectors<<7);
             sd_start<=0; catalog_done<=0;
             if(sd_valid && state==WAIT_IO) begin
                 case(io_return)
@@ -178,11 +188,7 @@ module slot_card_query (
                 end
                 BOOT: begin
                     if(bad || signature!=16'haa55 || boot_size!=partition_sectors ||
-                        fat_sectors==0 || fat_sectors>32'h00100000 ||
-                        data_base!=32'd2080+(fat_sectors<<1) || slots_base!=data_base+64 ||
-                        volume_end[32] || last_slot_end>=volume_end ||
-                        volume_end<({1'b0,data_base}+33'd4193600) ||
-                        ((partition_sectors-32-(fat_sectors<<1))>>6)+2>(fat_sectors<<7))
+                        !(&geometry_ok))
                         fail(8'h21);
                     else if(for_write) read_sector(data_base+({24'd0,slot_index}>>4),DIRECTORY);
                     else begin

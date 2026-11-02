@@ -4,6 +4,8 @@
 UART钢琴单音试听及PN001～PN100。按下从顶部出现并向下滚动，按住时长决定条长；
 键盘亮键同步当前音符，保留最近约3秒轨迹，详见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
 频谱图和波形图观察当前音源实际送入PT8211的16位PCM，支持钢琴和马林巴的压力演奏、串口屏试听及SD播放。
+数字效果器接入后，该采样点位于最终效果输出之后，延迟/震音/颤音及自然尾音同样参与分析，
+不另增FFT。效果模式/量变化不清除显示；明确停止/切音源仍清除旧分析代次。
 只有模式0实时瀑布流属于钢琴；马林巴不产生瀑布流和钢琴亮键。
 三种显示共用原来的1600×900/60 Hz输出、TMDS引脚及显示器接线。
 
@@ -51,7 +53,8 @@ piano_video在50 MHz运行分析，在像素域使用analysis_frame_cdc双缓冲
 ## 验证与构建
 
 实时瀑布流的当前回归入口为sim/run_live_waterfall.ps1，见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
-下述频谱/波形资源及时序数据来自此前实现报告；本轮瀑布流尚未重新综合，需以新构建报告为准。
+下述频谱/波形资源及时序数据来自此前实现报告，不代表当前压力、瀑布流及数字效果版本；
+本轮没有重新综合，需以用户新构建报告为准。
 
 ```powershell
 python tools/check_project.py
@@ -69,6 +72,6 @@ FFT六类向量共3072行和真实UART钢琴C4的512行结果均与定点参考�
 
 ![频谱与波形RTL预览](../output/piano_analysis/preview.png)
 
-最终资源、时序、回归日志和指纹见output/piano_analysis/verification.json。原版本源代码及位流已备份在output/piano_analysis/before/。
-当前使用77/118块BSRAM，比增加分析显示前多9块，剩余41块；DSP为27.5/118。布局布线耗时97秒。系统/像素Fmax为60.088/116.744 MHz，对应目标50/108 MHz；三个数据时钟域的setup/hold违例均为0。
-新位流仍为output/GW_PROBLEM_TOW.fs。本轮没有下载开发板或烧录串口屏；已有视频复位恢复/移除违例仍单独记录。
+当时资源、时序、回归日志和指纹见output/piano_analysis/verification.json。原版本源代码及位流已备份在output/piano_analysis/before/。
+该历史构建使用77/118块BSRAM；DSP为27.5/118，布局布线耗时97秒。系统/像素Fmax为60.088/116.744 MHz，对应目标50/108 MHz；三个数据时钟域的setup/hold违例均为0。
+这些数据不包含后来新增功能。output/GW_PROBLEM_TOW.fs未因本轮仿真更新，本轮没有下载开发板或烧录串口屏；已有视频复位恢复/移除违例仍单独记录。

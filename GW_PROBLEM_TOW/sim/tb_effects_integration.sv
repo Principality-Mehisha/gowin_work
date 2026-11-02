@@ -76,14 +76,17 @@ module tb_effects_integration;
         effect('h52,100);
         for(i=1;i<=3;i=i+1)begin
             effect('h51,i);
-            repeat(i==2 ? 900 : 300)@(posedge dut.sample_tick);
+            repeat(600)@(posedge dut.sample_tick);
             if(ons!=saved_ons || starts!=saved_starts || !dut.system.voices.piano.gates[39] ||
                dut.system.effects.applied_mode!=i || dut.system.effects.wet_gain!=125 ||
                !dut.audio_analysis_active || dut.last_error)
                 $fatal(1,"FX mode change reset playback or missed smooth application");
+            if(i==3 && dut.system.effects.vibrato_mix!=256)
+                $fatal(1,"Vibrato retained dry mix after fade");
         end
-        effect('h52,0);repeat(140)@(posedge dut.sample_tick);
-        if(dut.system.effects.wet_gain || ons!=saved_ons)$fatal(1,"FX zero amount/retrigger");
+        effect('h52,0);repeat(300)@(posedge dut.sample_tick);
+        if(dut.system.effects.wet_gain || dut.system.effects.vibrato_mix || ons!=saved_ons)
+            $fatal(1,"FX zero amount/retrigger");
         effect('h51,1);effect('h52,100);repeat(300)@(posedge dut.sample_tick);
         // Switching timbre keeps the selection but discards the old delay.
         send_frame(0,'h44,0,0,0);settle();

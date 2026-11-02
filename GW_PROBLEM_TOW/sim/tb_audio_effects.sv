@@ -30,7 +30,8 @@ module tb_audio_effects;
             while(!out_valid && cycles<64)begin @(negedge clk);cycles=cycles+1;end
             if(cycles>max_cycles)max_cycles=cycles;
             if(cycles==64 || error || output_sample!==v[37:22] ||
-               tail!==v[21] || applied!==v[20:19] || dut.wet_gain!==v[18:12])
+               tail!==v[21] || applied!==v[20:19] || dut.wet_gain!==v[18:12] ||
+               dut.vibrato_mix!==v[11:3])
                 $fatal(1,"FX sample %0d mode=%0d: out=%0d exp=%0d gain=%0d/%0d tail=%0b/%0b cycles=%0d",
                     i,mode,output_sample,$signed(v[37:22]),dut.wet_gain,v[18:12],tail,v[21],cycles);
             $fdisplay(fd,"%04x",output_sample);

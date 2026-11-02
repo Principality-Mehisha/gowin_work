@@ -8,6 +8,7 @@ module instrument_system #(
     parameter integer PRESSURE_LONG_HOLD_FRAMES = 1042,
     parameter integer NOTE_GATE_CYCLES = 25000000,
     parameter integer NOTE_TAIL_CYCLES = 50000000,
+    parameter integer AUDIO_FRAME_CYCLES = 3072,
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter FREQ_FILE = "src/rom/frequency88.hex",
     parameter VOICING_FILE = "src/rom/voicing88.hex",
@@ -20,6 +21,8 @@ module instrument_system #(
     input wire sys_clk,
     input wire rst_n,
     input wire sample_tick,
+    input wire [1:0] effect_mode,
+    input wire [6:0] effect_amount,
     input wire [6:0] pitch_group,
     input wire pressure_sample_valid,
     input wire [3:0] pressure_sample_key,
@@ -78,11 +81,12 @@ module instrument_system #(
     wire [7:0] pressure_hold_progress;
     wire pressure_overflow,piano_busy,audio_busy,pressure_busy;
     reg pressure_fault;
+    wire effect_fault,effect_tail;
     assign pressure_enable=PRESSURE_ENABLE && manual_mode &&
                            !note_busy && !control_restart && !pressure_fault;
     assign pressure_busy=pressure_enable && ((|pressure_enabled_pressed) || audio_busy);
-    assign last_error=pressure_fault ? 8'h61 : control_error;
-    assign player_state=pressure_fault ? 8'd3 : control_state;
+    assign last_error=effect_fault ? 8'h62 : pressure_fault ? 8'h61 : control_error;
+    assign player_state=pressure_fault || effect_fault ? 8'd3 : control_state;
     always @(posedge sys_clk or negedge rst_n) begin
         if(!rst_n) pressure_fault<=0;
         else if(control_restart) pressure_fault<=0;
@@ -164,15 +168,16 @@ module instrument_system #(
         else if (control_restart || !storage_enable) stream_error <= 0;
         else stream_error <= (sd_error_code != 0 || fat_error != 0 || score_error != 0);
     end
-    wire manual_error=deadline_error || pressure_fault || (pressure_enable && pressure_overflow);
-    assign failed = (storage_enable && stream_error) || sequence_error || manual_error;
+    wire source_error=deadline_error || pressure_fault || (pressure_enable && pressure_overflow) ||
+                      (storage_enable && stream_error) || sequence_error;
+    wire manual_error=source_error || effect_fault;
+    assign failed = source_error || effect_fault;
     wire synth_stop = control_restart || note_clear ||
                       (manual_mode ? manual_error : (failed || finished));
     wire audio_silence = (manual_mode ? manual_error :
                          (failed || finished || !playing));
     assign dds_event_ready = !manual_mode && synth_event_ready;
     wire signed [15:0] selected_pcm;
-    assign pcm = audio_silence ? 16'sd0 : selected_pcm;
     instrument_voice_bank #(.LIVE_DYNAMICS(PRESSURE_ENABLE),
         .SINE_FILE(SINE_FILE),.FREQ_FILE(FREQ_FILE),.VOICING_FILE(VOICING_FILE),
         .MARIMBA_MODE_FILE(MARIMBA_MODE_FILE),.MARIMBA_ATTACK_FILE(MARIMBA_ATTACK_FILE)) voices (
@@ -183,9 +188,29 @@ module instrument_system #(
         .event_dynamics(synth_event_dynamics),.pitch_ratio(DDS_PITCH_RATIO),
         .event_ready(bank_event_ready),.deadline_error(deadline_error),.pcm(selected_pcm),
         .piano_busy(piano_busy),.audio_busy(audio_busy));
-    assign audio_analysis_active=!audio_silence && !synth_stop &&
+    wire source_active=!audio_silence && !synth_stop &&
         (manual_mode ? (marimba_mode ? audio_busy : (note_busy || pressure_busy)) : playing);
-    assign analysis_clear=synth_stop || !audio_analysis_active;
+    wire effect_clear=control_restart || source_error;
+    wire signed [15:0] effect_pcm;
+    audio_effects #(.FRAME_CYCLES(AUDIO_FRAME_CYCLES)) effects(
+        .clk(sys_clk),.reset_n(rst_n),.clear(effect_clear),.in_valid(sample_tick),
+        .in_sample(source_active ? selected_pcm : 16'sd0),.mode(effect_mode),.amount(effect_amount),
+        .out_sample(effect_pcm),.out_valid(),.busy(),.tail_active(effect_tail),
+        .applied_mode(),.deadline_error(effect_fault));
+    // Break the UART/restart -> source gating -> DAC input timing path.
+    // Effects complete well before the next audio frame; this adds one
+    // system clock to gating without changing the DAC sample cadence.
+    reg signed [15:0] pcm_registered;
+    always @(posedge sys_clk or negedge rst_n) begin
+        if(!rst_n)pcm_registered<=0;
+        else pcm_registered<=effect_clear || effect_fault || !(source_active || effect_tail) ?
+                             16'sd0 : effect_pcm;
+    end
+    assign pcm=pcm_registered;
+    // Natural release/score EOF stops the source, not an effect's tail.
+    // Explicit transport/instrument commands still clear the entire chain.
+    assign audio_analysis_active=!effect_clear && !effect_fault && (source_active || effect_tail);
+    assign analysis_clear=effect_clear || effect_fault || !audio_analysis_active;
     assign storage_paused=manual_mode || control_restart;
     // Observe only events actually accepted by the piano synthesizer. Updates
     // change pressure dynamics without making another note or ending its bar.

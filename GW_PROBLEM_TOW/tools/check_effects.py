@@ -12,7 +12,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output/audio_effects"
-BENCHES = ("tb_audio_effects", "tb_tjc_status", "tb_uart_protocol", "tb_effects_integration")
+BENCHES = ("tb_audio_effects", "tb_tjc_status", "tb_uart_protocol", "tb_effects_integration", "tb_fixed_slot_reader")
 
 
 def sha(path):
@@ -40,7 +40,7 @@ def main():
             w.setparams((1, 2, round(info["sample_rate_hz"]), 0, "NONE", "not compressed"))
             w.writeframes(struct.pack("<" + "h"*len(signed), *signed))
     scripts = ROOT / "screen/tjc_uart"
-    for mode, name in enumerate(("original", "delay", "reverb", "chorus")):
+    for mode, name in enumerate(("original", "delay", "tremolo", "vibrato")):
         text = (scripts / ("effect_" + name + "_release.txt")).read_text()
         fields = [int(v, 16) for v in text.split()[1:]]
         assert fields == [165, 90, 1, 0, 81, mode, 0, 0, 82+mode, 13]
@@ -65,7 +65,8 @@ def main():
         "src/video/piano_roll_line.v", "src/video/playback_video_cdc.v",
         "src/video/video_source.v", "src/video/piano_video.v",
     ]
-    preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/storage").glob("*.v")]
+    preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/storage").glob("*.v")
+                  if p.name != "slot_card_query.v"]
     preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/rom").glob("*.hex")]
     with zipfile.ZipFile(OUT / "before/sources.zip") as backup:
         for name in preserved:
@@ -79,8 +80,12 @@ def main():
     paths += sorted(scripts.glob("effect_*.txt"))
     result = dict(created_at=datetime.now(timezone(timedelta(hours=8))).isoformat(),
                   tests=logs, bit_exact_samples=len(samples), screen_packet_cases=105,
+                  modulation_rate_hz=info["modulation_rate_hz"],
+                  measurements=info["measurements"],
                   shared_ram_bytes=16384, fixed_pipeline_audio_frames=1,
                   unchanged_from_backup={name: sha(ROOT / name) for name in preserved},
+                  timing_pipeline_changes={name: sha(ROOT / name) for name in
+                      ("src/system/instrument_system.v", "src/storage/slot_card_query.v")},
                   inputs={p.relative_to(ROOT).as_posix(): sha(p) for p in paths},
                   synthesis_run=False, pnr_run=False, hardware_tested=False,
                   screen_ide_compiled=False)

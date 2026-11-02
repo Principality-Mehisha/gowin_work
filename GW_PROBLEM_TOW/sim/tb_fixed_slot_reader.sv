@@ -70,11 +70,20 @@ module tb_fixed_slot_reader;
         end
     endtask
     integer i,base,meta;
-    reg [31:0] checksum,record_crc;
+    reg [31:0] checksum,record_crc,saved_fat_size;
     initial begin
         for(i=0;i<33554432;i=i+1)image[i]=0;
         $readmemh("output/fixed_slots/card.hex",image);
         run_case(0,32,0,1);
+        for(i=0;i<4;i=i+1)begin
+            saved_fat_size[i*8+:8]=image[2048*512+36+i];
+            image[2048*512+36+i]=0;
+        end
+        run_case(0,0,14);
+        image[2048*512+36]=1;
+        run_case(0,0,14);
+        for(i=0;i<4;i=i+1)image[2048*512+36+i]=saved_fat_size[i*8+:8];
+        run_case(0,32,0);
         run_case(1,32,0);
         run_case(199,0,4);
         image[FIX_SLOT_BASE*512+21]=image[FIX_SLOT_BASE*512+21]^1;

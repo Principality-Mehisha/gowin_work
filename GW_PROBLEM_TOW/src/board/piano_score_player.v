@@ -107,6 +107,8 @@ module piano_score_player #(
     wire [15:0] pcm;
     wire uart_overflow;
     wire sample_tick;
+    wire [1:0] effect_mode;
+    wire [6:0] effect_amount;
     assign analysis_sample_tick=sample_tick;
     wire signed [15:0] pcm_right=pcm;
     wire [55:0] notes,velocities;
@@ -121,13 +123,15 @@ module piano_score_player #(
             .player_error(last_error),.play_request(raw_uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
-            .display_mode(display_mode),.requested_track(uart_track),.overflow(uart_overflow));
+            .display_mode(display_mode),.effect_mode(effect_mode),.effect_amount(effect_amount),
+            .requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;assign display_mode=0;
         assign raw_uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
         assign uart_select_piano=0; assign uart_select_marimba=0;
+        assign effect_mode=0;assign effect_amount=30;
     end endgenerate
     sd_score_stream #(
         .SD_POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
@@ -163,6 +167,7 @@ module piano_score_player #(
         .PRESSURE_LONG_HOLD_FRAMES(PRESSURE_LONG_HOLD_FRAMES),
         .NOTE_GATE_CYCLES(NOTE_GATE_CYCLES),
         .NOTE_TAIL_CYCLES(NOTE_TAIL_CYCLES),
+        .AUDIO_FRAME_CYCLES(64*BCK_HALF_DIV),
         .SINE_FILE(SINE_FILE),
         .FREQ_FILE(FREQ_FILE),
         .VOICING_FILE(VOICING_FILE),
@@ -173,6 +178,7 @@ module piano_score_player #(
         .sys_clk(sys_clk),
         .rst_n(rst_n),
         .sample_tick(sample_tick),
+        .effect_mode(effect_mode),.effect_amount(effect_amount),
         .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),
         .pressure_sample_key(pressure_sample_key),.pressure_sample_data(pressure_sample_data),
         .uart_play(uart_play),

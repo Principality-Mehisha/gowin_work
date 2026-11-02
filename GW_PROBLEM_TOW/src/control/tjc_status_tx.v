@@ -1,9 +1,8 @@
-// Native TJC commands, recmod=0. Each snapshot updates page0.n0..n5:
-// state, track, error, result, sequence, command; then note/instrument text.
-// payload: {marimba,selected_note[6:0],state,track,error,result,sequence,command}.
+// Native TJC commands: n0..n5 retain their meanings, n6/n7 are effects
+// mode/amount, followed by note/instrument text. Low 56 payload bits unchanged.
 module tjc_status_tx (
     input wire clk, rst_n,
-    input wire [55:0] snapshot,
+    input wire [71:0] snapshot,
     input wire valid,
     output wire ready,
     output reg [7:0] byte_data,
@@ -11,8 +10,8 @@ module tjc_status_tx (
     input wire byte_ready
 );
     reg busy;
-    reg [55:0] saved;
-    reg [2:0] field;
+    reg [71:0] saved;
+    reg [3:0] field;
     reg [1:0] fence;
     reg [5:0] pos;
     reg [7:0] value;
@@ -28,7 +27,8 @@ module tjc_status_tx (
         case(field)
             0: value=saved[47:40]; 1: value=saved[39:32];
             2: value=saved[31:24]; 3: value=saved[23:16];
-            4: value=saved[15:8]; default: value=saved[7:0];
+            4: value=saved[15:8]; 5: value=saved[7:0];
+            6: value=saved[71:64]; default: value=saved[63:56];
         endcase
         hundreds=value/100; tens=(value%100)/10; ones=value%10;
         digits=(value>=100) ? 3 : ((value>=10) ? 2 : 1);
@@ -61,7 +61,7 @@ module tjc_status_tx (
                 else if (pos==15 && digits==3) byte_data="0"+ones;
             end
         endcase
-        if (field==6) begin
+        if (field==8) begin
             case(pos)
                 0: byte_data="e"; 1: byte_data="v"; 2: byte_data="e";
                 3: byte_data="r"; 4: byte_data="y"; 5: byte_data=".";
@@ -76,7 +76,7 @@ module tjc_status_tx (
                 default: byte_data=8'hff;
             endcase
         end
-        if (field==7) begin
+        if (field==9) begin
             // Native screen text uses GB2312: piano / marimba.
             case(pos)
                 0: byte_data="e"; 1: byte_data="v"; 2: byte_data="e";
@@ -108,11 +108,11 @@ module tjc_status_tx (
             if (valid) begin saved<=snapshot; field<=0; pos<=0; busy<=1; fence<=3; end
         end else if (byte_ready) begin
             if (fence!=0) fence<=fence-1'b1;
-            else if ((field==6 && pos==20+note_length) ||
-                     (field==7 && pos==26+instrument_length) ||
-                     (field<6 && pos==15+digits)) begin
+            else if ((field==8 && pos==20+note_length) ||
+                     (field==9 && pos==26+instrument_length) ||
+                     (field<8 && pos==15+digits)) begin
                 pos<=0;
-                if (field==7) busy<=0;
+                if (field==9) busy<=0;
                 else field<=field+1'b1;
             end else pos<=pos+1'b1;
         end

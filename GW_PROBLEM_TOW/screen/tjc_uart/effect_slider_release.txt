@@ -1,0 +1,11 @@
+// Always send the final value, even if the last timer tick already sent it.
+vaFxDrag.val=0
+vaFxValue.val=hFx.val
+vaFxSum.val=83+vaFxValue.val
+printh A5 5A 01 00 52
+prints vaFxValue.val,1
+printh 00 00
+prints vaFxSum.val,1
+printh 0D
+vaFxSent.val=vaFxValue.val
+vaFxWait.val=10

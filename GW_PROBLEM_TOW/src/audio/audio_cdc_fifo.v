@@ -11,7 +11,8 @@ module audio_cdc_fifo (
     output reg rd_valid,
     input wire rd_ready
 );
-    reg [3:0] wr_release,rd_release;
+    (* syn_async_reg=1 *) reg [3:0] wr_release /* synthesis syn_preserve=1 */;
+    (* syn_async_reg=1 *) reg [3:0] rd_release /* synthesis syn_preserve=1 */;
     always @(posedge wr_clk or negedge reset_n)
         if(!reset_n)wr_release<=0;
         else wr_release<={wr_release[2:0],1'b1};
@@ -19,6 +20,7 @@ module audio_cdc_fifo (
         if(!reset_n)rd_release<=0;
         else rd_release<={rd_release[2:0],1'b1};
     wire full,empty;
+    wire rd_reset_n=rd_release[3];
     wire [31:0] q;
     reg [2:0] state;
     assign wr_ready=wr_release[3] && !full;
@@ -29,9 +31,8 @@ module audio_cdc_fifo (
         .WrReset(!wr_release[3]),.RdReset(!rd_release[3]),
         .WrEn(wr_valid && wr_ready),.RdEn(read_enable),
         .Q(q),.Empty(empty),.Full(full),.Almost_Full(wr_almost_full));
-    always @(posedge rd_clk or negedge reset_n) begin
-        if(!reset_n)begin state<=0;rd_data<=0;rd_valid<=0;end
-        else if(!rd_release[3])begin state<=0;rd_valid<=0;end
+    always @(posedge rd_clk or negedge rd_reset_n) begin
+        if(!rd_reset_n)begin state<=0;rd_data<=0;rd_valid<=0;end
         else case(state)
             0:if(read_enable)state<=1;
             1:state<=2;

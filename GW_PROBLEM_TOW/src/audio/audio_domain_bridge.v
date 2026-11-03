@@ -26,7 +26,7 @@ module audio_domain_bridge (
     output reg bridge_fault
 );
     wire link_reset_n=reset_n && pll_locked && !restart;
-    reg [3:0] engine_release;
+    (* syn_async_reg=1 *) reg [3:0] engine_release /* synthesis syn_preserve=1 */;
     always @(posedge audio_clk or negedge link_reset_n)
         if(!link_reset_n)engine_release<=0;
         else engine_release<={engine_release[2:0],1'b1};
@@ -34,7 +34,7 @@ module audio_domain_bridge (
     reg [7:0] epoch,audio_epoch;
     reg [15:0] sent_config;
     reg pending_stop,pending_clear;
-    reg [1:0] lock_sync;
+    (* syn_async_reg=1 *) reg [1:0] lock_sync /* synthesis syn_preserve=1 */;
     reg link_seen;
     wire [15:0] desired_config=config_in | {pending_clear,pending_stop,14'd0};
     wire config_changed=desired_config!=sent_config || pending_stop || pending_clear;
@@ -54,18 +54,23 @@ module audio_domain_bridge (
         .rd_data(command),.rd_valid(command_valid),.rd_ready(command_ready));
     reg ack_pending,return_overflow;
     reg [31:0] pending_ack;
+    reg event_pending;
+    reg [16:0] staged_event;
     wire return_wr_ready,return_valid,return_almost_full;
     wire [31:0] returned;
     wire matching=audio_config_valid && command[30:23]==audio_epoch;
-    assign audio_event_valid=command_valid && !command[31] && matching &&
-                             !audio_config[14] && !audio_config[15] && !ack_pending;
-    assign audio_event_update=command[16];
-    assign audio_event_on=command[15];
-    assign audio_event_note=command[14:8];
-    assign audio_event_dynamics=command[7:0];
+    // Decode/epoch-check before the synth handshake. Keep the config frozen
+    // while this event is staged; ACK still means the synth accepted it.
+    wire stage_event=command_valid && !command[31] && matching &&
+        !audio_config[14] && !audio_config[15] && !event_pending && !ack_pending;
+    assign audio_event_valid=event_pending && !ack_pending;
+    assign audio_event_update=staged_event[16];
+    assign audio_event_on=staged_event[15];
+    assign audio_event_note=staged_event[14:8];
+    assign audio_event_dynamics=staged_event[7:0];
     wire fire=audio_event_valid && audio_event_ready;
-    assign command_ready=(command[31] && !ack_pending) || (!command[31] && !matching) ||
-                         (fire && !ack_pending);
+    assign command_ready=(!event_pending && !ack_pending &&
+                         (command[31] || (!command[31] && !matching))) || stage_event;
     wire [31:0] return_word=dac_tick ?
         {1'b1,audio_epoch,return_overflow,effect_fault,synth_fault,audio_busy,
          piano_busy,source_active,1'b0,dac_pcm} : pending_ack;
@@ -78,7 +83,9 @@ module audio_domain_bridge (
         if(!engine_reset_n)begin
             audio_config<=0;audio_config_valid<=0;audio_epoch<=0;
             ack_pending<=0;pending_ack<=0;return_overflow<=0;
+            event_pending<=0;staged_event<=0;
         end else begin
+            if(stage_event)begin staged_event<=command[16:0];event_pending<=1;end
             if(command_valid && command_ready && command[31])begin
                 audio_epoch<=command[30:23];audio_config<=command[15:0];audio_config_valid<=1;
                 if(command[14])begin
@@ -88,7 +95,8 @@ module audio_domain_bridge (
             end
             if(ack_pending && return_wr_ready && !dac_tick && !return_almost_full)ack_pending<=0;
             if(fire)begin
-                pending_ack<={1'b0,audio_epoch,1'b0,4'd0,audio_config[9],command[16:0]};ack_pending<=1;
+                event_pending<=0;
+                pending_ack<={1'b0,audio_epoch,1'b0,4'd0,audio_config[9],staged_event};ack_pending<=1;
             end
             if(dac_tick && !return_wr_ready)return_overflow<=1;
         end

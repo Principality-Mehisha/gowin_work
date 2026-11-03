@@ -22,8 +22,10 @@ module audio_effects #(
 );
     localparam IDLE=0,READ_WAIT=1,CALC=2,STORE=3,MIX=4,EMIT=5,
                V_WAIT0=6,V_SAVE0=7,V_WAIT1=8,V_SAVE1=9,V_BLEND=10,V_STORE=11,
-               T_CALC=12,T_GAIN=13;
-    reg [3:0] state;
+               T_CALC=12,T_GAIN=13,TARGET=14,GAIN=15,V_DEPTH=16,
+               V_EXCURSION=17,V_OFFSET=18,V_ADDRESS=19,SUM=20,
+               D_SAT=21,T_SAT=22,V_SAT=23;
+    reg [4:0] state;
     localparam RAM_BITS=DELAY_SAMPLES>8191 ? 14 : 13;
     localparam TAIL_MAX=DELAY_TAIL>VIBRATO_TAIL ? DELAY_TAIL : VIBRATO_TAIL;
     localparam TAIL_BITS=TAIL_MAX<2 ? 1 : $clog2(TAIL_MAX+1);
@@ -42,25 +44,27 @@ module audio_effects #(
     reg [7:0] fraction;
     reg [8:0] vibrato_delay;
     reg signed [25:0] product;
-    wire [6:0] bounded_amount=amount>100 ? 7'd100 : amount;
-    // Depth ramps by one Q0.8 unit per sample. Delay retains its old mix.
-    wire [6:0] target_gain=mode==0 ? 7'd0 : bounded_amount+(bounded_amount>>2);
-    wire [6:0] next_gain=!control_step ? wet_gain : (mode!=applied_mode || mode==0) ?
+    reg [1:0] mode_q;
+    reg [6:0] bounded_amount,target_gain;
+    reg control_step_q;
+    reg signed [31:0] depth_product,delay_excursion,delay_q8;
+    reg signed [17:0] wet_mix,final_mix;
+    // Snapshot at the sample boundary, then separate clamp/target/ramp stages.
+    wire [6:0] next_gain=!control_step_q ? wet_gain : (mode_q!=applied_mode || mode_q==0) ?
         (wet_gain!=0 ? wet_gain-1'b1 : 7'd0) :
         wet_gain<target_gain ? wet_gain+1'b1 :
         wet_gain>target_gain ? wet_gain-1'b1 : wet_gain;
     // Vibrato is fully pitch-modulated after the fade, not a chorus mix.
     // Its amount controls delay excursion, independently of bypass fading.
-    wire want_vibrato=mode==3 && applied_mode==3 && bounded_amount!=0;
-    wire [8:0] next_vibrato_mix=!control_step ? vibrato_mix : want_vibrato ?
+    wire want_vibrato=mode_q==3 && applied_mode==3 && bounded_amount!=0;
+    wire [8:0] next_vibrato_mix=!control_step_q ? vibrato_mix : want_vibrato ?
         (vibrato_mix<256 ? vibrato_mix+1'b1 : 9'd256) :
         (vibrato_mix!=0 ? vibrato_mix-1'b1 : 9'd0);
     wire [15:0] folded=lfo_phase[31] ? ~lfo_phase[30:15] : lfo_phase[30:15];
     wire signed [16:0] triangle=$signed({1'b0,folded})-17'sd32768;
     wire signed [31:0] triangle_ext={{15{triangle[16]}},triangle};
-    wire signed [31:0] delay_excursion=(triangle_ext*VIBRATO_DEPTH)*$signed({1'b0,next_gain});
-    wire signed [31:0] delay_q8=VIBRATO_BASE*256+(delay_excursion>>>14);
     wire [8:0] requested_delay=delay_q8[16:8];
+    wire [8:0] first_vibrato_address=position[8:0]-requested_delay;
     wire signed [15:0] old_value=warm ? memory_q : 16'sd0;
     wire signed [31:0] old_ext={{16{old_value[15]}},old_value};
     wire signed [31:0] dry_ext={{16{dry[15]}},dry};
@@ -70,6 +74,8 @@ module audio_effects #(
         $signed({wet[15],wet})-$signed({dry[15],dry});
     wire [8:0] mult_b=state==V_SAVE1 ? {1'b0,fraction} :
         state==T_CALC ? {1'b0,folded[15:8]} : sample_gain;
+    wire signed [25:0] product_value /* synthesis syn_dspstyle="dsp" */;
+    assign product_value=mult_a*$signed({1'b0,mult_b});
     assign busy=state!=IDLE;
     assign tail_active=tail_count!=0 &&
         ((applied_mode==1 && wet_gain!=0) || (applied_mode==3 && vibrato_mix!=0));
@@ -93,6 +99,8 @@ module audio_effects #(
             dry<=0;wet<=0;tap0<=0;wet_gain<=0;sample_gain<=0;vibrato_mix<=0;
             tail_count<=0;applied_mode<=0;lfo_phase<=0;fraction<=0;
             vibrato_delay<=0;warm<=0;product<=0;position<=0;filled<=0;
+            mode_q<=0;bounded_amount<=0;target_gain<=0;control_step_q<=0;
+            depth_product<=0;delay_excursion<=0;delay_q8<=0;wet_mix<=0;final_mix<=0;
         end else if(clear)begin
             state<=IDLE;out_sample<=0;out_valid<=0;deadline_error<=0;write_enable<=0;control_phase<=0;
             wet_gain<=0;sample_gain<=0;vibrato_mix<=0;tail_count<=0;
@@ -103,14 +111,22 @@ module audio_effects #(
             case(state)
                 IDLE:if(in_valid)begin
                     control_phase<=control_phase==CONTROL_RATE_RATIO-1 ? 0 : control_phase+1'b1;
-                    dry<=in_sample;wet_gain<=next_gain;vibrato_mix<=next_vibrato_mix;
+                    mode_q<=mode;bounded_amount<=amount>100 ? 7'd100 : amount;
+                    control_step_q<=control_step;dry<=in_sample;state<=TARGET;
+                end
+                TARGET:begin
+                    target_gain<=mode_q==0 ? 7'd0 : bounded_amount+(bounded_amount>>2);
+                    state<=GAIN;
+                end
+                GAIN:begin
+                    wet_gain<=next_gain;vibrato_mix<=next_vibrato_mix;
                     sample_gain<=applied_mode==3 ? next_vibrato_mix : {2'd0,next_gain};
                     if(applied_mode==0 || applied_mode==2)tail_count<=0;
-                    else if(in_sample>4 || in_sample< -4)
+                    else if(dry>4 || dry< -4)
                         tail_count<=applied_mode==1 ? DELAY_TAIL : VIBRATO_TAIL;
                     else if(tail_count!=0)tail_count<=tail_count-1'b1;
-                    if(mode!=applied_mode && wet_gain==0 && vibrato_mix==0)begin
-                        applied_mode<=mode;wet<=0;sample_gain<=0;tail_count<=0;lfo_phase<=0;
+                    if(mode_q!=applied_mode && wet_gain==0 && vibrato_mix==0)begin
+                        applied_mode<=mode_q;wet<=0;sample_gain<=0;tail_count<=0;lfo_phase<=0;
                         position<=0;filled<=0;state<=MIX;
                     end else case(applied_mode)
                         0:begin wet<=0;state<=MIX;end
@@ -118,16 +134,27 @@ module audio_effects #(
                             read_address<=position;warm<=filled>=DELAY_SAMPLES;state<=READ_WAIT;
                         end
                         2:state<=T_CALC;
-                        3:begin
-                            read_address<={4'd0,(position[8:0]-requested_delay)};
-                            vibrato_delay<=requested_delay;fraction<=delay_q8[7:0];
-                            warm<=filled>=requested_delay;state<=V_WAIT0;
-                        end
+                        3:state<=V_DEPTH;
                     endcase
+                end
+                V_DEPTH:begin depth_product<=triangle_ext*VIBRATO_DEPTH;state<=V_EXCURSION;end
+                V_EXCURSION:begin
+                    delay_excursion<=depth_product*$signed({1'b0,wet_gain});state<=V_OFFSET;
+                end
+                V_OFFSET:begin
+                    delay_q8<=VIBRATO_BASE*256+(delay_excursion>>>14);state<=V_ADDRESS;
+                end
+                V_ADDRESS:begin
+                    read_address<=first_vibrato_address;
+                    vibrato_delay<=requested_delay;fraction<=delay_q8[7:0];
+                    warm<=filled>=requested_delay;state<=V_WAIT0;
                 end
                 READ_WAIT:state<=CALC;
                 CALC:begin
-                    wet<=old_value;write_data<=saturate(dry_ext+(old_ext>>>1));
+                    wet<=old_value;wet_mix<=dry_ext+(old_ext>>>1);state<=D_SAT;
+                end
+                D_SAT:begin
+                    write_data<=saturate({{14{wet_mix[17]}},wet_mix});
                     write_enable<=1;write_address<=read_address;state<=STORE;
                 end
                 STORE:begin
@@ -135,12 +162,15 @@ module audio_effects #(
                     if(filled<DELAY_SAMPLES)filled<=filled+1'b1;
                     state<=MIX;
                 end
-                T_CALC:begin product<=mult_a*$signed({1'b0,mult_b});state<=T_GAIN;end
+                T_CALC:begin product<=product_value;state<=T_GAIN;end
                 T_GAIN:begin
                     // Equivalent to amplitude modulation down to ~3% at
                     // amount=100. The signed intermediate is never wrapped.
-                    wet<=saturate(dry_ext-(product>>>7));
-                    lfo_phase<=lfo_phase+LFO_STEP;state<=MIX;
+                    wet_mix<=dry_ext-(product>>>7);
+                    lfo_phase<=lfo_phase+LFO_STEP;state<=T_SAT;
+                end
+                T_SAT:begin
+                    wet<=saturate({{14{wet_mix[17]}},wet_mix});state<=MIX;
                 end
                 V_WAIT0:state<=V_SAVE0;
                 V_SAVE0:begin
@@ -149,9 +179,12 @@ module audio_effects #(
                     warm<=filled>=vibrato_delay+1'b1;state<=V_WAIT1;
                 end
                 V_WAIT1:state<=V_SAVE1;
-                V_SAVE1:begin product<=mult_a*$signed({1'b0,mult_b});state<=V_BLEND;end
+                V_SAVE1:begin product<=product_value;state<=V_BLEND;end
                 V_BLEND:begin
-                    wet<=saturate($signed(tap0)+(product>>>8));
+                    wet_mix<=$signed(tap0)+(product>>>8);state<=V_SAT;
+                end
+                V_SAT:begin
+                    wet<=saturate({{14{wet_mix[17]}},wet_mix});
                     write_address<=position;write_data<=dry;write_enable<=1;state<=V_STORE;
                 end
                 V_STORE:begin
@@ -159,9 +192,11 @@ module audio_effects #(
                     if(filled<512)filled<=filled+1'b1;
                     lfo_phase<=lfo_phase+LFO_STEP;state<=MIX;
                 end
-                MIX:begin product<=mult_a*$signed({1'b0,mult_b});state<=EMIT;end
+                MIX:begin product<=product_value;state<=SUM;end
+                SUM:begin final_mix<=dry_ext+(product>>>8);state<=EMIT;end
                 EMIT:begin
-                    out_sample<=dry==0 && tail_count==0 ? 16'sd0 : saturate(dry_ext+(product>>>8));
+                    out_sample<=dry==0 && tail_count==0 ? 16'sd0 :
+                        saturate({{14{final_mix[17]}},final_mix});
                     out_valid<=1;state<=IDLE;
                 end
                 default:state<=IDLE;

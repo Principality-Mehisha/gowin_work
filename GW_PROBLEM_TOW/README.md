@@ -4,8 +4,9 @@
 音频域现改为官方PLL的150 MHz，原生合成及DAC采样率48828.125 Hz；
 控制、压力扫描、UART/蓝牙和SD仍为50 MHz，双时钟传输使用官方FIFO。
 本轮未编译主工程或更新位流，最终编译由用户执行，详见[150 MHz音频域](docs/AUDIO_150MHZ.md)。
-当前新增马林巴参数ROM重排和双音色正弦表复用，参数精度、音色及采样率保持不变，
-结构估算可减少约12块BSRAM，尚待用户编译确认，见[ROM优化](docs/ROM_SHARING.md)。
+马林巴参数ROM重排和双音色正弦表复用已由用户编译确认BSRAM降至106/118，见[ROM优化](docs/ROM_SHARING.md)。
+当前完成首轮效果器流水、事件通路及CDC/复位修正，功能回归通过，但尚未重新综合/PnR，
+不能宣称150 MHz时序已收敛；新增系统域专属报告供下一轮定位，见[时序修正](docs/TIMING_150MHZ.md)。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
 完整16键压力输入：钢琴支持持续力度及原音高分组，马林巴使用前三组覆盖C2～B5共48音，
@@ -97,6 +98,7 @@ GW_PROBLEM_TOW
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_timing150.ps1 -Full
 powershell -ExecutionPolicy Bypass -File sim/run_rom_sharing.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_audio150.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_key_guide.ps1

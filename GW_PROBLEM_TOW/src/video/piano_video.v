@@ -14,7 +14,8 @@ module piano_video (
     video_clock clocks(.sys_clk(sys_clk),.reset(!reset_n),
         .serial_clk(serial_clk),.pixel_clk(pixel_clk),.locked(locked));
     wire clocks_ready=locked && reset_n;
-    reg [3:0] release_pipe,sys_release;
+    (* syn_async_reg=1 *) reg [3:0] release_pipe /* synthesis syn_preserve=1 */;
+    (* syn_async_reg=1 *) reg [3:0] sys_release /* synthesis syn_preserve=1 */;
     always @(posedge pixel_clk or negedge clocks_ready) begin
         if(!clocks_ready) release_pipe<=0;
         else release_pipe<={release_pipe[2:0],1'b1};
@@ -24,6 +25,17 @@ module piano_video (
         else sys_release<={sys_release[2:0],1'b1};
     end
     wire video_reset_n=release_pipe[3];
+    // Separate the tiny fabric reset-clock branch from the existing IO HCLK.
+    wire serializer_clk /* synthesis syn_keep=1 */;
+    DCE serializer_clock_buffer(
+        .CLKIN(serial_clk),.CE(1'b1),.CLKOUT(serializer_clk));
+    // CLKDIV /5 has a 60% duty cycle: both PCLK edges coincide with rising
+    // FCLK edges. Use falling FCLK for the three-bit reset release only.
+    (* syn_async_reg=1 *) reg [2:0] serializer_release /* synthesis syn_preserve=1 */;
+    always @(negedge serializer_clk or negedge video_reset_n)begin
+        if(!video_reset_n)serializer_release<=0;
+        else serializer_release<={serializer_release[1:0],1'b1};
+    end
     wire frame_tick,update,video_active;
     wire [31:0] video_ms;
     wire [87:0] video_keys;
@@ -57,7 +69,7 @@ module piano_video (
         .analysis_address(analysis_read_address),.frame_tick(frame_tick),.red(red),.green(green),.blue(blue),
         .hsync(hsync),.vsync(vsync),.de(de));
     dvi_tx tx(.pixel_clk(pixel_clk),.serial_clk(serial_clk),.reset_n(video_reset_n),
-        .serial_reset_n(video_reset_n),
+        .serial_reset_n(serializer_release[2]),
         .red(red),.green(green),.blue(blue),.hsync(hsync),.vsync(vsync),.de(de),
         .tmds_data_p(tmds_data_p),.tmds_data_n(tmds_data_n),
         .tmds_clk_p(tmds_clk_p),.tmds_clk_n(tmds_clk_n));

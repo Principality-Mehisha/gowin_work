@@ -27,8 +27,9 @@ def validate_score(data: bytes, instrument: str) -> None:
         raise ValueError(f"File must be 24..{MAX_FILE_BYTES} bytes")
     magic, version, record_bytes, slots, reserved, rate, count = struct.unpack_from("<4sBBBBII", data)
     expected = b"P88S" if instrument == "piano" else b"M42S"
-    if (magic, version, record_bytes, slots, reserved, rate) != (expected, 1, 8, 8, 0, 1000):
-        raise ValueError(f"Expected a {expected.decode()} v1 score")
+    if ((magic, version, record_bytes, reserved, rate) != (expected, 1, 8, 0, 1000)
+            or slots not in (8, 32)):
+        raise ValueError(f"Expected a {expected.decode()} v1 score with 8 or 32 slots")
     if not 1 <= count <= 20000 or len(data) != 16 + count * 8:
         raise ValueError("Header event count does not match the actual file length")
     previous = 0
@@ -39,7 +40,7 @@ def validate_score(data: bytes, instrument: str) -> None:
         if index == count - 1:
             if (slot, note, velocity) != (255, 255, 0):
                 raise ValueError("Missing final end record")
-        elif slot >= 8 or velocity >= 128 or not (
+        elif slot >= slots or velocity >= 128 or not (
             0 <= note <= 87 if instrument == "piano" else 36 <= note <= 83
         ):
             raise ValueError(f"Invalid note event {index}")

@@ -12,7 +12,7 @@ from midi_notes import read_notes
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "sd_card"
-VOICES = 8
+VOICES = 32
 
 
 def pack_score(events):
@@ -44,7 +44,7 @@ def compile_notes(notes, duration):
             if not free:
                 # Reuse a released voice before considering any active voice.
                 if not released:
-                    raise ValueError("Arrangement exceeds eight simultaneous notes")
+                    raise ValueError(f"Arrangement exceeds {VOICES} simultaneous notes")
                 _, slot = heapq.heappop(released)
             else:
                 slot = heapq.heappop(free)

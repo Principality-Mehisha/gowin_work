@@ -65,12 +65,12 @@ class PianoLibraryTests(unittest.TestCase):
         self.assertEqual([(n["start_ms"], n["end_ms"]) for n in score["notes"]],
                          [(0, 250), (250, 750)])
 
-    def test_nine_notes_are_rejected_without_publishing_a_partial_library(self):
+    def test_33_notes_are_rejected_without_publishing_a_partial_library(self):
         source_dir = self.root / "source"
         for song in CATALOG:
-            count = 9 if song["number"] == 2 else 1
+            count = 33 if song["number"] == 2 else 1
             write_midi(source_dir / song["midi"], [(0, 480, 48 + i, 100, 0) for i in range(count)])
-        with self.assertRaisesRegex(ValueError, "eight simultaneous"):
+        with self.assertRaisesRegex(ValueError, "32 simultaneous"):
             generate(source_dir, self.root / "out")
         self.assertFalse((self.root / "out").exists())
 
@@ -89,7 +89,7 @@ class PianoLibraryTests(unittest.TestCase):
         self.assertEqual([r["file"] for r in reports], ["PN001.BIN", "PN002.BIN", "PN003.BIN"])
         for report in reports:
             data = load_score(self.root / "out" / report["file"], "piano")
-            self.assertEqual(struct.unpack_from("<4sBBBBII", data)[:6], (b"P88S", 1, 8, 8, 0, 1000))
+            self.assertEqual(struct.unpack_from("<4sBBBBII", data)[:6], (b"P88S", 1, 8, 32, 0, 1000))
             self.assertEqual(report["bytes"], len(data))
         with self.assertRaises(FileExistsError):
             generate(source_dir, self.root / "out")

@@ -4,6 +4,7 @@ import hashlib,json,struct,wave
 from pathlib import Path
 from fit_marimba_params import np,signal
 ROOT=Path(__file__).resolve().parents[1]
+VOICES=32
 
 def main():
     source=ROOT/'assets/ringtone/apple_marimba_pcm_board.wav'
@@ -36,13 +37,13 @@ def main():
             a['time_ms']=attacks[i-1]['time_ms']
     events=[]
     for i,a in enumerate(attacks):
-        slot=i%8
+        slot=i%VOICES
         events.append((a['time_ms'],slot,a['midi'],a['velocity'],0))
         events.append((a['time_ms']+90,slot,a['midi'],0,0))
     events.sort(key=lambda x:(x[0],x[3]!=0,x[1]))
     end=max(round(len(audio)/fs*1000),max(x[0] for x in events)+1200)
     events.append((end,255,255,0,0))
-    payload=struct.pack('<4sBBBBII',b'M42S',1,8,8,0,1000,len(events))+b''.join(struct.pack('<IBBBB',*e) for e in events)
+    payload=struct.pack('<4sBBBBII',b'M42S',1,8,VOICES,0,1000,len(events))+b''.join(struct.pack('<IBBBB',*e) for e in events)
     out=ROOT/'sd_card';out.mkdir(parents=True,exist_ok=True);(out/'RINGTONE.BIN').write_bytes(payload)
     report=dict(format='M42S v1; MIDI 36..83; timestamps ms; velocity 1..127; zero=note off',
                 source=str(source.relative_to(ROOT)),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),

@@ -34,7 +34,7 @@ def verify_bundle(directory, song, report):
     score = (directory / report["file"]).read_bytes()
     _, decoded = read_p88s(directory / report["file"])
     assert decoded["note_count"] == report["note_count"]
-    assert decoded["peak_polyphony"] == report["peak_polyphony"] <= 8
+    assert decoded["peak_polyphony"] == report["peak_polyphony"] <= 32
     bundle = directory / "bluetooth" / report["file"][:-4]
     begin = (bundle / "BEGIN.bin").read_bytes()
     merged = (bundle / f'{report["file"][:-4]}_DATA_END.bin').read_bytes()
@@ -83,7 +83,7 @@ def generate(source_dir, destination, download=False):
             seconds = round(report["duration_ms"]/1000)
             lines.append(f'| {report["file"]} | {report["title"]} | {seconds//60}:{seconds%60:02} | {report["bytes"]} | {report["peak_polyphony"]} |')
         lines += ["", "## 手机蓝牙发送", "",
-                  "使用与固定槽位布局及蓝牙v2协议匹配的FPGA固件、已初始化的SD卡。串口设置115200/8N1。",
+                  "使用支持32音符槽、固定槽位布局及蓝牙v2协议的FPGA固件、已初始化的SD卡。串口设置115200/8N1。",
                   "先停止SD播放。解压ZIP后打开对应 bluetooth/PNxxx 文件夹，按以下顺序用RAW文件发送：", "",
                   "1. 发送该文件夹的 BEGIN.bin，等待 READY（不是仅等待手机发送完毕）。",
                   "2. READY后30秒内开始发送同文件夹的 PNxxx_DATA_END.bin，等待最终成功。",
@@ -99,7 +99,7 @@ def generate(source_dir, destination, download=False):
         lines += ["```", "", "## 内容与来源", "",
                   "按源MIDI全部事件转换，保留源文件中的速度、力度和踏板信息，不删音、不裁剪。",
                   "实际演奏长度及反复以来源MIDI为准。毫秒量化与合成音色不等同真人录音。",
-                  "已检查8事件槽位、A0～C8音域、100 KiB大小、音符开关配对及首尾蓝牙帧CRC。",
+                  "已检查32事件槽位、A0～C8音域、100 KiB大小、音符开关配对及首尾蓝牙帧CRC。",
                   "未打开COM口、写入物理SD卡或下载FPGA；未做实板试听。", ""]
         for song in SELECTED:
             lines += [f'- {song["title"]} / {song["composer"]}: {song["page"]}', f'  {song["source_notice"]}']

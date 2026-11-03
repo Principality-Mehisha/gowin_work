@@ -12,8 +12,8 @@ module tb_score_full;
     wire [63:0] event_data;
     wire [3:0] fat_error, score_error;
     wire playing, finished, error;
-    wire [55:0] notes, velocities;
-    wire [7:0] gates, triggers;
+    wire [223:0] notes, velocities;
+    wire [31:0] gates, triggers;
     `include "../output/fixed_slots/layout.vh"
     fixed_slot_reader reader (
         .slot_index(8'd1),.file_name("PN002   BIN"),.scan_catalog(1'b1),

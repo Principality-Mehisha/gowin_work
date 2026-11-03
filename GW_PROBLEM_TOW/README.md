@@ -9,6 +9,10 @@
 不能宣称150 MHz时序已收敛；新增系统域专属报告供下一轮定位，见[时序修正](docs/TIMING_150MHZ.md)。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
+SD乐谱现支持32复音，PN/MB新文件使用32个音符事件槽，兼容已有8槽文件。
+音源上限仍为钢琴88音、马林巴48音；新生成器默认32槽，旧BIN及SD布局无需重做。
+32槽BIN需配套重新编译、下载FPGA固件；未更新现有发布位流，详见[乐谱格式](docs/AUDIO_AND_SD.md)。
+
 完整16键压力输入：钢琴支持持续力度及原音高分组，马林巴使用前三组覆盖C2～B5共48音，
 按下时的压力决定敲击力度，之后自然衰减，按住不重复敲击。SD自动播放和串口屏试听期间暂停压力输入；PN跟弹期间开放。
 切回后仍按住的键需先松开再按，KEY2重新校准时保持全部松键。
@@ -99,6 +103,7 @@ GW_PROBLEM_TOW
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_polyphony32.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_timing150.ps1 -Full
 powershell -ExecutionPolicy Bypass -File sim/run_rom_sharing.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_audio150.ps1

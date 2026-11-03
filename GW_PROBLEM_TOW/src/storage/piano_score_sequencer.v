@@ -1,9 +1,10 @@
 // Event FIFO decouples bursty SD/FAT reads from the millisecond score clock.
 // Automatic playback uses the score clock; guided playback waits per onset group.
+// Prefill two 32-note on/off groups before starting across SD sector boundaries.
 module piano_score_sequencer #(
     parameter integer CLOCKS_PER_MS = 50000,
     parameter integer FIFO_BITS = 8,
-    parameter integer PREFILL_EVENTS = 32
+    parameter integer PREFILL_EVENTS = 128
 ) (
     input wire clk, rst_n,
     input wire paused,
@@ -23,10 +24,10 @@ module piano_score_sequencer #(
     output wire dispatch_on,
     output wire [6:0] dispatch_note,
     output wire [7:0] dispatch_dynamics,
-    output reg [55:0] notes,
-    output reg [55:0] velocities,
-    output reg [7:0] gates,
-    output reg [7:0] triggers,
+    output reg [223:0] notes,
+    output reg [223:0] velocities,
+    output reg [31:0] gates,
+    output reg [31:0] triggers,
     output reg playing, finished, error,
     output reg [31:0] elapsed_ms
 );

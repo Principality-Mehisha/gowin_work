@@ -22,6 +22,7 @@ module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
     reg [3:0] index;
     reg [127:0] header;
     reg [63:0] record;
+    reg [7:0] score_slots;
     reg [31:0] events_left, last_time;
     reg eof_seen;
     wire take = valid && ready;
@@ -40,6 +41,7 @@ module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
         if (!rst_n) begin
             state <= HEADER; index <= 0; header <= 0; record <= 0;
             events_left <= 0; last_time <= 0; eof_seen <= 0;
+            score_slots <= 8;
             event_data <= 0; event_valid <= 0; format_ok <= 0;
             complete <= 0; error_code <= 0;
         end else begin
@@ -58,12 +60,15 @@ module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
                 end
                 CHECK_HEADER: begin
                     if (header[31:0] != expected_magic || header[39:32] != 1 ||
-                        header[47:40] != 8 || header[55:48] != 8 || header[63:56] != 0 ||
+                        header[47:40] != 8 ||
+                        (header[55:48] != 8 && header[55:48] != 32) ||
+                        header[63:56] != 0 ||
                         header[95:64] != 1000 || header[127:96] == 0 ||
                         header[127:96] > 20000 ||
                         ({3'd0, header[127:96]} << 3) + 35'd16 != {3'd0, file_size})
                         fail(1);
                     else begin
+                        score_slots <= header[55:48];
                         events_left <= header[127:96]; format_ok <= 1; state <= RECORD;
                     end
                 end
@@ -75,7 +80,7 @@ module piano_score_reader #(parameter integer DYNAMIC_FORMAT = 0) (
                 CHECK_RECORD: begin
                     if (timestamp < last_time || record[63:56] != 0 ||
                         (events_left == 1 && !end_record) ||
-                        (events_left != 1 && (slot >= 8 || invalid_note || velocity >= 128)))
+                        (events_left != 1 && (slot >= score_slots || invalid_note || velocity >= 128)))
                         fail(2);
                     else begin
                         event_data <= record; event_valid <= 1;

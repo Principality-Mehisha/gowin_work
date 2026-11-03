@@ -61,6 +61,13 @@ module tb_follow_sequencer;
         press(22);repeat(8)@(negedge clk);if(!waiting)$fatal(1,"Stale held press counted");
         pressed=0;repeat(3)@(negedge clk);press(22);wait(finished);
         if(error || keys)$fatal(1,"EOF failed");
+        // A 32-slot chord still prompts only the highest physical 16-key group.
+        reset();
+        for(n=0;n<32;n=n+1)put(0,n,n,100);
+        put(20,255,255,0);done=1;wait(waiting);#1;
+        if(group_id!=1 || keys!==(88'hffff<<16))$fatal(1,"32-slot guide chord wrong");
+        for(n=16;n<32;n=n+1)press(n);
+        wait(finished);if(error)$fatal(1,"32-slot guide chord failed");
         // Every note, including all eight top-group keys; terminal at same time.
         for(n=0;n<88;n=n+1)begin
             reset();put(0,0,n,100);put(0,255,255,0);done=1;
@@ -77,7 +84,7 @@ module tb_follow_sequencer;
         if(!error || waiting || keys)$fatal(1,"Stream error did not clear target");
         mode=0;reset();put(0,0,3,100);put(3,255,255,0);done=1;
         wait(finished);if(error || waiting)$fatal(1,"Automatic playback broken");
-        passed=1;$display("PASS follow sequencer: all 88 targets, cross-group chord, fresh simultaneous presses, repeats, delayed refill, full FIFO, same-time EOF, errors, automatic mode");$finish;
+        passed=1;$display("PASS follow sequencer: all 88 targets, 32-slot cross-group chord, fresh simultaneous presses, repeats, delayed refill, full FIFO, same-time EOF, errors, automatic mode");$finish;
     end
     initial begin #10000000;$fatal(1,"Follow sequencer timeout");end
 endmodule

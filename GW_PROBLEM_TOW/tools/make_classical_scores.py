@@ -2,7 +2,7 @@
 
 No serial ports or physical SD cards are accessed. Existing files are kept
 unless --force is supplied. MIDI tempo, dynamics and sustain are decoded by
-the project's existing reader; notes are never stolen to fit eight slots.
+the project's existing reader; notes are never stolen to fit 32 slots.
 """
 from __future__ import annotations
 
@@ -93,6 +93,7 @@ def convert_song(song, midi_path, output_dir):
     pitches = [n["pitch"] for n in notes]
     return dict(number=song["number"], title=song["title"], composer=song["composer"],
                 file=name, format="P88S v1", protocol=2,
+                voices=checked["voices"],
                 bytes=len(data), event_count=len(events),
                 source_note_count=len(source_notes), note_count=len(notes),
                 peak_polyphony=peak, duration_ms=checked["duration_ms"],
@@ -140,14 +141,14 @@ def generate(source_dir, output_dir, *, download=False, force=False):
             seconds = round(item["duration_ms"] / 1000)
             lines.append(f"| {item['file']} | {item['title']} | {seconds // 60}:{seconds % 60:02} | {item['bytes']} | {item['peak_polyphony']} | {item['crc32']} |")
         lines += ["", "三个编号是建议映射；上传时以 --number 指定的目标槽位为准。",
-                  "已保留 MIDI 速度变化与力度，未裁剪曲长、未丢弃其他音高来凑八声部。",
+                  "已保留 MIDI 速度变化与力度，未裁剪曲长、未丢弃其他音高来凑32声部。",
                   "同音同刻合并；踏板延长的同音在下一次击键前释放，适配合成器的同音重触发。", "",
                   "## 上传", "", "在项目根目录运行；将 COM8 替换成实际蓝牙串口：", "", "```powershell"]
         for song in CATALOG:
             file = output_dir / f"PN{song['number']:03}.BIN"
             lines.append(f'python -B tools/bluetooth_upload.py "{file}" --instrument piano --number {song["number"]} --port COM8')
         lines += ["```", "", "省略 --port 只做离线检查。上传前停止播放，等待最终 Upload committed 后再播放。",
-                  "SD 卡和 FPGA 固件必须支持项目的固定槽位布局及蓝牙 v2；文件不需要填充到 100 KiB。",
+                  "SD 卡和 FPGA 固件必须支持项目的固定槽位布局、蓝牙 v2及32音符槽；文件不需要填充到 100 KiB。",
                   "BEGIN/READY → BIN 原始字节 → END/最终成功；普通裸文件发送不能省略首尾控制帧。",
                   "新增曲目可用频谱/波形；当前内置瀑布流谱面不随这三个文件更新。", "",
                   "## 来源", ""]

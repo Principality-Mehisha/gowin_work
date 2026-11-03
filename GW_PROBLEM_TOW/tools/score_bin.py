@@ -15,8 +15,9 @@ def read_p88s(path: Path):
     if len(data) < 24:
         raise ValueError('P88S file is shorter than its header and terminal event')
     magic, version, size, voices, reserved, rate, count = struct.unpack_from('<4sBBBBII', data)
-    if (magic, version, size, voices, reserved, rate) != (b'P88S', 1, 8, 8, 0, 1000):
-        raise ValueError('Expected P88S v1, 8-byte records, 8 voices, 1000 ticks/second')
+    if ((magic, version, size, reserved, rate) != (b'P88S', 1, 8, 0, 1000)
+            or voices not in (8, 32)):
+        raise ValueError('Expected P88S v1, 8-byte records, 8 or 32 voices, 1000 ticks/second')
     if not 1 <= count <= 20000 or len(data) != 16 + count * 8:
         raise ValueError('P88S event count/file size mismatch')
     active = {}
@@ -60,7 +61,7 @@ def read_p88s(path: Path):
                 for n in notes for t in [frame_at_ms(n['start_ms'])])
     metadata = dict(format='P88S v1', path=str(path.resolve()),
                     sha256=hashlib.sha256(data).hexdigest(), bytes=len(data),
-                    event_count=count, note_count=len(notes), duration_ms=last_time,
+                    event_count=count, note_count=len(notes), duration_ms=last_time, voices=voices,
                     peak_polyphony=peak, used_keys=len({n['note'] for n in notes}),
                     max_quantization_error_ms=round(error, 6), notes=notes)
     return events, metadata

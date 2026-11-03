@@ -36,11 +36,20 @@
 旧三首名字、CMD=0x10及普通FAT文件搜索已移除；已有编号槽位位置不变。
 
 两种格式均为小端序：16 字节头，后接每条 8 字节事件。
-头部为 `magic[4], version=1, event_bytes=8, slots=8, reserved=0, ticks_per_second=1000(u32), event_count(u32)`。
+头部为 `magic[4], version=1, event_bytes=8, slots=32, reserved=0, ticks_per_second=1000(u32), event_count(u32)`。
 事件为 `time_ms(u32), slot(u8), note(u8), velocity(u8), reserved=0(u8)`。
-slot 为 0～7，velocity 为 1～127 表示 note-on，0 表示 note-off。
+新乐谱支持32个同时保持的音符，slot 为 0～31；旧 `slots=8` 文件仍支持，slot 必须为0～7。
+velocity 为 1～127 表示 note-on，0 表示 note-off。
 结束记录使用 slot=255、note=255、velocity=0。时间戳必须非递减。
 P88S 音符为钢琴索引 0～87，M42S 为 MIDI 36～83。内部力度由 velocity 左移一位转换。
+
+32槽文件需要重新编译并下载支持本格式的FPGA固件；旧固件会拒绝 `slots=32` 头部。
+文件仍为v1、8字节事件，蓝牙仍为v2；200个100 KiB文件槽位及卡布局不变，不需为此重新初始化卡。
+已有8槽BIN及已准备的蓝牙包可继续使用；新生成器默认32槽，不自动改写已有曲目。
+同一音高只有一个音源状态，重复击键为重触发；松键后的尾音不占乐谱保持槽。
+调度状态扩展为32槽，事件FIFO仍为256条，默认预填由32增至128条（短曲读完即可开始）。
+预填改善32音和弦跨扇区衔接，不改变SD持续吞吐；不能保证任意密度的事件流都不会欠载。
+专项入口为 `sim/run_polyphony32.ps1`，功能仿真不能代替布线时序和实板验证。
 
 SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
 错误分类：1x=SD，2x=FAT，3x=乐谱，40=调度，50=合成超时，60=UART反馈溢出，

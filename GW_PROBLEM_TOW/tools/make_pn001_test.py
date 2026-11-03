@@ -31,7 +31,8 @@ def write_new_files(output: Path, files: dict[str, bytes]) -> None:
 
 def two_send_instructions(score_size: int) -> bytes:
     return (
-        "Two-send upload with the CURRENT FPGA firmware (no RTL change):\n"
+        "Two-send upload with FPGA firmware supporting the score header's slot count:\n"
+        "New 32-slot scores require the updated FPGA firmware; old 8-slot firmware rejects them.\n"
         "1. Send BEGIN.bin as RAW; wait for a successful READY response.\n"
         f"2. Within 30 seconds, send {MERGED_NAME} as RAW; wait for final success.\n"
         f"{MERGED_NAME} = complete PN001.BIN ({score_size} bytes) + END.bin (10 bytes).\n"

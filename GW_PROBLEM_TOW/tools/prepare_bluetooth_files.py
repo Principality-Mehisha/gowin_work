@@ -30,6 +30,7 @@ def prepare(score: bytes, instrument: str, number: int, data_name: str | None = 
         "instrument": instrument,
         "number": number,
         "score_bytes": len(score),
+        "score_slots": score[6],
         "score_crc32": f"{checksum:08X}",
         "score_sha256": hashlib.sha256(score).hexdigest(),
         "begin_hex": begin.hex(" ").upper(),
@@ -41,6 +42,7 @@ def prepare(score: bytes, instrument: str, number: int, data_name: str | None = 
     }
     notes = (
         f"TARGET: {target}. The target is encoded in BEGIN, NOT inferred from the transport filename.\n"
+        f"Requires FPGA firmware supporting {score[6]} score slots; legacy 8-slot firmware rejects 32-slot scores.\n"
         "Use these two files as a matched pair; do not reuse BEGIN from a different score.\n"
         f"1. Send BEGIN.bin as RAW; wait for READY.\n"
         f"2. Within 30 seconds of READY, send {data_name} as RAW; wait for final success.\n"

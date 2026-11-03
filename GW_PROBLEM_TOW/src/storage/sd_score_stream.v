@@ -22,8 +22,8 @@ module sd_score_stream #(
     output wire [7:0] dispatch_dynamics,
     output wire initialized, file_found, playing, finished, sequence_error,
     output wire [3:0] sd_error_code, fat_error, score_error,
-    output wire [55:0] notes, velocities,
-    output wire [7:0] gates, triggers,
+    output wire [223:0] notes, velocities,
+    output wire [31:0] gates, triggers,
     output wire [31:0] elapsed_ms,
     output wire [199:0] catalog_mask,
     output wire catalog_done

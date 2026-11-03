@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module GSR(input wire GSRI); wire GSRO=GSRI; endmodule
 
-module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output reg passed=0);
+module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0, POLYPHONY32=0)(output reg passed=0);
     `include "../output/fixed_slots/layout.vh"
     localparam TICKS=8, BIT_NS=20*TICKS;
     reg clk=0, key=0, bt_rx=1, screen_rx=1, card_reset=0;
@@ -127,7 +127,7 @@ module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output re
             checked=checked+12;
         end
     endtask
-    task make_score(input integer bytes,input bit marimba=0);
+    task make_score(input integer bytes,input bit marimba=0,input integer slots=8);
         integer count;
         reg [31:0] timestamp;
         begin
@@ -135,11 +135,12 @@ module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output re
             for(integer p=0;p<bytes;p=p+1)content[p]=0;
             content[0]=marimba ? "M" : "P";content[1]=marimba ? "4" : "8";
             content[2]=marimba ? "2" : "8";content[3]="S";
-            content[4]=1;content[5]=8;content[6]=8;content[8]=8'he8;content[9]=3;
+            content[4]=1;content[5]=8;content[6]=slots;content[8]=8'he8;content[9]=3;
             for(integer b=0;b<4;b=b+1)content[12+b]=count>>(b*8);
             for(integer r=0;r<count;r=r+1)begin
                 timestamp=r<2 ? r*100 : 32'h00005aa5+(r-2)*100;
                 for(integer b=0;b<4;b=b+1)content[16+r*8+b]=timestamp>>(b*8);
+                content[16+r*8+4]=slots==32 ? (r/2)%slots : 0;
                 content[16+r*8+5]=marimba ? 60 : 39;content[16+r*8+6]=r%2==0 ? 100 : 0;
             end
             content[bytes-4]=255;content[bytes-3]=255;content[bytes-2]=0;
@@ -222,6 +223,23 @@ module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output re
     endtask
     initial begin : run_cases
         repeat(8)@(posedge clk);key=1;card_reset=1;repeat(32)@(posedge clk);
+        if(POLYPHONY32)begin
+            make_score(1032,0,32);begin_upload(1,1);
+            send_content;send_packet(3,0);expect_reply(3,0);check_file(0);play(1,1);
+            make_score(1032,1,32);begin_upload(2,1);
+            send_content;send_packet(3,0);expect_reply(3,0);check_file(100);play(2,1);
+            // CRC-correct but out-of-range slot 32 must not be committed.
+            make_score(1032,0,32);content[20]=32;checksum=32'hffffffff;
+            for(i=0;i<size;i=i+1)checksum=crc32(checksum,content[i]);
+            checksum=~checksum;
+            begin_upload(1,1);send_content;send_packet(3,0);expect_reply(3,7);
+            if(word32(8*512+24)!=0)$fatal(1,"Invalid slot32 was committed");
+            make_score(1032);begin_upload(1,1);
+            send_content;send_packet(3,0);expect_reply(3,0);check_file(0);play(1,1);
+            passed=1;
+            $display("PASS Bluetooth32: PN/MB headers and slot31 upload/commit/play, invalid slot32 rejected, legacy8 recovery");
+            disable run_cases;
+        end
         if(RESET_ONLY)begin
             make_score(1032);begin_upload(1,1);
             for(i=0;i<520;i=i+1)send_byte(content[i]);
@@ -312,5 +330,10 @@ endmodule
 module tb_bluetooth_reset;
     wire passed;
     fixed_slot_case #(.RESET_ONLY(1)) test(passed);
+    initial begin wait(passed);$finish;end
+endmodule
+module tb_bluetooth_polyphony32;
+    wire passed;
+    fixed_slot_case #(.POLYPHONY32(1)) test(passed);
     initial begin wait(passed);$finish;end
 endmodule

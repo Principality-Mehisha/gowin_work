@@ -7,13 +7,14 @@ import mido
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/'assets/ringtone/android/samsung_over_the_horizon_s3.mid'
 SOURCE_URL='http://onj3.andrelouis.com/phonetones/unzipped/Samsung/GT-E1270/01%20Ringtones/07%20Over%20the%20horizon.mid'
+VOICES=32
 
 def main():
     midi=mido.MidiFile(SOURCE)
     tracks=[t for t in midi.tracks if any(m.type=='program_change' and m.program==12 for m in t)]
     assert len(tracks)==1 and tracks[0].name=='Marimba'
     channels={m.channel for m in tracks[0] if m.type=='program_change' and m.program==12}
-    tempo=500000;seconds=0;free=list(range(8));heapq.heapify(free)
+    tempo=500000;seconds=0;free=list(range(VOICES));heapq.heapify(free)
     active={};events=[];notes=[];note_slots={};peak=0;fixed_pitchwheel=set()
     for message in mido.merge_tracks(midi.tracks):
         seconds+=mido.tick2second(message.time,midi.ticks_per_beat,tempo)
@@ -24,7 +25,7 @@ def main():
         milliseconds=round(seconds*1000)
         if message.type=='note_on' and message.velocity:
             assert 36<=message.note<=83
-            assert free,'More than eight simultaneous MIDI notes'
+            assert free,f'More than {VOICES} simultaneous MIDI notes'
             slot=heapq.heappop(free);active.setdefault(message.note,[]).append(slot)
             events.append((milliseconds,slot,message.note,message.velocity,0))
             notes.append(dict(time_ms=milliseconds,midi=message.note,velocity=message.velocity,slot=slot))
@@ -50,7 +51,7 @@ def main():
     events.sort(key=lambda e:(e[0],e[3]!=0,e[1]))
     end=max(math.ceil(midi.length*1000),events[-1][0]+1200)
     events.append((end,255,255,0,0))
-    payload=struct.pack('<4sBBBBII',b'M42S',1,8,8,0,1000,len(events))+b''.join(struct.pack('<IBBBB',*e) for e in events)
+    payload=struct.pack('<4sBBBBII',b'M42S',1,8,VOICES,0,1000,len(events))+b''.join(struct.pack('<IBBBB',*e) for e in events)
     out=ROOT/'sd_card';(out/'ANDROID.BIN').write_bytes(payload)
     report=dict(title='Samsung Over the Horizon (2012/S3) - marimba part arrangement',
         source=str(SOURCE.relative_to(ROOT)),source_url=SOURCE_URL,

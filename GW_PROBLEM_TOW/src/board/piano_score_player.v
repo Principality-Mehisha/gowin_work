@@ -116,8 +116,8 @@ module piano_score_player #(
     wire [6:0] effect_amount;
     wire signed [15:0] dac_sample_pcm;
     wire signed [15:0] pcm_right=pcm;
-    wire [55:0] notes,velocities;
-    wire [7:0] gates,triggers;
+    wire [223:0] notes,velocities;
+    wire [31:0] gates,triggers;
     wire guide_mode,guide_changed,guide_waiting,guide_hit;
     wire [2:0] guide_group;
     wire [6:0] guide_hit_note;

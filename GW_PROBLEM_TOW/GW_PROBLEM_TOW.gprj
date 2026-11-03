@@ -24,6 +24,7 @@
         <File path="src/audio/marimba_synth.v" type="file.verilog" enable="1"/>
         <File path="src/audio/output_limiter.v" type="file.verilog" enable="1"/>
         <File path="src/audio/piano_synth.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/sine_pair_rom.v" type="file.verilog" enable="1"/>
         <File path="src/audio/pt8211_score_tx.v" type="file.verilog" enable="1"/>
         <File path="src/board/GW_PROBLEM_TOW.v" type="file.verilog" enable="1"/>
         <File path="src/board/board_reset.v" type="file.verilog" enable="1"/>

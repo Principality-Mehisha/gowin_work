@@ -3,6 +3,7 @@
 // MIDI notes 36..83 map to the fitted C2..B5 range.
 module marimba_synth #(
     parameter integer EXTERNAL_LIMITER=0,
+    parameter integer EXTERNAL_SINE=0,
     parameter integer SAMPLE_RATE_RATIO=1,
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter MODE_FILE = "src/rom/marimba48.hex",
@@ -20,7 +21,10 @@ module marimba_synth #(
     output wire signed [31:0] output_mix,
     output wire output_mix_valid,
     output reg deadline_error,
-    output wire voice_busy
+    output wire voice_busy,
+    output wire [7:0] sine_read_address,
+    output wire sine_read_enable,
+    input wire signed [15:0] external_sine_value,external_sine_next
 );
     localparam NOTE_FIRST = 7'd36;
     localparam NOTE_COUNT = 48;
@@ -47,17 +51,26 @@ module marimba_synth #(
     reg [31:0] noise_state_ram [0:63]; // {level[15:0], lfsr[15:0]}
     reg [47:0] mode_state_q;
     reg [31:0] noise_state_q;
-    reg [255:0] mode_rom [0:NOTE_COUNT-1];
-    reg [31:0] attack_rom [0:NOTE_COUNT-1];
-    reg signed [15:0] sine_rom [0:255];
-    reg [255:0] mode_row;
-    reg [31:0] attack_row;
+    // 0..191: one 64-bit mode; 192..239: one 32-bit attack in the low half.
+    reg [63:0] mode_rom [0:255];
+    reg [63:0] selected_mode;
+    wire [31:0] attack_row=selected_mode[31:0];
     reg [31:0] mode_step, mode_phase;
     reg [15:0] mode_decay, mode_level;
     reg [15:0] noise_level, noise_step, noise_lfsr;
     reg [7:0] note_dynamics;
     reg trigger_note;
-    reg signed [15:0] sine_value, sine_next;
+    wire signed [15:0] sine_value, sine_next;
+    assign sine_read_address=mode_phase[31:24];
+    assign sine_read_enable=state==SINE_READ;
+    generate if(EXTERNAL_SINE)begin: shared_sine
+        assign sine_value=external_sine_value;
+        assign sine_next=external_sine_next;
+    end else begin: local_sine
+        sine_pair_rom #(.SINE_FILE(SINE_FILE)) lookup(
+            .clk(clk),.enable(sine_read_enable),.address(sine_read_address),
+            .value(sine_value),.next_value(sine_next));
+    end endgenerate
     reg [7:0] phase_fraction;
     reg signed [16:0] interpolated_sample;
     reg signed [31:0] amp_sample, scaled_sample, noise_amp, noise_sample;
@@ -68,13 +81,18 @@ module marimba_synth #(
     reg signed [47:0] mult_product;
     wire signed [47:0] mult_result = mult_a * mult_b;
     wire [7:0] mode_address = {note_index, mode_index};
-    wire [63:0] selected_mode = select_mode(mode_row, mode_index);
     // Fetch the next mode on the clock that advances its index. NOTE_START
     // always fetches mode zero, including when the previous note ended at 3.
     // This hides the synchronous RAM latency inside existing FSM cycles.
     wire [7:0] mode_read_address = state == NOTE_START ? {note_index, 2'd0} :
         ((state == MODE_COMMIT || state == ADVANCE) && mode_index != 3) ?
         mode_address + 8'd1 : mode_address;
+    // Mode 3 consumes its parameters before fetching the attack, so this
+    // single read port needs no extra FSM clocks or parallel wide-row ROM.
+    wire attack_fetch=state==MODE_LOAD && mode_index==3;
+    wire parameter_fetch=state==NOTE_START || attack_fetch ||
+        ((state==MODE_COMMIT || state==ADVANCE) && mode_index!=3);
+    wire [7:0] parameter_address=attack_fetch ? 8'd192+{2'd0,note_index} : mode_read_address;
     wire [31:0] stored_phase = mode_state_q[47:16];
     wire [15:0] stored_level = mode_state_q[15:0];
     wire [15:0] stored_noise_level = noise_state_q[31:16];
@@ -90,19 +108,6 @@ module marimba_synth #(
     wire signed [31:0] filtered_sample;
     wire filtered_valid;
 
-    function [63:0] select_mode;
-        input [255:0] row;
-        input [1:0] index;
-        begin
-            case (index)
-                0: select_mode = row[63:0];
-                1: select_mode = row[127:64];
-                2: select_mode = row[191:128];
-                default: select_mode = row[255:192];
-            endcase
-        end
-    endfunction
-
     function [15:0] next_lfsr;
         input [15:0] current;
         reg feedback;
@@ -114,10 +119,20 @@ module marimba_synth #(
         end
     endfunction
 
+    // Initialization-only arrays retain the existing measured file format.
+    // They have no runtime read ports; only the packed 64-bit ROM is read.
+    reg [255:0] initial_modes[0:NOTE_COUNT-1];
+    reg [31:0] initial_attacks[0:NOTE_COUNT-1];
+    integer init_note,init_mode;
     initial begin
-        $readmemh(SINE_FILE, sine_rom);
-        $readmemh(MODE_FILE, mode_rom);
-        $readmemh(ATTACK_FILE, attack_rom);
+        $readmemh(MODE_FILE,initial_modes);
+        $readmemh(ATTACK_FILE,initial_attacks);
+        for(init_note=0;init_note<256;init_note=init_note+1)mode_rom[init_note]=0;
+        for(init_note=0;init_note<NOTE_COUNT;init_note=init_note+1)begin
+            for(init_mode=0;init_mode<4;init_mode=init_mode+1)
+                mode_rom[init_note*4+init_mode]=initial_modes[init_note][init_mode*64 +:64];
+            mode_rom[192+init_note]={32'd0,initial_attacks[init_note]};
+        end
     end
 
     always @* begin
@@ -159,6 +174,7 @@ module marimba_synth #(
     assign event_ready = reset_n && !stop_all && state == IDLE;
 
     always @(posedge clk) begin
+        if(parameter_fetch)selected_mode<=mode_rom[parameter_address];
         mode_state_q <= mode_state_ram[mode_read_address];
         if (reset_n && !stop_all && state == MODE_COMMIT)
             mode_state_ram[mode_address] <= {mode_phase + mode_step, next_level};
@@ -170,8 +186,6 @@ module marimba_synth #(
         else if (state == NOTE_START)
             noise_state_q <= noise_state_ram[note_index];
         if (state == SINE_READ) begin
-            sine_value <= sine_rom[mode_phase[31:24]];
-            sine_next <= sine_rom[mode_phase[31:24] + 8'd1];
             phase_fraction <= mode_phase[23:16];
         end
         if (state == INTERP_MUL || state == AMP_MUL ||
@@ -236,8 +250,6 @@ module marimba_synth #(
                     mix_accum <= 0; state <= NOTE_START;
                 end
                 NOTE_START: begin
-                    mode_row <= mode_rom[note_index];
-                    attack_row <= attack_rom[note_index];
                     trigger_note <= pending[note_index];
                     pending[note_index] <= 0;
                     note_dynamics <= dynamics_by_note[note_index];

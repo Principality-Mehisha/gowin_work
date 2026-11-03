@@ -2,6 +2,7 @@
 // event_note=0..87 means A0..C8; note-off addresses the original note.
 module piano_synth #(
     parameter integer EXTERNAL_LIMITER=0,
+    parameter integer EXTERNAL_SINE=0,
     parameter integer LIVE_DYNAMICS=0,
     parameter integer SAMPLE_RATE_RATIO=1,
     parameter SINE_FILE="src/rom/sine256.hex",
@@ -34,7 +35,10 @@ module piano_synth #(
     output wire [6:0] debug_voice,
     output wire [2:0] debug_env_state,
     output wire [23:0] debug_envelope,
-    output wire [31:0] debug_phase
+    output wire [31:0] debug_phase,
+    output wire [7:0] sine_read_address,
+    output wire sine_read_enable,
+    input wire signed [15:0] external_sine_value,external_sine_next
 );
     localparam IDLE=0, LOAD=1, H0=2, H1=3, ENV_PREP=4, ENV_GAIN=5,
                DYN_GAIN=6, ADD=7, FINISH=8, FETCH=9, COMMIT=10, DRAIN=11,
@@ -89,7 +93,6 @@ module piano_synth #(
     reg [31:0] frequency_rom [0:87];
     reg [47:0] decay_rom [0:87];
     reg [47:0] decay_data;
-    reg signed [15:0] sine_rom [0:255];
     function [23:0] decay_for_note;
         input integer note_number;
         integer scale;
@@ -104,7 +107,6 @@ module piano_synth #(
     endfunction
     integer init_note;
     initial begin
-        $readmemh(SINE_FILE, sine_rom);
         $readmemh(FREQ_FILE, frequency_rom);
         $readmemh(VOICING_FILE, voicing_rom);
         // Elaborated constants: these / and * operations create no runtime
@@ -259,7 +261,17 @@ module piano_synth #(
     reg [8:0] alias_gain_reg;
     wire [19:0] safe_weight = (bright_weight_reg >> 8) * alias_gain_reg;
     wire [7:0] sine_address = phase_h[31:24];
-    reg signed [15:0] sine_value, sine_next;
+    wire signed [15:0] sine_value, sine_next;
+    assign sine_read_address=sine_address;
+    assign sine_read_enable=1'b1;
+    generate if(EXTERNAL_SINE)begin: shared_sine
+        assign sine_value=external_sine_value;
+        assign sine_next=external_sine_next;
+    end else begin: local_sine
+        sine_pair_rom #(.SINE_FILE(SINE_FILE)) lookup(
+            .clk(clk),.enable(sine_read_enable),.address(sine_read_address),
+            .value(sine_value),.next_value(sine_next));
+    end endgenerate
     wire signed [16:0] sine_difference =
         $signed({sine_next[15],sine_next}) - $signed({sine_value[15],sine_value});
     reg signed [16:0] difference_reg, base1, base2;
@@ -301,8 +313,6 @@ module piano_synth #(
             profile<=BASS_VOICING ? voicing_rom[voice] : standard_profile;
             decay_data<=decay_rom[voice];
         end
-        sine_value<=sine_rom[sine_address];
-        sine_next<=sine_rom[sine_address+8'd1];
         if (state==ADD && env_state_reg!=0)
             partial_ram[voice]<={partial_levels,noise_lfsr,unison_phase,
                                 strike_level,tone_level,voice_phases};

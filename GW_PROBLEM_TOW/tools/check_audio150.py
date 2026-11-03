@@ -26,6 +26,7 @@ CHANGED = {
 NEW_SOURCES = {
     "src/audio/audio_clock150.v", "src/audio/audio_cdc_fifo.v",
     "src/audio/audio_domain_bridge.v", "src/rom/marimba48_48828.hex",
+    "src/audio/sine_pair_rom.v",
 }
 IP_INPUTS = (
     "ip/audio_fifo32/audio_fifo32.ipc", "ip/audio_fifo32/audio_fifo32.vo",
@@ -103,7 +104,7 @@ def main():
     paths = [ROOT / "GW_PROBLEM_TOW.gprj"] + [
         ROOT / node.attrib["path"] for node in nodes if node.attrib.get("enable") == "1"]
     assert sum(node.attrib.get("type") == "file.verilog" and node.attrib.get("enable") == "1"
-               for node in nodes) == 58
+               for node in nodes) == 59
     roms = sorted((ROOT / "src/rom").glob("*.hex"))
     assert len(roms) == 6
     paths += roms + [ROOT / name for name in IP_INPUTS]

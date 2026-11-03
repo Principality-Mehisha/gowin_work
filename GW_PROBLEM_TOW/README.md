@@ -4,6 +4,8 @@
 音频域现改为官方PLL的150 MHz，原生合成及DAC采样率48828.125 Hz；
 控制、压力扫描、UART/蓝牙和SD仍为50 MHz，双时钟传输使用官方FIFO。
 本轮未编译主工程或更新位流，最终编译由用户执行，详见[150 MHz音频域](docs/AUDIO_150MHZ.md)。
+当前新增马林巴参数ROM重排和双音色正弦表复用，参数精度、音色及采样率保持不变，
+结构估算可减少约12块BSRAM，尚待用户编译确认，见[ROM优化](docs/ROM_SHARING.md)。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
 完整16键压力输入：钢琴支持持续力度及原音高分组，马林巴使用前三组覆盖C2～B5共48音，
@@ -72,6 +74,7 @@ GW_PROBLEM_TOW
 │  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
 │     ├─ audio_domain_bridge：官方双时钟FIFO传递事件、确认及DAC样本
 │     ├─ instrument_voice_bank：150 MHz钢琴 / 马林巴 → 共用限幅器
+│     │  └─ sine_pair_rom：两种音色共用的双读口正弦表
 │     └─ audio_effects：共享32 KiB缓存 → 平滑干湿混合/饱和 → DAC
 ├─ bluetooth_file_receiver：独立UART连续流、32 KiB FIFO及固定槽位写入
 └─ piano_video：视频时钟、快照跨域、实时瀑布流/频谱/波形与TMDS
@@ -90,10 +93,11 @@ GW_PROBLEM_TOW
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
 新增压力、实时瀑布流及数字效果功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
-使用IDE时重新载入工程以识别当前58个RTL文件（含官方PLL/FIFO）；现有位流未因仿真而更新。
+使用IDE时重新载入工程以识别当前59个RTL文件（含官方PLL/FIFO和sine_pair_rom）；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_rom_sharing.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_audio150.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_key_guide.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_effects.ps1

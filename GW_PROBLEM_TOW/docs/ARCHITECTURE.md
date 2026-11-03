@@ -64,6 +64,9 @@ piano_score_player只导出旁路guide_active，条件为PN曲目实际播放且
 控制/压力/SD/UART仍50 MHz；官方双时钟FIFO传递事件、实际接受确认及DAC样本。
 STOP刷新队列代次，PLL锁定后释放音频复位；跨域故障锁存0x63。
 详见AUDIO_150MHZ.md。deadline_error仍检查逐帧计算预算。
+马林巴参数现按模态重排为256×64位表，起音参数放在同一表的192～239地址；
+利用原FSM预取，不增加计算周期。两种互斥音色共用sine_pair_rom的两个同步读口，
+原有六张音频表内容和参数精度不变，资源估算与对照测试见ROM_SHARING.md。
 
 公共限幅器后增加audio_effects，所有音源共用一条处理链：
 selected_pcm → audio_effects共享同步RAM → 干湿混合/16位饱和 → PCM门控寄存器 → PT8211。
@@ -96,7 +99,7 @@ piano_live_roll在像素域保存180帧×88键的循环历史，每帧向下移�
 board_reset保持KEY2异步断言、同步释放；保留已有关键路径寄存器及原引脚/时钟约束。
 CST新增25个ADC/分组IO；SDC只为分组输入到首级同步寄存器增加例外，未放宽ADC内部时序。
 本轮SDC另加audio_clk三倍频及报告，未豁免50/150 MHz内部路径。
-.gprj统一列出RTL。check_project检查58个RTL、六张音频ROM、编号按钮及无冲突引脚。
+.gprj统一列出RTL。check_project检查59个RTL、六张音频ROM、编号按钮及无冲突引脚。
 run_effects/run_upload/run_analysis/run_pressure为当前集成回归；效果证据在output/audio_effects/verification.json。
 压力证据见output/pressure_keyboard/verification.json。
 run_key_guide覆盖动态灯、真实SD与原压力/播放显示兼容，证据在output/key_guide/verification.json。

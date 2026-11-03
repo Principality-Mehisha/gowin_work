@@ -57,7 +57,7 @@ module tb_marimba;
         reset_n=1;
         for (note=0; note<48; note=note+1)
             for (mode=0; mode<4; mode=mode+1)
-                if (dut.mode_rom[note][mode*64+32 +: 32] >= 32'h80000000)
+                if (dut.mode_rom[note*4+mode][63:32] >= 32'h80000000)
                     $fatal(1,"Mode above Nyquist: note=%0d mode=%0d",note,mode);
 
         send_event(1,35);

@@ -6,8 +6,10 @@ try {
     . tools/project_sources.ps1
     & python -B tools/check_project.py
     if($LASTEXITCODE){throw 'Project check failed'}
-    & python -B tools/make_key_guide_fixtures.py
-    if($LASTEXITCODE){throw 'Native SD fixtures failed'}
+    if('tb_audio150_system' -in $Benches){
+        & python -B tools/make_key_guide_fixtures.py
+        if($LASTEXITCODE){throw 'Native SD fixtures failed'}
+    }
     $out='output/audio150/work'
     if(-not(Test-Path $out)){& vlib $out;if($LASTEXITCODE){throw 'vlib failed'}}
     $sources=Get-ProjectSources $projectRoot

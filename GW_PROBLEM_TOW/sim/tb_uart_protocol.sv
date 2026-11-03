@@ -6,17 +6,20 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  wire [1:0] view_mode;
  wire [1:0] fx_mode;
  wire [6:0] fx_amount;
+ wire guide_mode,guide_changed;
  wire note_previous,note_next,note_play;
  wire select_piano,select_marimba;
  reg marimba_selected=0;
  integer piano_count=0,marimba_count=0;
  integer previous_count=0,next_count=0,note_count=0;
+ integer mode_changes=0;
  wire [7:0] track;
  reg [7:0] state=0,selected=0,error=0;
  reg [6:0] note_selected=0;
  integer starts=0,stops=0,snapshots=0,reply_count=0;
  integer fields[0:7];
  integer modes[0:255],amounts[0:255];
+ integer guides[0:255];
  integer results[0:255],commands[0:255],states[0:255],tracks[0:255];
  reg seen[0:255];
  reg overflow_reported=0;
@@ -27,9 +30,11 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   .selected_marimba(marimba_selected),.note_select_piano(select_piano),.note_select_marimba(select_marimba),
   .stop_request(stop),.requested_track(track),.display_mode(view_mode),.overflow(overflow),
   .effect_mode(fx_mode),.effect_amount(fx_amount),
+  .guide_mode(guide_mode),.guide_changed(guide_changed),
   .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
  `include "uart_test_tasks.vh"
  always @(posedge clk) if(rst_n) begin
+  if(guide_changed)mode_changes=mode_changes+1;
   if(play) begin starts=starts+1; selected<=track; state<=1; end
   if(stop) begin stops=stops+1; selected<=0; state<=0; end
   if(note_previous) begin previous_count=previous_count+1;note_selected<=(note_selected==0)?87:note_selected-1'b1;end
@@ -75,12 +80,17 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
      if(fields[4]==21 && fields[5]=='h43 &&
         text_command!={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""})
       $fatal(1,"Piano reply snapshot precedes execution");
+     field=10;
+    end else if(field==10) begin
+     if(pos!=13 || prefix!="main.n8.val=" || number>1)
+      $fatal(1,"Invalid guide mode echo");
      if(fields[2]=='h60) overflow_reported=1;
      snapshots=snapshots+1;
      if(fields[5]!=8'h81) begin
       seen[fields[4]]=1; results[fields[4]]=fields[3];commands[fields[4]]=fields[5];
       states[fields[4]]=fields[0];tracks[fields[4]]=fields[1];reply_count=reply_count+1;
       modes[fields[4]]=fields[6];amounts[fields[4]]=fields[7];
+      guides[fields[4]]=number;
      end
      field=0;
     end else begin
@@ -92,8 +102,8 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
    end
   end else begin
    if(ff!=0) $fatal(1,"Missing three FF terminators");
-   if(field>=8) text_command={text_command[279:0],c};
-   else if(pos<13) prefix={prefix[95:0],c};
+   if(field==8 || field==9) text_command={text_command[279:0],c};
+   else if(pos<(field==10 ? 12 : 13)) prefix={prefix[95:0],c};
    else begin
     if(c<"0" || c>"9") $fatal(1,"Non-decimal native value");
     number=number*10+c-"0";
@@ -204,6 +214,16 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
      piano_count!=1 || marimba_count!=1 || view_mode!=0)$fatal(1,"Effects affected transport/view/instrument");
   send_frame(109,'h52,0,0,0);expect_reply(109,0,'h52);
   if(fx_amount || amounts[109])$fatal(1,"FX amount zero");
+  send_frame(110,'h53,1,0,0);expect_reply(110,0,'h53);
+  if(!guide_mode || guides[110]!=1)$fatal(1,"Guide on/echo failed");
+  send_frame(111,'h53,2,0,0);expect_reply(111,1,'h53);
+  send_frame(112,'h53,0,1,0);expect_reply(112,1,'h53);
+  send_frame(113,'h53,0,0,1);expect_reply(113,1,'h53);
+  if(!guide_mode || !guides[113])$fatal(1,"Bad guide arguments changed mode");
+  send_frame(115,'h53,1,0,0);expect_reply(115,0,'h53);
+  if(mode_changes!=1 || starts!=4 || stops!=1)$fatal(1,"Duplicate guide mode restarted transport");
+  send_frame(114,'h53,0,0,0);expect_reply(114,0,'h53);
+  if(guide_mode || guides[114] || mode_changes!=2)$fatal(1,"Guide off/echo failed");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

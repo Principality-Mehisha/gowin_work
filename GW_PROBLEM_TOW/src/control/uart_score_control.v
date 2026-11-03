@@ -17,6 +17,7 @@ module uart_score_control #(
     output reg [1:0] display_mode,
     output reg [1:0] effect_mode,
     output reg [6:0] effect_amount,
+    output reg guide_mode, guide_changed,
     output reg [7:0] requested_track,
     output reg overflow
 );
@@ -54,10 +55,11 @@ module uart_score_control #(
     end
     wire known=(cmd==8'h01 || cmd==8'h11 || cmd==8'h12 ||
                 cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 ||
-                cmd==8'h50 || cmd==8'h51 || cmd==8'h52);
+                cmd==8'h50 || cmd==8'h51 || cmd==8'h52 || cmd==8'h53);
     wire args_ok=cmd==8'h12 ? (p0>=1 && p0<=2 && p1>=1 && p1<=100 && p2==0) :
         (p1==0 && p2==0 && (cmd==8'h50 ? p0<=2 :
-                           cmd==8'h51 ? p0<=3 : cmd==8'h52 ? p0<=100 : p0==0));
+                           cmd==8'h51 ? p0<=3 : cmd==8'h52 ? p0<=100 :
+                           cmd==8'h53 ? p0<=1 : p0==0));
     // A FIFO slot is reserved while the accepted command changes player state.
     reg [71:0] replies[0:15];
     reg [3:0] wr, rd;
@@ -94,9 +96,18 @@ module uart_score_control #(
         end
     end
     reg [47:0] observed;
+    always @(posedge clk or negedge rst_n)begin
+        if(!rst_n)begin guide_mode<=0;guide_changed<=0;end
+        else begin
+            guide_changed<=0;
+            if(request && known && args_ok && room && cmd==8'h53)begin
+                guide_mode<=p0[0];guide_changed<=guide_mode!=p0[0];
+            end
+        end
+    end
     reg dirty;
     wire [7:0] reported_error=player_error!=0 ? player_error : (overflow ? 8'h60 : 8'h00);
-    wire [47:0] current={6'd0,effect_mode,1'b0,effect_amount,
+    wire [47:0] current={5'd0,guide_mode,effect_mode,1'b0,effect_amount,
                         selected_marimba,selected_note,player_state,player_track,reported_error};
     wire push=pending || (dirty && room && !request && !waiting_apply);
     wire response_ready;

@@ -48,7 +48,8 @@ module piano_score_player #(
     output wire audio_analysis_active,analysis_clear,analysis_sample_tick,
     output wire signed [15:0] analysis_pcm,
     output wire [87:0] video_keys,
-    output wire guide_active
+    output wire guide_active,
+    output wire [87:0] guide_keys
 );
     GSR GSR_INST (.GSRI(1'b1));
     wire rst_n;
@@ -117,7 +118,12 @@ module piano_score_player #(
     wire signed [15:0] pcm_right=pcm;
     wire [55:0] notes,velocities;
     wire [7:0] gates,triggers;
-    assign guide_active=sd_active && playing && selected_track>=4 && selected_track<=103 &&
+    wire guide_mode,guide_changed,guide_waiting,guide_hit;
+    wire [2:0] guide_group;
+    wire [6:0] guide_hit_note;
+    wire [15:0] guide_pressed;
+    wire guide_score=guide_mode && selected_track>=4 && selected_track<=103;
+    assign guide_active=guide_score && guide_waiting && sd_active && playing &&
                         !storage_paused && last_error==0;
     generate if (UART_ENABLE != 0) begin: uart_control
         uart_score_control #(.CLK_HZ(UART_CLK_HZ),.BAUD(UART_BAUD),
@@ -130,6 +136,7 @@ module piano_score_player #(
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
             .display_mode(display_mode),.effect_mode(effect_mode),.effect_amount(effect_amount),
+            .guide_mode(guide_mode),.guide_changed(guide_changed),
             .requested_track(uart_track),.overflow(uart_overflow));
     end else begin: no_uart_control
         assign uart_tx=1'b1;assign display_mode=0;
@@ -138,6 +145,7 @@ module piano_score_player #(
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
         assign uart_select_piano=0; assign uart_select_marimba=0;
         assign effect_mode=0;assign effect_amount=30;
+        assign guide_mode=0;assign guide_changed=0;
     end endgenerate
     sd_score_stream #(
         .SD_POWER_WAIT_CYCLES(SD_POWER_WAIT_CYCLES),
@@ -146,6 +154,9 @@ module piano_score_player #(
     ) score_stream (
         .clk(sys_clk), .rst_n(storage_rst_n),.catalog_cached(catalog_valid),
         .paused(storage_paused),
+        .guide_mode(guide_score),.guide_hit(guide_hit),.guide_hit_note(guide_hit_note),
+        .guide_pressed(guide_pressed),.guide_waiting(guide_waiting),
+        .guide_group(guide_group),.guide_keys(guide_keys),
         .selected_track(selected_track),
         .sd_cs_n(sd_cs_n), .sd_sck(sd_sck), .sd_mosi(sd_mosi), .sd_miso(sd_miso),
         .dispatch_ready(dds_event_ready), .dispatch_valid(dds_event_valid),
@@ -187,6 +198,8 @@ module piano_score_player #(
         .sample_tick(sample_tick),
         .dac_sample_pcm(dac_sample_pcm),
         .effect_mode(effect_mode),.effect_amount(effect_amount),
+        .guide_mode(guide_mode),.guide_changed(guide_changed),.guide_group(guide_group),
+        .guide_hit(guide_hit),.guide_hit_note(guide_hit_note),.guide_pressed(guide_pressed),
         .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),
         .pressure_sample_key(pressure_sample_key),.pressure_sample_data(pressure_sample_data),
         .uart_play(uart_play),

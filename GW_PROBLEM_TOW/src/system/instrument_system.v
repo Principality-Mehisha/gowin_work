@@ -27,6 +27,11 @@ module instrument_system #(
     input wire signed [15:0] dac_sample_pcm,
     input wire [1:0] effect_mode,
     input wire [6:0] effect_amount,
+    input wire guide_mode, guide_changed,
+    input wire [2:0] guide_group,
+    output wire guide_hit,
+    output wire [6:0] guide_hit_note,
+    output wire [15:0] guide_pressed,
     input wire [6:0] pitch_group,
     input wire pressure_sample_valid,
     input wire [3:0] pressure_sample_key,
@@ -88,8 +93,15 @@ module instrument_system #(
     wire pressure_overflow,piano_busy,audio_busy,pressure_busy;
     reg pressure_fault;
     wire effect_fault,effect_tail,bridge_fault,audio_link_ready;
-    assign pressure_enable=PRESSURE_ENABLE && audio_link_ready && manual_mode &&
+    wire guide_session=guide_mode && ringtone_active && !marimba_mode;
+    wire perform_mode=manual_mode || guide_session;
+    wire guide_restart=guide_changed && ringtone_active && !marimba_mode;
+    assign pressure_enable=PRESSURE_ENABLE && audio_link_ready &&
+                           (manual_mode || (guide_session && playing)) &&
                            !note_busy && !control_restart && !pressure_fault;
+    assign guide_hit=guide_session && pressure_valid && pressure_ready && pressure_on && !pressure_update;
+    assign guide_hit_note=pressure_note;
+    assign guide_pressed=pressure_enabled_pressed;
     assign pressure_busy=pressure_enable && ((|pressure_enabled_pressed) || audio_busy);
     assign last_error=bridge_fault ? 8'h63 : effect_fault ? 8'h62 : pressure_fault ? 8'h61 : control_error;
     assign player_state=pressure_fault || effect_fault || bridge_fault ? 8'd3 : control_state;
@@ -106,9 +118,10 @@ module instrument_system #(
         pressure_keyboard #(.CALIBRATION_LOG2(PRESSURE_CALIBRATION_LOG2),
             .SOFT_TOUCH_BOOST(PRESSURE_SOFT_TOUCH_BOOST),
             .LONG_HOLD_FRAMES(PRESSURE_LONG_HOLD_FRAMES)) keyboard(
-            .clk(sys_clk),.reset_n(rst_n),.enable(pressure_enable),.marimba_mode(selected_marimba),
+            .clk(sys_clk),.reset_n(rst_n),.enable(pressure_enable),.marimba_mode(marimba_mode),
+            .guide_mode(guide_session),
             .sample_valid(pressure_sample_valid),.sample_key(pressure_sample_key),
-            .sample_data(pressure_sample_data),.base_note(base_note),
+            .sample_data(pressure_sample_data),.base_note(guide_session ? {guide_group,4'b0} : base_note),
             .event_ready(pressure_ready),.event_valid(pressure_valid),.event_on(pressure_on),
             .event_update(pressure_update),.event_note(pressure_note),
             .event_dynamics(pressure_dynamics),.pressed(pressure_pressed),
@@ -125,6 +138,7 @@ module instrument_system #(
     playback_control #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE)) control (
         .clk(sys_clk), .rst_n(rst_n),
         .uart_play(uart_play), .uart_stop(uart_stop), .uart_note_play(uart_note_play),
+        .mode_restart(guide_restart),
         .instrument_request(instrument_request), .audition_marimba(selected_marimba),
         .note_busy(note_busy || pressure_busy), .playing(playing), .finished(finished),
         .failed(failed), .sequence_error(sequence_error), .uart_track(uart_track),
@@ -151,15 +165,15 @@ module instrument_system #(
         .event_valid(note_event_valid),.event_on(note_event_on),
         .event_note(note_event_note),.event_dynamics(note_event_dynamics),
         .busy(note_busy),.clear(note_clear));
-    // Select UART audition or SD score events.
+    // Guided piano keeps SD ownership but routes physical playing to the synth.
     wire synth_event_valid = !control_restart &&
-                            (manual_mode ? (note_busy ? note_event_valid :
+                            (perform_mode ? (note_busy ? note_event_valid :
                              (pressure_enable && pressure_valid)) : dds_event_valid);
-    wire synth_event_on = manual_mode ? (note_busy ? note_event_on : pressure_on) : dds_event_on;
-    wire synth_event_update=manual_mode && !note_busy && pressure_enable && pressure_update;
-    wire [6:0] synth_event_note = manual_mode ?
+    wire synth_event_on = perform_mode ? (note_busy ? note_event_on : pressure_on) : dds_event_on;
+    wire synth_event_update=perform_mode && !note_busy && pressure_enable && pressure_update;
+    wire [6:0] synth_event_note = perform_mode ?
                                 (note_busy ? note_event_note : pressure_note) : dds_event_note;
-    wire [7:0] synth_event_dynamics = manual_mode ?
+    wire [7:0] synth_event_dynamics = perform_mode ?
                                     (note_busy ? note_event_dynamics : pressure_dynamics) : dds_event_dynamics;
     assign pressure_ready=pressure_enable && synth_event_ready;
     wire deadline_error;
@@ -180,9 +194,9 @@ module instrument_system #(
     assign failed = source_error || effect_fault;
     wire synth_stop = control_restart || note_clear ||
                       (manual_mode ? manual_error : (failed || finished));
-    wire audio_silence = (manual_mode ? manual_error :
+    wire audio_silence = (perform_mode ? manual_error :
                          (failed || finished || !playing));
-    assign dds_event_ready = !manual_mode && synth_event_ready;
+    assign dds_event_ready = !perform_mode && synth_event_ready;
     wire signed [15:0] selected_pcm;
     wire engine_reset_n,audio_config_valid;
     wire [15:0] audio_config;
@@ -193,7 +207,7 @@ module instrument_system #(
     wire returned_active,ack_valid,ack_on,ack_update,ack_marimba,ack_clear;
     wire [6:0] ack_note;
     wire [15:0] control_config={control_restart || source_error,synth_stop,
-        (|pressure_enabled_pressed),note_busy,manual_mode,!audio_silence && !synth_stop,
+        (|pressure_enabled_pressed),note_busy,perform_mode,!audio_silence && !synth_stop,
         marimba_mode,effect_mode,effect_amount};
     wire source_active=audio_config_valid && audio_config[10] && !audio_config[14] &&
         !audio_deadline_error && !audio_effect_fault &&
@@ -266,7 +280,7 @@ module instrument_system #(
     // Release/tail expiry leaves the recent history scrolling. Explicit stop,
     // a new SD score, leaving SD for audition, instrument changes and errors
     // invalidate history, even if the command lasts less than one video frame.
-    assign video_clear = uart_start || uart_stop || instrument_request ||
+    assign video_clear = uart_start || uart_stop || instrument_request || guide_restart ||
                          (uart_note_play && !manual_mode) || marimba_mode || failed;
     assign video_active = !marimba_mode && !failed;
     assign video_elapsed_ms = elapsed_ms;

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform', 'EffectOriginal', 'EffectDelay', 'EffectTremolo', 'EffectVibrato', 'EffectReverb', 'EffectChorus', 'EffectAmount')]
+    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform', 'EffectOriginal', 'EffectDelay', 'EffectTremolo', 'EffectVibrato', 'EffectReverb', 'EffectChorus', 'EffectAmount', 'GuideOn', 'GuideOff')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
     [string]$Port,
@@ -32,6 +32,8 @@ switch ($Command) {
     'EffectReverb' { $commandByte = 0x51; $track = 2 }
     'EffectChorus' { $commandByte = 0x51; $track = 3 }
     'EffectAmount' { $commandByte = 0x52; $track = $Amount }
+    'GuideOn' { $commandByte = 0x53; $track = 1 }
+    'GuideOff' { $commandByte = 0x53; $track = 0 }
 }
 $checksum = (1 + $Sequence + $commandByte + $track + $p1) -band 255
 [byte[]]$frame = 0xA5,0x5A,1,$Sequence,$commandByte,$track,$p1,0,$checksum,0x0D

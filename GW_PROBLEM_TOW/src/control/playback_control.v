@@ -4,6 +4,7 @@ module playback_control #(
 ) (
     input wire clk, rst_n,
     input wire uart_play, uart_stop, uart_note_play,
+    input wire mode_restart,
     input wire instrument_request, audition_marimba,
     input wire note_busy, playing, finished, failed, sequence_error,
     input wire [7:0] uart_track,
@@ -18,7 +19,7 @@ module playback_control #(
     assign manual_mode = !ringtone_active;
     assign uart_start = uart_play && uart_track>=4 && uart_track<=203 &&
                         !(ringtone_active && selected_track==uart_track);
-    assign control_restart = uart_start || uart_stop || uart_note_play || instrument_request;
+    assign control_restart = uart_start || uart_stop || uart_note_play || instrument_request || mode_restart;
     assign play_rst_n = rst_n && !control_restart;
     assign marimba_mode = ringtone_active ? (selected_track>=104 && selected_track<=203) :
                        audition_marimba;

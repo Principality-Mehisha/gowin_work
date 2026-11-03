@@ -1,0 +1,2 @@
+// 200 ms timer. main.n8 must be a global Number, btGuide a dual-state button.
+btGuide.val=main.n8.val

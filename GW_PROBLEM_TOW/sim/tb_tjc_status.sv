@@ -30,9 +30,10 @@ module tb_tjc_status;
        else expected_line={"every.tInstrument.txt=\"",32'hb8d6c7d9,"\""};
       end
       else if(field==8) expected_line={"every.tNote.txt=\"",expected[n%88],"\""};
+      else if(field==10) expected_line=$sformatf("main.n8.val=%0d",n%2);
       else expected_line=$sformatf("page0.n%0d.val=%0d",field,fields[field]);
       if(line!=expected_line) $fatal(1,"Packet %0d field %0d: got %s expected %s",n,field,line,expected_line);
-      if(field==9) begin field=0;packets=packets+1;end
+      if(field==10) begin field=0;packets=packets+1;end
       else field=field+1;
      end
      ff=0;line="";
@@ -58,6 +59,7 @@ module tb_tjc_status;
    fields[6]=n%4;fields[7]=n%101;
    wait(ready);@(negedge clk);
    snapshot={8'(fields[6]),8'(fields[7]),1'(n/88==1),7'(n%88),8'(fields[0]),8'(fields[1]),8'd0,8'd0,8'(fields[4]),8'h41};valid=1;
+   snapshot[66]=n%2;
    @(negedge clk);valid=0;snapshot='1;
    // Input changes during byte transmission must not affect this snapshot.
    wait(packets==n+1);@(negedge clk);

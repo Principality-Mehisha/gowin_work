@@ -32,6 +32,7 @@ module tb_score_full;
     );
     piano_score_sequencer #(.CLOCKS_PER_MS(100)) sequencer (
         .clk(clk), .rst_n(rst_n), .paused(1'b0), .format_ok(format_ok),
+        .guide_mode(1'b0),.guide_hit(1'b0),.guide_hit_note(7'd0),.guide_pressed(16'd0),
         .stream_complete(complete), .stream_error(fat_error != 0 || score_error != 0),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
         .dispatch_ready(dispatch_ready), .dispatch_valid(), .dispatch_on(),

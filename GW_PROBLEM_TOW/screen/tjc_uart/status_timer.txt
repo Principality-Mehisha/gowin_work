@@ -1,4 +1,4 @@
-// Timer event, 200 ms. Requires page0.n0..n5 and text control t0.
+// Timer event, 200 ms. Requires global page0.n0..n7, main.n8 and text control t0.
 if(n0.val==0)
 {
   t0.txt="READY"
@@ -9,7 +9,13 @@ if(n0.val==1)
 }
 if(n0.val==2)
 {
-  t0.txt="PLAYING"
+  if(main.n8.val==1&&n1.val>=4&&n1.val<=103)
+  {
+    t0.txt="GUIDE"
+  }else
+  {
+    t0.txt="PLAYING"
+  }
 }
 if(n0.val==3)
 {

@@ -10,6 +10,7 @@ module pressure_keyboard #(
 ) (
     input wire clk, reset_n, sample_valid,
     input wire enable,
+    input wire guide_mode,
     input wire marimba_mode,
     input wire [6:0] base_note,
     input wire [3:0] sample_key,
@@ -29,7 +30,9 @@ module pressure_keyboard #(
     wire [127:0] gains;
     wire [191:0] forces;
     wire [127:0] key_hold_progress;
-    wire pitch_valid=!marimba_mode || base_note<48;
+    // The highest piano group has eight keys; do not alias keys 9..16 to C8.
+    wire pitch_valid=(!marimba_mode || base_note<48) &&
+                     (!guide_mode || {1'b0,base_note}+{4'd0,edge_key}<88);
     wire [6:0] mapped_base=marimba_mode ? (base_note<48 ? 7'd36+base_note : 7'd36) : base_note;
     reg [15:0] armed;
     wire event_reset_n=reset_n && enable;

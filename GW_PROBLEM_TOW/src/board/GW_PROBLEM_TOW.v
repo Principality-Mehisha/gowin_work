@@ -37,6 +37,7 @@ module GW_PROBLEM_TOW #(
     wire [31:0] video_elapsed_ms;
     wire [87:0] video_keys;
     wire guide_active;
+    wire [87:0] guide_keys;
     wire [143:0] guide_palette;
     wire [1:0] display_mode;
     wire audio_analysis_active,analysis_clear,analysis_sample_tick;
@@ -73,7 +74,7 @@ module GW_PROBLEM_TOW #(
         .group_palette(guide_palette));
     ws2812_key_guide dynamic_leds (
         .clk(sys_clk),.reset_n(player_reset_n),.active(guide_active && !upload_active),
-        .keys(video_keys),.palette_rgb(guide_palette),.data_out(LED_indicator_dynamic));
+        .keys(guide_keys),.palette_rgb(guide_palette),.data_out(LED_indicator_dynamic));
 
     assign sd_cs_n=upload_active ? upload_sd_cs_n : player_sd_cs_n;
     assign sd_sck=upload_active ? upload_sd_sck : player_sd_sck;
@@ -92,7 +93,7 @@ module GW_PROBLEM_TOW #(
         .sd_cs_n(player_sd_cs_n), .sd_sck(player_sd_sck), .sd_mosi(player_sd_mosi), .sd_miso(sd_miso),
         .LEDs(LEDs), .player_reset_n(player_reset_n), .video_active(video_active),.video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms), .video_keys(video_keys),
-        .display_mode(display_mode),.guide_active(guide_active),
+        .display_mode(display_mode),.guide_active(guide_active),.guide_keys(guide_keys),
         .audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear),
         .analysis_sample_tick(analysis_sample_tick),.analysis_pcm(analysis_pcm)
     );

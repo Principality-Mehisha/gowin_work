@@ -6,6 +6,13 @@ module sd_score_stream #(
     parameter integer CLOCKS_PER_MS = 50000
 ) (
     input wire clk, rst_n, paused, catalog_cached,
+    input wire guide_mode,
+    input wire guide_hit,
+    input wire [6:0] guide_hit_note,
+    input wire [15:0] guide_pressed,
+    output wire guide_waiting,
+    output wire [2:0] guide_group,
+    output wire [87:0] guide_keys,
     input wire [7:0] selected_track,
     output wire sd_cs_n, sd_sck, sd_mosi,
     input wire sd_miso,
@@ -71,6 +78,9 @@ module sd_score_stream #(
     piano_score_sequencer #(.CLOCKS_PER_MS(CLOCKS_PER_MS)) sequencer (
         .clk(clk), .rst_n(rst_n),
         .paused(paused),
+        .guide_mode(guide_mode),.guide_hit(guide_hit),.guide_hit_note(guide_hit_note),
+        .guide_pressed(guide_pressed),.guide_waiting(guide_waiting),
+        .guide_group(guide_group),.guide_keys(guide_keys),
         .format_ok(format_ok), .stream_complete(complete), .stream_error(stream_error),
         .event_data(event_data), .event_valid(event_valid), .event_ready(event_ready),
         .dispatch_ready(dispatch_ready), .dispatch_valid(dispatch_valid),

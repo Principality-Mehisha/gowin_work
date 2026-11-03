@@ -2,6 +2,11 @@
 
 ## 状态与边界
 
+后续 PR0004 排查已确认：本轮新增的 `serializer_clk` CST 强制 BUFG 约束会触发路由失败，
+现已删除；同网表单变量对照已完成 PnR 和位流生成，DCE 输出仍走 PRIMARY 全局时钟。
+系统、音频及串行器复位时序仍未通过，详见 [PR0004 排查记录](PNR_PR0004.md)。
+以下为此前时序修正阶段的记录，不是最终时序签核结论。
+
 基于2026-11-03 16:45的用户PnR报告：BSRAM已降至106/118，
 但sys_clk目标50 MHz、Fmax46.571 MHz；audio_clk目标150 MHz、Fmax66.040 MHz，
 最差Setup为-8.476 ns。此报告仍是修改前的报告，不能证明本轮修改后已收敛。
@@ -47,8 +52,9 @@ FCLK的半周期错相。测试直接测量了高/低电平时间，核对真实
 
 视频OSER10复位改用既有540 MHz FCLK下降沿的三级释放同步器。
 仅新增三个复位控制寄存器，视频主体仍108 MHz，音频/系统仍150/50 MHz。
-CST增加serializer_clk的BUFG=CLK约束，用常使能的官方DCE为这三个寄存器
-分出全局时钟支路，不直接约束原serial_clk的IO HCLK网络。
+使用常使能的官方DCE为这三个寄存器分出全局时钟支路，
+不直接约束原serial_clk的IO HCLK网络。此前新增的serializer_clk BUFG=CLK
+约束已在PR0004排查中删除；实际成功报告确认其自动分配为PRIMARY。
 不能让真实时钟挤在普通布线上；原IOLOGIC的HCLK连接及全部引脚不变。
 下一份报告需额外确认该时钟路由资源分配和540 MHz寄存器路径。
 串行器RESET路径没有豁免，其Recovery/Removal仍必须通过用户的新PnR报告确认。

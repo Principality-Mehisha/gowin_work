@@ -1,5 +1,6 @@
 // Native TJC commands: n0..n5 retain their meanings, n6/n7 are effects
-// mode/amount, followed by note/instrument text. Low 56 payload bits unchanged.
+// mode/amount, followed by note/instrument text and main.n8 guide mode.
+// Reserved bit 66 carries guide mode; low 56 payload bits are unchanged.
 module tjc_status_tx (
     input wire clk, rst_n,
     input wire [71:0] snapshot,
@@ -28,7 +29,8 @@ module tjc_status_tx (
             0: value=saved[47:40]; 1: value=saved[39:32];
             2: value=saved[31:24]; 3: value=saved[23:16];
             4: value=saved[15:8]; 5: value=saved[7:0];
-            6: value=saved[71:64]; default: value=saved[63:56];
+            6: value={6'd0,saved[65:64]}; 10: value={7'd0,saved[66]};
+            default: value=saved[63:56];
         endcase
         hundreds=value/100; tens=(value%100)/10; ones=value%10;
         digits=(value>=100) ? 3 : ((value>=10) ? 2 : 1);
@@ -51,7 +53,7 @@ module tjc_status_tx (
         case(pos)
             0: byte_data="p"; 1: byte_data="a"; 2: byte_data="g";
             3: byte_data="e"; 4: byte_data="0"; 5: byte_data=".";
-            6: byte_data="n"; 7: byte_data="0"+field; 8: byte_data=".";
+            6: byte_data="n"; 7: byte_data=field==10 ? "8" : "0"+field; 8: byte_data=".";
             9: byte_data="v"; 10: byte_data="a"; 11: byte_data="l";
             12: byte_data="=";
             default: begin
@@ -99,6 +101,16 @@ module tjc_status_tx (
                 default: byte_data=8'hff;
             endcase
         end
+        if (field==10) begin
+            case(pos)
+                0: byte_data="m"; 1: byte_data="a"; 2: byte_data="i";
+                3: byte_data="n"; 4: byte_data="."; 5: byte_data="n";
+                6: byte_data="8"; 7: byte_data="."; 8: byte_data="v";
+                9: byte_data="a"; 10: byte_data="l"; 11: byte_data="=";
+                12: byte_data="0"+{7'd0,saved[66]};
+                default: byte_data=8'hff;
+            endcase
+        end
         // Discard any partial screen command left by an FPGA reset mid-TX.
         if (fence!=0) byte_data=8'hff;
     end
@@ -110,9 +122,9 @@ module tjc_status_tx (
             if (fence!=0) fence<=fence-1'b1;
             else if ((field==8 && pos==20+note_length) ||
                      (field==9 && pos==26+instrument_length) ||
-                     (field<8 && pos==15+digits)) begin
+                     (field<8 && pos==15+digits) || (field==10 && pos==15)) begin
                 pos<=0;
-                if (field==9) busy<=0;
+                if (field==10) busy<=0;
                 else field<=field+1'b1;
             end else pos<=pos+1'b1;
         end

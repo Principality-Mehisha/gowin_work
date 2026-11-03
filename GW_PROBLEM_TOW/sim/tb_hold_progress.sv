@@ -10,6 +10,7 @@ module hold_progress_case #(parameter integer FRAMES=4)(output reg passed=0);
     pressure_keyboard #(.CALIBRATION_LOG2(0),.FILTER_SHIFT(0),.CONFIRM_FRAMES(1),
         .LONG_HOLD_FRAMES(FRAMES)) dut(
         .clk(clk),.reset_n(reset_n),.enable(enable),.marimba_mode(1'b0),.sample_valid(valid),
+        .guide_mode(1'b0),
         .sample_key(key),.sample_data(data),.base_note(7'd0),.event_ready(1'b1),
         .event_valid(),.event_on(),.event_update(),.event_note(),.event_dynamics(),
         .pressed(pressed),.enabled_pressed(),.calibrated(calibrated),.long_held(long_held),

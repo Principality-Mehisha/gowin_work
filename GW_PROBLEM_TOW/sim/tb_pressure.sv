@@ -25,6 +25,7 @@ module tb_pressure;
         .sample_valid(sample_valid), .sample_key(sample_key), .sample_data(sample_data));
     pressure_keyboard #(.CALIBRATION_LOG2(1), .LONG_HOLD_FRAMES(12)) keyboard (
         .clk(clk), .reset_n(reset_n), .enable(1'b1), .marimba_mode(1'b0),
+        .guide_mode(1'b0),
         .sample_valid(sample_valid), .base_note(7'd39),
         .sample_key(sample_key), .sample_data(sample_data),
         .event_ready(ready && allow_events),

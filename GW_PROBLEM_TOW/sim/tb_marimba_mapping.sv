@@ -14,6 +14,7 @@ module tb_marimba_mapping;
     pressure_keyboard #(.CALIBRATION_LOG2(0),.FILTER_SHIFT(0),.CONFIRM_FRAMES(1),
         .LONG_HOLD_FRAMES(2)) dut(
         .clk(clk),.reset_n(rst),.enable(enable),.marimba_mode(1'b1),
+        .guide_mode(1'b0),
         .sample_valid(valid),.sample_key(key),.sample_data(data),.base_note(base),
         .event_ready(1'b1),.event_valid(ev),.event_on(on),.event_update(update),
         .event_note(note),.event_dynamics(gain),.pressed(pressed),.enabled_pressed(eligible),

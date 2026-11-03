@@ -28,10 +28,11 @@ try {
     if($LASTEXITCODE){throw 'Analysis compilation failed'}
     foreach($bench in $Benches) {
         if($bench -eq 'tb_analysis_render') {
-            & $PythonExe tools/check_analysis.py --prepare-render
+            & $PythonExe tools/check_analysis.py --rate-ratio 3 --prepare-render
             if($LASTEXITCODE){throw 'Real piano analysis differs'}
         }
         $extra=@();if($bench -eq 'tb_uart_protocol'){$extra=@('-gUART_TICKS=8')}
+        if($bench -eq 'tb_analysis_render'){$extra=@('-gANALYSIS_RATE_RATIO=3')}
         $commands='onfinish stop; run -all; if {[examine -radix unsigned /'+$bench+'/passed] != 1} {quit -code 1 -f}; quit -code 0 -f'
         & vsim -c -voptargs=+acc -lib "$out/work" $bench @extra -do $commands -l "$out/$bench.log"
         if($LASTEXITCODE){throw "$bench failed"}
@@ -45,6 +46,6 @@ try {
         if($LASTEXITCODE){throw 'Official video model regression failed'}
         Copy-Item -LiteralPath output/video_integration/tb_video_hardware.log -Destination "$out/tb_video_hardware.log"
     }
-    & $PythonExe tools/check_analysis.py
+    & $PythonExe tools/check_analysis.py --rate-ratio 3
     if($LASTEXITCODE){throw 'Analysis image/data verification failed'}
 }finally{Pop-Location}

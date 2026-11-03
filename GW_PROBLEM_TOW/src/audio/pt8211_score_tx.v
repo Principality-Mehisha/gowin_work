@@ -1,7 +1,8 @@
 // Adapted from I2S_1/src/I2S_1_communication.v.
 // PT8211: 16-bit LSBJ, MSB first, WS=0 right and WS=1 left.
 // DIN/WS change on falling BCK; the DAC samples on rising BCK.
-// Piano_88 uses half-divisor 48: BCK=520.833 kHz, Fs=16.276041667 kHz.
+// One stereo frame uses 64*BCK_HALF_DIV input clocks.
+// At 150 MHz and half-divisor 48: BCK=1.5625 MHz, Fs=48.828125 kHz.
 module pt8211_score_tx #(
     parameter integer BCK_HALF_DIV = 16,
     parameter integer AMP_START_CYCLES = 2_500_000

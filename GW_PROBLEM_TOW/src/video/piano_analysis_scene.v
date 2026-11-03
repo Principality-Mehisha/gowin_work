@@ -1,5 +1,6 @@
 // Five pixel-clock stages, matching the existing waterfall RGB/DE latency.
-module piano_analysis_scene #(parameter FONT_FILE="src/video/analysis_font.hex") (
+module piano_analysis_scene #(parameter FONT_FILE="src/video/analysis_font.hex",
+    parameter integer SAMPLE_RATE_RATIO=1) (
     input wire clk,reset_n,
     input wire [1:0] display_mode,
     input wire [10:0] x,
@@ -69,6 +70,25 @@ module piano_analysis_scene #(parameter FONT_FILE="src/video/analysis_font.hex")
                 endcase
                 default:label_char=" ";
             endcase
+            if(SAMPLE_RATE_RATIO==3 && line==1)begin
+                if(mode==1)case(index)
+                    16:label_char="6";17:label_char="K";
+                    32:label_char="1";33:label_char="2";34:label_char="K";
+                    48:label_char="1";49:label_char="8";50:label_char="K";
+                    61:label_char="2";62:label_char="4";63:label_char="K";
+                    default:begin end
+                endcase else case(index)
+                    16:label_char="3";17:label_char=" ";
+                    32:label_char="5";33:label_char=" ";
+                    48:label_char="8";49:label_char=" ";
+                    62:label_char="1";63:label_char="0";
+                    default:begin end
+                endcase
+            end
+            if(SAMPLE_RATE_RATIO==3 && line==2 && valid && mode==2)begin
+                if(index==15)label_char="1";
+                if(index==16)label_char="0";
+            end
         end
     endfunction
     wire [1:0] line_number=y<128 ? 2'd0 : (y<768 ? 2'd1 : 2'd2);

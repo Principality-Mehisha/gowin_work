@@ -11,10 +11,13 @@
 | src/rom/sine256.hex | 256 点有符号正弦函数 |
 | src/rom/frequency88.hex | 88 音的 32 位 DDS 频率字，按 48 kHz 归一化 |
 | src/rom/voicing88.hex | 每键分音权重、增益、衰减及弦刚度参数 |
-| src/rom/marimba48.hex | 每音四组模态频率、幅度和衰减参数 |
+| src/rom/marimba48_48828.hex | 当前48828.125 Hz每音四组模态频率、幅度和衰减参数 |
+| src/rom/marimba48.hex | 保留的旧采样率模态参考，用于独立旧算法回归 |
 | src/rom/marimba_attack48.hex | 每音短起音噪声参数 |
 
 这些表保存函数和参数，不是逐音录音。当前综合路径不含 PCM/ADPCM 录音播放器。
+音频域150 MHz、原生采样48828.125 Hz；控制和SD仍50 MHz，音高与衰减时间已按新采样率调整。
+原五表不修改，新增模态表由tools/generate_audio150_parameters.py生成，详见AUDIO_150MHZ.md。
 `assets/` 的录音仅供离线拟合或乐谱转写；`sim/` 的 WAV 是仿真结果。
 
 
@@ -38,7 +41,8 @@ slot 为 0～7，velocity 为 1～127 表示 note-on，0 表示 note-off。
 P88S 音符为钢琴索引 0～87，M42S 为 MIDI 36～83。内部力度由 velocity 左移一位转换。
 
 SD SPI 的初始化/读取半分频均为 63，时钟约 397 kHz。
-错误分类：1x=SD，2x=FAT，3x=乐谱，40=调度，50=合成超时，60=UART 反馈溢出；数值均为十六进制。
+错误分类：1x=SD，2x=FAT，3x=乐谱，40=调度，50=合成超时，60=UART反馈溢出，
+61=压力溢出，62=效果超期，63=音频跨域/失锁；数值均为十六进制。
 播放错误在存储链复位前锁存，通过停止、重选曲目或复位清除。
 
 ## 生成与分析工具

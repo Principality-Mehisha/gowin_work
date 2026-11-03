@@ -5,6 +5,12 @@
     <Version>5</Version>
     <Device name="GW5AT-60B" pn="GW5AT-LV60PG484AC1/I0">gw5at60b-002</Device>
     <FileList>
+        <File path="ip/audio_fifo32/audio_fifo32.v" type="file.verilog" enable="1"/>
+        <File path="ip/audio_pll150/audio_pll150.v" type="file.verilog" enable="1"/>
+        <File path="ip/audio_pll150/audio_pll150_mod.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/audio_clock150.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/audio_cdc_fifo.v" type="file.verilog" enable="1"/>
+        <File path="src/audio/audio_domain_bridge.v" type="file.verilog" enable="1"/>
         <File path="src/audio/audio_effects.v" type="file.verilog" enable="1"/>
         <File path="src/input/pressure/pressure_adc_scan.v" type="file.verilog" enable="1"/>
         <File path="src/input/pressure/pitch_group_select.v" type="file.verilog" enable="1"/>

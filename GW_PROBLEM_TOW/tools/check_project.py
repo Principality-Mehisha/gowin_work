@@ -10,9 +10,13 @@ entries = [f.attrib['path'] for f in project.findall('./FileList/File') if f.att
 assert len(entries) == len(set(entries)), 'Duplicate project entries'
 assert all((ROOT/p).is_file() for p in entries), 'Missing project input'
 rtl = {p for p in entries if p.endswith('.v')}
-assert rtl == {p.relative_to(ROOT).as_posix() for p in (ROOT/'src').rglob('*.v')}, 'Unlisted or obsolete RTL'
+official = {'ip/audio_fifo32/audio_fifo32.v', 'ip/audio_pll150/audio_pll150.v',
+            'ip/audio_pll150/audio_pll150_mod.v'}
+assert rtl == {p.relative_to(ROOT).as_posix() for p in (ROOT/'src').rglob('*.v')} | official, \
+    'Unlisted or obsolete RTL'
 expected = {'sine256.hex':(256,4), 'frequency88.hex':(88,8), 'voicing88.hex':(88,35),
-            'marimba48.hex':(48,64), 'marimba_attack48.hex':(48,8)}
+            'marimba48.hex':(48,64), 'marimba_attack48.hex':(48,8),
+            'marimba48_48828.hex':(48,64)}
 assert {p.name for p in (ROOT/'src/rom').iterdir()} == set(expected), 'Unexpected ROM'
 for name,(count,width) in expected.items():
     rows = (ROOT/'src/rom'/name).read_text().split()
@@ -47,4 +51,5 @@ for name in ('src/board/GW_PROBLEM_TOW.v', 'src/board/piano_score_player.v',
         f'LED bus must remain eight bits end-to-end: {name}'
 subprocess.run([sys.executable, str(ROOT/'tools/generate_analysis_tables.py'), '--check'], check=True)
 subprocess.run([sys.executable, str(ROOT/'tools/generate_numbered_buttons.py'), '--check'], check=True)
-print(f'PASS: {len(rtl)} active RTL files, five audio ROMs, 200 numbered slots/buttons, no legacy reader, both UARTs, pressure/group pins, eight LEDs and C19/3.3 V dynamic guide without collisions')
+subprocess.run([sys.executable, str(ROOT/'tools/generate_audio150_parameters.py'), '--check'], check=True)
+print(f'PASS: {len(rtl)} active RTL files including official PLL/FIFO, six audio ROMs, 200 numbered slots/buttons, both UARTs, pressure/group pins, eight LEDs and C19/3.3 V dynamic guide without collisions')

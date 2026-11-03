@@ -55,19 +55,16 @@ def main():
     timer = (scripts / "effect_timer.txt").read_text()
     assert "if(hFx.val!=vaFxSent.val)" in timer and "if(vaFxDrag.val==1)" in timer
     assert "tmFx.tim=100" in (scripts / "effect_page_postinitialize.txt").read_text()
-    # Board/CST additions are audited against the newer guide backup separately.
+    # Native audio sources are audited separately by check_audio150.py.
     preserved = [
-        "src/board/GW_PROBLEM_TOW.sdc", "src/audio/piano_synth.v",
-        "src/audio/marimba_synth.v", "src/audio/marimba_body_filter.v",
-        "src/audio/instrument_voice_bank.v", "src/audio/output_limiter.v",
         "src/control/bluetooth_file_receiver.v", "src/control/playback_control.v",
         "src/video/piano_live_roll.v", "src/video/piano_scene.v",
         "src/video/piano_roll_line.v", "src/video/playback_video_cdc.v",
-        "src/video/video_source.v", "src/video/piano_video.v",
     ]
     preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/storage").glob("*.v")
                   if p.name != "slot_card_query.v"]
-    preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/rom").glob("*.hex")]
+    preserved += [p.relative_to(ROOT).as_posix() for p in (ROOT / "src/rom").glob("*.hex")
+                  if p.name != "marimba48_48828.hex"]
     with zipfile.ZipFile(OUT / "before/sources.zip") as backup:
         for name in preserved:
             assert backup.read(name) == (ROOT / name).read_bytes(), f"Unexpected change: {name}"
@@ -82,7 +79,8 @@ def main():
                   tests=logs, bit_exact_samples=len(samples), screen_packet_cases=105,
                   modulation_rate_hz=info["modulation_rate_hz"],
                   measurements=info["measurements"],
-                  shared_ram_bytes=16384, fixed_pipeline_audio_frames=1,
+                  reference_profile_hz=info["sample_rate_hz"],
+                  shared_ram_bytes=16384, production_shared_ram_bytes=32768, fixed_pipeline_audio_frames=1,
                   unchanged_from_backup={name: sha(ROOT / name) for name in preserved},
                   timing_pipeline_changes={name: sha(ROOT / name) for name in
                       ("src/system/instrument_system.v", "src/storage/slot_card_query.v")},

@@ -51,7 +51,7 @@ def png(path, data, width, height):
                      chunk(b'IDAT', zlib.compress(rows))+chunk(b'IEND', b''))
 
 
-def reference(mode, points):
+def reference(mode, points, rate_ratio=1):
     image = bytearray(bytes.fromhex('0b1020')*(1600*900))
     def put(x, y, color):
         i = (y*1600+x)*3
@@ -77,8 +77,13 @@ def reference(mode, points):
             put(x, y, color)
     axis = {0:'0',16:'2',17:'K',32:'4',33:'K',48:'6',49:'K',62:'8',63:'K',65:'H',66:'Z'} if mode == 1 else {
             0:'0',16:'8',32:'1',33:'6',48:'2',49:'4',62:'3',63:'1',65:'M',66:'S'}
+    if rate_ratio == 3:
+        axis = {0:'0',16:'6',17:'K',32:'1',33:'2',34:'K',48:'1',49:'8',50:'K',
+                61:'2',62:'4',63:'K',65:'H',66:'Z'} if mode == 1 else {
+                0:'0',16:'3',32:'5',48:'8',62:'1',63:'0',65:'M',66:'S'}
+    wave_footer = '512  SAMPLES / 10 MS' if rate_ratio == 3 else '512  SAMPLES / 31 MS'
     labels = [(96, dict(enumerate('AUDIO SPECTRUM' if mode == 1 else 'AUDIO WAVEFORM'))),
-              (736, axis), (800, dict(enumerate('1024 FFT / HANN   LOG' if mode == 1 else '512  SAMPLES / 31 MS')))]
+              (736, axis), (800, dict(enumerate('1024 FFT / HANN   LOG' if mode == 1 else wave_footer)))]
     for top, letters in labels:
         for index, letter in letters.items():
             for row, bits in enumerate(FONT.get(letter, '').split()):
@@ -95,6 +100,7 @@ def main():
     parser.add_argument('--data-dir', type=Path, default=OUT)
     parser.add_argument('--prefix', default='piano')
     parser.add_argument('--prepare-render', action='store_true')
+    parser.add_argument('--rate-ratio', type=int, choices=(1, 3), default=1)
     args = parser.parse_args()
     out = args.data_dir
     samples = [int(x, 16) for x in (out/(args.prefix+'_input.hex')).read_text().split()]
@@ -112,7 +118,7 @@ def main():
         header = b'P6\n1600 900\n255\n'
         assert content.startswith(header)
         pixels = content[len(header):]
-        expected = reference(mode, actual)
+        expected = reference(mode, actual, args.rate_ratio)
         assert len(pixels) == 1600*900*3, (name, len(pixels))
         if pixels != expected:
             mismatches = [i//3 for i, (a, b) in enumerate(zip(pixels, expected)) if a != b][:10]

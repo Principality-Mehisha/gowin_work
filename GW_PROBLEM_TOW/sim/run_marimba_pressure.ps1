@@ -16,11 +16,11 @@ try {
         & vsim -c -voptargs=+acc -lib "$out/work" $bench -do $commands -l "$out/$bench.log"
         if($LASTEXITCODE){throw "$bench failed"}
     }
-    & python -B tools/check_analysis.py --data-dir $out --prefix marimba --prepare-render
+    & python -B tools/check_analysis.py --data-dir $out --prefix marimba --rate-ratio 3 --prepare-render
     if($LASTEXITCODE){throw 'Real marimba PCM analysis differs from reference'}
     $commands='onfinish stop; run -all; if {[examine -radix unsigned /tb_analysis_render/passed] != 1} {quit -code 1 -f}; quit -code 0 -f'
-    & vsim -c -voptargs=+acc -lib "$out/work" tb_analysis_render "-gDATA_FILE=$out/render_data.hex" "-gSPECTRUM_FILE=$out/spectrum.ppm" "-gWAVEFORM_FILE=$out/waveform.ppm" -do $commands -l "$out/tb_analysis_render.log"
+    & vsim -c -voptargs=+acc -lib "$out/work" tb_analysis_render -gANALYSIS_RATE_RATIO=3 "-gDATA_FILE=$out/render_data.hex" "-gSPECTRUM_FILE=$out/spectrum.ppm" "-gWAVEFORM_FILE=$out/waveform.ppm" -do $commands -l "$out/tb_analysis_render.log"
     if($LASTEXITCODE){throw 'Marimba RGB render failed'}
-    & python -B tools/check_analysis.py --data-dir $out --prefix marimba
+    & python -B tools/check_analysis.py --data-dir $out --prefix marimba --rate-ratio 3
     if($LASTEXITCODE){throw 'Marimba RGB pixels differ from reference'}
 } finally { Pop-Location }

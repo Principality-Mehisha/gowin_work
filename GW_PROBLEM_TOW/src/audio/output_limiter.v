@@ -2,6 +2,7 @@
 // until its safe gain is known; a 36-cycle restoring divider avoids a huge / unit.
 module output_limiter #(
     parameter integer MASTER_SHIFT=2,
+    parameter integer SAMPLE_RATE_RATIO=1,
     parameter integer CEILING=30000
 ) (
     input wire clk, reset_n, clear,
@@ -13,6 +14,9 @@ module output_limiter #(
     output reg saturated
 );
     reg [21:0] peak;
+    localparam RATE_BITS=SAMPLE_RATE_RATIO<2 ? 1 : $clog2(SAMPLE_RATE_RATIO);
+    reg [RATE_BITS-1:0] rate_phase;
+    reg release_step;
     // Worst-case bound even if every voice used the maximum 4x compensation:
     // 88 * 30000 * 4 * (255/256) / 4 < 2^22.
     reg signed [31:0] sample_reg;
@@ -36,23 +40,27 @@ module output_limiter #(
             scaled = (in_sample + (in_sample < 0 ?
                      (1 << (MASTER_SHIFT-1))-1 : (1 << (MASTER_SHIFT-1)))) >>> MASTER_SHIFT;
         magnitude = sample_reg < 0 ? -sample_reg : sample_reg;
-        decayed = peak > 0 ? peak - (peak[21:12] == 0 ?
-                           22'd1 : {12'd0,peak[21:12]}) : 22'd0;
+        decayed = !release_step ? peak : (peak > 0 ? peak - (peak[21:12] == 0 ?
+                           22'd1 : {12'd0,peak[21:12]}) : 22'd0);
     end
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state<=0; peak<=0; out_sample<=0; out_valid<=0;
+            rate_phase<=0;release_step<=1;
             limiting<=0; saturated<=0; sample_reg<=0;
             dividend<=0; quotient<=0; remainder<=0; denominator<=1;
             count<=0; gain<=0; product<=0;
             magnitude_reg<=0; decay_reg<=0; required_peak_reg<=0; rounded_reg<=0;
         end else if (clear) begin
             state<=0; peak<=0; out_sample<=0; out_valid<=0;
+            rate_phase<=0;release_step<=1;
             limiting<=0; saturated<=0;
         end else begin
             out_valid<=0;
             case (state)
                 0: if (in_valid) begin
+                    release_step<=rate_phase==0;
+                    rate_phase<=rate_phase==SAMPLE_RATE_RATIO-1 ? 0 : rate_phase+1'b1;
                     sample_reg<=scaled;
                     state<=4;
                 end

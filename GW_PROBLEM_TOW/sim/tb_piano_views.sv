@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input GSRI);endmodule
+module GSR(input GSRI);wire GSRO=GSRI;endmodule
 module tb_piano_views;
  localparam UART_TICKS=8;
  reg clk=0,rx=1,follow=1,k2=1,passed=0;

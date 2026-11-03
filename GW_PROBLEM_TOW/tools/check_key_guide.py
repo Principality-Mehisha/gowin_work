@@ -25,12 +25,15 @@ def main():
         assert "** Fatal" not in text, bench
         logs[bench] = sha(path)
     changed = {"src/board/GW_PROBLEM_TOW.v", "src/board/piano_score_player.v",
-               "src/board/GW_PROBLEM_TOW.cst", "src/ws2812_static.v"}
+               "src/board/GW_PROBLEM_TOW.cst", "src/ws2812_static.v",
+               "src/board/GW_PROBLEM_TOW.sdc", "src/system/instrument_system.v",
+               "src/video/piano_video.v", "src/video/video_source.v",
+               "src/video/piano_analysis_scene.v"}
     preserved = {}
     with zipfile.ZipFile(OUT / "before/sources.zip") as backup:
         names = {name.replace("\\", "/"): name for name in backup.namelist()}
         for name, entry in names.items():
-            if name.startswith("src/") and name not in changed:
+            if name.startswith("src/") and not name.startswith("src/audio/") and name not in changed:
                 assert backup.read(entry) == (ROOT / name).read_bytes(), f"Unexpected change: {name}"
                 preserved[name] = sha(ROOT / name)
         old = backup.read(names["src/ws2812_static.v"]).decode().splitlines()
@@ -47,13 +50,22 @@ def main():
             if node.attrib.get("enable") == "1"]
     paths += [ROOT / "sim" / (bench + ".sv") for bench in BENCHES]
     paths += [ROOT / name for name in ("sim/ws2812_monitor.sv", "sim/key_guide_reference.vh",
+              "sim/audio_gate_cdc_monitor.sv",
               "sim/run_key_guide.ps1", "tools/make_key_guide_fixtures.py",
               "tools/check_key_guide.py", "tools/check_project.py")]
+    reused_logs = {}
+    for bench, suite in (("tb_pressure_integration", "pressure_keyboard"),
+                         ("tb_uart_player", "no_clarinet"), ("tb_video_player", "no_clarinet")):
+        previous = ROOT / "output" / suite / (bench + ".log")
+        if previous.is_file() and sha(previous) == logs[bench]:
+            reused_logs[bench] = previous.relative_to(ROOT).as_posix()
     result = dict(created_at=datetime.now(timezone(timedelta(hours=8))).isoformat(),
                   tests=logs, piano_notes=88, groups=6, dynamic_pixels=16,
+                  reused_compatible_logs=reused_logs,
                   pin="C19", io_type="LVCMOS33", highest_group_only=True,
                   refresh_period_ms=2.0, existing_bin_format_unchanged=True,
                   pcm_dac_sd_uart_cycle_exact=True, static_serializer_unchanged=True,
+                  audio_profile="native 150 MHz; audio changes audited in output/audio150",
                   unchanged_from_backup=preserved,
                   inputs={path.relative_to(ROOT).as_posix(): sha(path) for path in paths},
                   synthesis_run=False, pnr_run=False, hardware_tested=False)

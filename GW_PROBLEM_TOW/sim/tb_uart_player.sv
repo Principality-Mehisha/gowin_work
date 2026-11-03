@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input GSRI); endmodule
+module GSR(input GSRI); wire GSRO=GSRI; endmodule
 module uart_player_case #(
     parameter IMAGE="output/fixed_slots/player.hex",
     parameter integer ERROR=0, EMPTY=0, AUTOPLAY=0
@@ -20,6 +20,15 @@ module uart_player_case #(
         .rst_n(dut.rst_n),.cs_n(cs),.sck(sck),.mosi(mosi),.miso(miso),
         .profile(2'd2),.fault(4'd0),.last_argument(),.read_commands(),.cmd16_seen());
     `include "uart_test_tasks.vh"
+    audio_gate_cdc_monitor key_monitor(
+        .sys_clk(clk),.audio_clk(dut.audio_clk),.reset_n(dut.system.clock_bridge.link_reset_n),
+        .enable(dut.system.audio_link_ready),.sys_clear(dut.system.synth_stop || dut.system.marimba_mode),
+        .source_fire(dut.system.audio_event_valid && dut.system.audio_event_ready),
+        .source_marimba(dut.system.audio_config[9]),.source_update(dut.system.audio_event_update),
+        .source_on(dut.system.audio_event_on),.source_note(dut.system.audio_event_note),
+        .ack_valid(dut.system.ack_valid),.ack_clear(dut.system.ack_clear),
+        .ack_marimba(dut.system.ack_marimba),.ack_update(dut.system.ack_update),
+        .ack_on(dut.system.ack_on),.ack_note(dut.system.ack_note),.keys(dut.video_keys));
     always @(posedge clk)if(dut.rst_n)begin
         if(dut.system.deadline_error)$fatal(1,"Numbered player compute deadline");
         if(dut.pcm!==dut.pcm_right)$fatal(1,"Stereo mismatch");
@@ -36,8 +45,7 @@ module uart_player_case #(
     always @(negedge clk)if(dut.rst_n)begin
         if(dut.system.marimba_mode)begin
             if(dut.video_active || dut.video_keys)$fatal(1,"Marimba leaked into live piano waterfall");
-        end else if(dut.video_keys!==dut.system.voices.piano.gates)
-            $fatal(1,"SD waterfall keys differ from actual piano gates");
+        end
     end
     task select_score(input integer kind,input integer number);
         begin send_frame(0,'h12,kind,number,0);end

@@ -49,7 +49,8 @@ module piano_video (
         .read_address(analysis_read_address),.read_data(analysis_read_data),.visible_valid(analysis_visible));
     wire [7:0] red,green,blue;
     wire hsync,vsync,de;
-    video_source #(.REALTIME(1)) source(.pixel_clk(pixel_clk),.reset_n(video_reset_n),.test_pattern(1'b0),
+    video_source #(.REALTIME(1),.ANALYSIS_RATE_RATIO(3)) source(
+        .pixel_clk(pixel_clk),.reset_n(video_reset_n),.test_pattern(1'b0),
         .update(update),.active(video_active),.elapsed_ms(video_ms),.lit_keys(video_keys),
         .clear(video_clear),.activity(video_activity),
         .display_mode(video_mode),.analysis_valid(analysis_visible),.analysis_data(analysis_read_data),

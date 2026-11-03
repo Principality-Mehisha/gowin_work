@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input GSRI); endmodule
+module GSR(input GSRI); wire GSRO=GSRI; endmodule
 module tb_effects_integration;
     localparam UART_TICKS=8;
     reg clk=0,k2=1,rx=1,passed=0;
@@ -57,7 +57,7 @@ module tb_effects_integration;
         @(posedge dut.sample_tick);
         fork: capture
             begin
-                expected=dut.pcm;dac_frame=0;
+                #0.001;expected=dut.dac_sample_pcm;dac_frame=0;
                 for(bit_number=0;bit_number<32;bit_number=bit_number+1)begin
                     @(posedge bck);dac_frame={dac_frame[30:0],din};
                     if(ws!==(bit_number>=16))$fatal(1,"FX DAC word select");
@@ -70,13 +70,13 @@ module tb_effects_integration;
     end
     initial begin
         for(i=0;i<16;i=i+1)voltages[i]=3510;
-        wait(dut.rst_n);wait(dut.system.pressure_calibrated==16'hffff);settle();
+        wait(dut.rst_n);wait(dut.system.pressure_calibrated==16'hffff && dut.system.audio_link_ready);settle();
         if(dut.effect_mode!=0 || dut.effect_amount!=30)$fatal(1,"FX startup not dry/default amount");
         voltages[7]=1900;wait(ons==1);saved_ons=ons;saved_starts=starts;
         effect('h52,100);
         for(i=1;i<=3;i=i+1)begin
             effect('h51,i);
-            repeat(600)@(posedge dut.sample_tick);
+            repeat(1800)@(posedge dut.sample_tick);
             if(ons!=saved_ons || starts!=saved_starts || !dut.system.voices.piano.gates[39] ||
                dut.system.effects.applied_mode!=i || dut.system.effects.wet_gain!=125 ||
                !dut.audio_analysis_active || dut.last_error)
@@ -84,10 +84,10 @@ module tb_effects_integration;
             if(i==3 && dut.system.effects.vibrato_mix!=256)
                 $fatal(1,"Vibrato retained dry mix after fade");
         end
-        effect('h52,0);repeat(300)@(posedge dut.sample_tick);
+        effect('h52,0);repeat(900)@(posedge dut.sample_tick);
         if(dut.system.effects.wet_gain || dut.system.effects.vibrato_mix || ons!=saved_ons)
             $fatal(1,"FX zero amount/retrigger");
-        effect('h51,1);effect('h52,100);repeat(300)@(posedge dut.sample_tick);
+        effect('h51,1);effect('h52,100);repeat(900)@(posedge dut.sample_tick);
         // Switching timbre keeps the selection but discards the old delay.
         send_frame(0,'h44,0,0,0);settle();
         repeat(64)@(posedge dut.sample_tick);
@@ -106,7 +106,7 @@ module tb_effects_integration;
         repeat(80)@(posedge dut.sample_tick);
         if(!dut.system.effect_tail || !dut.audio_analysis_active || !echo_samples)
             $fatal(1,"Natural SD EOF truncated echo/analysis");
-        wait(!dut.system.effect_tail);repeat(4)@(negedge clk);
+        wait(!dut.system.effect_tail);repeat(3)@(posedge dut.analysis_sample_tick);repeat(4)@(negedge clk);
         if(dut.pcm!=0 || dut.audio_analysis_active)$fatal(1,"Effect tail did not expire");
         @(negedge clk);k2=0;repeat(8)@(negedge clk);k2=1;wait(dut.rst_n);
         if(dut.effect_mode!=0 || dut.effect_amount!=30 || dut.pcm!=0)

@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 // VESA DMT 0x53: 1600x900 at 60 Hz, 108 MHz pixels, positive HS/VS.
-module video_source #(parameter integer REALTIME=0) (
+module video_source #(parameter integer REALTIME=0,ANALYSIS_RATE_RATIO=1) (
     input wire pixel_clk, input wire reset_n, input wire test_pattern,
     input wire update, active,
     input wire [1:0] display_mode,
@@ -19,7 +19,8 @@ module video_source #(parameter integer REALTIME=0) (
     reg [9:0] y;
     reg [4:0] hs_pipe, vs_pipe, de_pipe;
     wire [23:0] rgb,analysis_rgb;
-    piano_analysis_scene analysis_scene(.clk(pixel_clk),.reset_n(reset_n),.display_mode(display_mode),
+    piano_analysis_scene #(.SAMPLE_RATE_RATIO(ANALYSIS_RATE_RATIO)) analysis_scene(
+        .clk(pixel_clk),.reset_n(reset_n),.display_mode(display_mode),
         .x(x),.y(y),.visible_valid(analysis_valid),.read_data(analysis_data),
         .read_address(analysis_address),.rgb(analysis_rgb));
     piano_scene #(.REALTIME(REALTIME)) scene(.clk(pixel_clk), .reset_n(reset_n), .frame_tick(frame_tick),

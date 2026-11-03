@@ -24,7 +24,7 @@ CMD=0x50，P0为0/1/2，P1/P2必须为0。无效参数返回原反馈结果1，�
 
 可在没有SD卡时先选择频谱或波形，再选择钢琴/马林巴，用压力键盘或UART单音按钮演奏。
 标题为AUDIO SPECTRUM/AUDIO WAVEFORM；没有当前音源数据时显示WAITING FOR AUDIO，不沿用旧音色波形。
-马林巴松键后继续显示自然衰减，模态/噪声结束后保留128音频帧滤波清尾窗口。
+马林巴松键后继续显示自然衰减，模态/噪声结束后保留384音频帧滤波清尾窗口，仍约7.86 ms。
 
 主机工具只打印帧，显式指定-Port才发送到串口：
 
@@ -36,15 +36,15 @@ powershell -File tools/send_uart_command.ps1 -Command ViewWaveform
 
 ## 数据与刷新
 
-- 采样率来自当前DAC节拍：50 MHz / 3072 ≈ 16276.041667 Hz。
-- 频谱采用1024点Hann窗、定点radix-2 FFT，显示512个非负频率点，频率间隔约15.8946 Hz，横轴约0～8.1 kHz。柱高为归一化FFT的近似对数幅度，不是校准声压或功率谱密度。
-- 波形使用同一段PCM的前512个样本，时间窗口约31.46毫秒，按上升过零触发；无过零时最多等待1024个采样后触发。幅度保留实际PCM尺度，不自动增益。
-- 每块采样约62.91毫秒，计算及输出约0.66毫秒；等待视频换帧确认后采集下一块。因此分析数据约每秒12～15次刷新，HDMI扫描仍为60 Hz。首次显示需要一次触发和完整采样块。
+- 采样率来自当前DAC节拍：150 MHz / 3072 = 48828.125 Hz，经官方双时钟FIFO返回50 MHz分析域。
+- 频谱采用1024点Hann窗、定点radix-2 FFT，显示512个非负频率点，频率间隔约47.684 Hz，横轴约0～24.4 kHz。频率覆盖扩大三倍，固定FFT点数下分辨率变粗三倍。柱高为近似对数幅度，不是校准声压或功率谱密度。
+- 波形使用同一段PCM的前512个样本，时间窗口约10.486毫秒，按上升过零触发；无过零时最多等待1024个采样后触发。幅度保留实际PCM尺度，不自动增益。
+- 每块采样约20.972毫秒，计算及输出仍在50 MHz进行；等待视频换帧确认后采集下一块。实际分析刷新还取决于触发、计算及视频确认，HDMI扫描仍为60 Hz。首次显示需要一次触发和完整采样块。
 - 系数为片上的1024项窗函数和512项复数旋转因子ROM，由tools/generate_analysis_tables.py生成，不需要SD查表，也不增加SD文件。
 
 ## 模块边界
 
-piano_score_player从DAC已锁存的样本输出分析接口；instrument_system输出audio_analysis_active及清除状态。
+piano_score_player从DAC已锁存的样本经官方FIFO返回分析接口；instrument_system输出audio_analysis_active及清除状态。
 已有piano_audio_analysis/piano_analysis_scene名称保留，但FFT/波形逻辑本身不限定乐器，两种音源共用一套。
 piano_video在50 MHz运行分析，在像素域使用analysis_frame_cdc双缓冲读取，video_source选择三种场景。
 
@@ -53,6 +53,7 @@ piano_video在50 MHz运行分析，在像素域使用analysis_frame_cdc双缓冲
 ## 验证与构建
 
 实时瀑布流的当前回归入口为sim/run_live_waterfall.ps1，见[LIVE_WATERFALL.md](LIVE_WATERFALL.md)。
+原生150 MHz顶层、真实DAC/FFT及新坐标完整像素回归见sim/run_audio150.ps1和[AUDIO_150MHZ.md](AUDIO_150MHZ.md)。
 下述频谱/波形资源及时序数据来自此前实现报告，不代表当前压力、瀑布流及数字效果版本；
 本轮没有重新综合，需以用户新构建报告为准。
 

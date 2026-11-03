@@ -3,6 +3,7 @@
 module piano_synth #(
     parameter integer EXTERNAL_LIMITER=0,
     parameter integer LIVE_DYNAMICS=0,
+    parameter integer SAMPLE_RATE_RATIO=1,
     parameter SINE_FILE="src/rom/sine256.hex",
     parameter FREQ_FILE="src/rom/frequency88.hex",
     parameter VOICING_FILE="src/rom/voicing88.hex",
@@ -39,6 +40,9 @@ module piano_synth #(
                DYN_GAIN=6, ADD=7, FINISH=8, FETCH=9, COMMIT=10, DRAIN=11,
                DECODE=12, NOTE_GAIN=13, PREPARE=14, DYN_MERGE=15;
     reg [3:0] state;
+    localparam RATE_BITS=SAMPLE_RATE_RATIO<2 ? 1 : $clog2(SAMPLE_RATE_RATIO);
+    reg [RATE_BITS-1:0] rate_phase;
+    reg time_step;
     reg [6:0] voice;
     reg [3:0] harmonic;
     reg [87:0] gates, pending;
@@ -133,6 +137,8 @@ module piano_synth #(
     reg signed [31:0] mix_accum;
     reg [6:0] active_count;
     reg [17:0] frame_pitch;
+    wire envelope_advance=time_step || trigger_reg || !voice_valid ||
+        (!gate_reg && state_snapshot[2:0]!=0 && state_snapshot[2:0]!=4);
     wire [49:0] pitch_product = frequency_word * frame_pitch;
     wire [31:0] pitched_step = pitch_product[47:16];
     wire [49:0] stiffness_product = profile[139:108] * frame_pitch;
@@ -341,6 +347,7 @@ module piano_synth #(
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state<=IDLE; voice<=0; harmonic<=1; gates<=0; pending<=0;
+            rate_phase<=0;time_step<=1;
             mix_sample<=0; mix_valid<=0; mix_accum<=0; active_count<=0;
             active_voices<=0; deadline_error<=0; frame_pitch<=65536;
             base_phase<=0; phase_h<=0; voice_step<=0; freq_h<=0;
@@ -370,6 +377,7 @@ module piano_synth #(
             sum_high_valid<=0; sum_finish<=0;
         end else if (stop_all) begin
             state<=IDLE; gates<=0; pending<=0; mix_accum<=0;
+            rate_phase<=0;time_step<=1;
             mix_sample<=0; mix_valid<=0; active_count<=0; active_voices<=0;
             valid_states<=0; voice_env<=0; env_state_reg<=0; base_phase<=0;
             partial_valid<=0; partial_last<=0;
@@ -409,6 +417,8 @@ module piano_synth #(
             case (state)
                 IDLE: if (sample_tick) begin
                     voice<=0; mix_accum<=0; active_count<=0;
+                    time_step<=rate_phase==0;
+                    rate_phase<=rate_phase==SAMPLE_RATE_RATIO-1 ? 0 : rate_phase+1'b1;
                     frame_pitch<=pitch_ratio; state<=FETCH;
                 end
                 FETCH: begin
@@ -425,9 +435,9 @@ module piano_synth #(
                         voice_dynamics<=dynamics_data;
                     else if(!gate_reg)
                         voice_dynamics<=applied_gain;
-                    else if(applied_gain<dynamics_data)
+                    else if(time_step && applied_gain<dynamics_data)
                         voice_dynamics<=applied_gain+1'b1;
-                    else if(applied_gain>dynamics_data)
+                    else if(time_step && applied_gain>dynamics_data)
                         voice_dynamics<=applied_gain-1'b1;
                     else voice_dynamics<=applied_gain;
                     voice_decay_step<=decay_data[23:0];
@@ -447,9 +457,9 @@ module piano_synth #(
                 end
                 DECODE: state<=LOAD;
                 LOAD: begin
-                    voice_env<=next_env;
-                    env_state_reg<=next_env_state;
-                    release_step_reg<=next_release_step;
+                    voice_env<=envelope_advance ? next_env : state_snapshot[50:27];
+                    env_state_reg<=envelope_advance ? next_env_state : state_snapshot[2:0];
+                    release_step_reg<=envelope_advance ? next_release_step : state_snapshot[26:3];
                     voice_step<=pitched_step;
                     stiffness_step<=stiffness_product[47:16];
                     voice_phases<=(trigger_reg || !voice_valid) ? 256'd0 :
@@ -457,15 +467,15 @@ module piano_synth #(
                     partial_levels<=(trigger_reg || !voice_valid) ?
                                     {192{1'b1}} : partial_data[527:336];
                     tone_level<=(trigger_reg || !voice_valid) ? 16'hffff :
-                                previous_tone-tone_loss;
+                                (time_step ? previous_tone-tone_loss : previous_tone);
                     strike_level<=HAMMER_TRANSIENT ?
                         ((trigger_reg || !voice_valid) ? 16'hffff :
-                         (previous_strike>16'd128 ?
-                          previous_strike-16'd128 : 16'd0)) : 16'd0;
+                         (!time_step ? previous_strike :
+                          (previous_strike>16'd128 ? previous_strike-16'd128 : 16'd0))) : 16'd0;
                     if(UNISON_BEAT)
                         unison_phase<=(trigger_reg || !voice_valid) ?
                                       (32'h40000000+{9'd0,voice,16'd0}) :
-                                      previous_unison+32'd44739+(pitched_step>>10);
+                                      previous_unison+(32'd44739/SAMPLE_RATE_RATIO)+(pitched_step>>10);
                     noise_lfsr<=(trigger_reg || !voice_valid) ?
                                 (16'h1ace+{9'd0,voice}) :
                                 next_noise(previous_noise);
@@ -504,7 +514,7 @@ module piano_synth #(
                     base1<=$signed({sine_value[15],sine_value});
                     weight1<=safe_weight >> 8;
                     voice_phases[(harmonic-1)*32 +: 32]<=phase_h+freq_h[31:0];
-                    if(PARTIAL_DECAY)
+                    if(PARTIAL_DECAY && time_step)
                         if(partial_levels[(harmonic-1)*24 +: 24] <=
                            (24'd1 << partial_decay_shift(harmonic)))
                             partial_levels[(harmonic-1)*24 +: 24]<=0;

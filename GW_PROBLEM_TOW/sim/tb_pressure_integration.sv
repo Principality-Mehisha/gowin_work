@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input GSRI); endmodule
+module GSR(input GSRI); wire GSRO=GSRI; endmodule
 module tb_pressure_integration;
     localparam UART_TICKS=8;
     reg clk=0,k2=0,rx=1;
@@ -44,11 +44,20 @@ module tb_pressure_integration;
         last_adc=cycles;
     end
     `include "uart_test_tasks.vh"
+    audio_gate_cdc_monitor key_monitor(
+        .sys_clk(clk),.audio_clk(dut.score_player.audio_clk),
+        .reset_n(dut.score_player.system.clock_bridge.link_reset_n),
+        .enable(dut.score_player.system.audio_link_ready),
+        .sys_clear(dut.score_player.system.synth_stop || dut.score_player.system.marimba_mode),
+        .source_fire(dut.score_player.system.audio_event_valid && dut.score_player.system.audio_event_ready),
+        .source_marimba(dut.score_player.system.audio_config[9]),
+        .source_update(dut.score_player.system.audio_event_update),
+        .source_on(dut.score_player.system.audio_event_on),.source_note(dut.score_player.system.audio_event_note),
+        .ack_valid(dut.score_player.system.ack_valid),.ack_clear(dut.score_player.system.ack_clear),
+        .ack_marimba(dut.score_player.system.ack_marimba),.ack_update(dut.score_player.system.ack_update),
+        .ack_on(dut.score_player.system.ack_on),.ack_note(dut.score_player.system.ack_note),.keys(dut.video_keys));
     always @(negedge clk)begin
         #1;
-        if(dut.player_reset_n && !dut.score_player.system.marimba_mode &&
-           dut.video_keys!==dut.score_player.system.voices.piano.gates)
-            $fatal(1,"Pressure/audition waterfall keys differ from sounding piano gates");
         if((!dut.player_reset_n || !dut.score_player.system.pressure_enable ||
             dut.score_player.system.pressure_calibrated!=16'hffff) && leds!==8'hff)
             $fatal(1,"LEDs retained old status/mode/reset indication");
@@ -84,7 +93,7 @@ module tb_pressure_integration;
         @(posedge dut.score_player.sample_tick);
         fork: capture_frame
             begin
-                expected_pcm=dut.score_player.pcm;dac_frame=0;
+                #0.001;expected_pcm=dut.score_player.dac_sample_pcm;dac_frame=0;
                 for(bit_number=0;bit_number<32;bit_number=bit_number+1)begin
                     @(posedge bck);dac_frame={dac_frame[30:0],din};
                     if(ws!==(bit_number>=16))$fatal(1,"DAC word select");
@@ -119,7 +128,7 @@ module tb_pressure_integration;
         if(offs!=16 || dut.score_player.system.voices.piano.gates!=0 ||
            !dut.score_player.system.voices.piano_busy || !dut.audio_analysis_active || leds!==8'hff)
             $fatal(1,"Mapped release/tail ownership");
-        repeat(300)@(posedge dut.score_player.sample_tick);
+        repeat(900)@(posedge dut.score_player.sample_tick);
         if(dut.score_player.system.voices.piano_busy)$fatal(1,"Pressure tail did not finish");
         voltages[0]=1900;scans(12);saved=pressure_ons;
         send_frame(0,'h42,0,0,0);wait(dut.score_player.system.note_busy);
@@ -149,6 +158,7 @@ module tb_pressure_integration;
         wait(dut.score_player.playing);wait(!dut.score_player.system.ringtone_active);scans(6);
         if(pressure_ons!=saved || dut.score_player.last_error)$fatal(1,"SD/pressure stale event or error");
         send_frame(0,'h12,2,1,0);wait(dut.score_player.playing);
+        repeat(3)@(posedge dut.analysis_sample_tick);
         if(!dut.audio_analysis_active)$fatal(1,"MB missing from shared analysis");
         wait(!dut.score_player.system.ringtone_active);scans(4);
         for(i=0;i<16;i=i+1)voltages[i]=3510+i*3;

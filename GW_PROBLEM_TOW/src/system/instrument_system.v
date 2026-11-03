@@ -9,6 +9,8 @@ module instrument_system #(
     parameter integer NOTE_GATE_CYCLES = 25000000,
     parameter integer NOTE_TAIL_CYCLES = 50000000,
     parameter integer AUDIO_FRAME_CYCLES = 3072,
+    parameter integer AUDIO_CLOCK_HZ = 150000000,
+    parameter integer AUDIO_SAMPLE_RATE_RATIO = 3,
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter FREQ_FILE = "src/rom/frequency88.hex",
     parameter VOICING_FILE = "src/rom/voicing88.hex",
@@ -16,11 +18,13 @@ module instrument_system #(
     parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack48.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
     // actual DAC sample rate (configured by the board shell).
-    parameter [17:0] DDS_PITCH_RATIO = 18'd193274
+    parameter [17:0] DDS_PITCH_RATIO = 18'd64425
 ) (
     input wire sys_clk,
     input wire rst_n,
+    input wire audio_clk,audio_pll_locked,
     input wire sample_tick,
+    input wire signed [15:0] dac_sample_pcm,
     input wire [1:0] effect_mode,
     input wire [6:0] effect_amount,
     input wire [6:0] pitch_group,
@@ -62,6 +66,8 @@ module instrument_system #(
     output wire [31:0] video_elapsed_ms,
     output wire [87:0] video_keys,
     output wire audio_analysis_active,analysis_clear,
+    output wire analysis_sample_tick,
+    output wire signed [15:0] analysis_sample_pcm,
     output wire [7:0] LEDs
 );
     // ringtone_active now means any selected SD score (including piano).
@@ -81,12 +87,12 @@ module instrument_system #(
     wire [7:0] pressure_hold_progress;
     wire pressure_overflow,piano_busy,audio_busy,pressure_busy;
     reg pressure_fault;
-    wire effect_fault,effect_tail;
-    assign pressure_enable=PRESSURE_ENABLE && manual_mode &&
+    wire effect_fault,effect_tail,bridge_fault,audio_link_ready;
+    assign pressure_enable=PRESSURE_ENABLE && audio_link_ready && manual_mode &&
                            !note_busy && !control_restart && !pressure_fault;
     assign pressure_busy=pressure_enable && ((|pressure_enabled_pressed) || audio_busy);
-    assign last_error=effect_fault ? 8'h62 : pressure_fault ? 8'h61 : control_error;
-    assign player_state=pressure_fault || effect_fault ? 8'd3 : control_state;
+    assign last_error=bridge_fault ? 8'h63 : effect_fault ? 8'h62 : pressure_fault ? 8'h61 : control_error;
+    assign player_state=pressure_fault || effect_fault || bridge_fault ? 8'd3 : control_state;
     always @(posedge sys_clk or negedge rst_n) begin
         if(!rst_n) pressure_fault<=0;
         else if(control_restart) pressure_fault<=0;
@@ -168,7 +174,7 @@ module instrument_system #(
         else if (control_restart || !storage_enable) stream_error <= 0;
         else stream_error <= (sd_error_code != 0 || fat_error != 0 || score_error != 0);
     end
-    wire source_error=deadline_error || pressure_fault || (pressure_enable && pressure_overflow) ||
+    wire source_error=deadline_error || bridge_fault || pressure_fault || (pressure_enable && pressure_overflow) ||
                       (storage_enable && stream_error) || sequence_error;
     wire manual_error=source_error || effect_fault;
     assign failed = source_error || effect_fault;
@@ -178,48 +184,84 @@ module instrument_system #(
                          (failed || finished || !playing));
     assign dds_event_ready = !manual_mode && synth_event_ready;
     wire signed [15:0] selected_pcm;
+    wire engine_reset_n,audio_config_valid;
+    wire [15:0] audio_config;
+    wire audio_event_valid,audio_event_on,audio_event_update,audio_event_ready;
+    wire [6:0] audio_event_note;
+    wire [7:0] audio_event_dynamics;
+    wire audio_deadline_error,audio_effect_fault,audio_bank_busy,audio_piano_busy;
+    wire returned_active,ack_valid,ack_on,ack_update,ack_marimba,ack_clear;
+    wire [6:0] ack_note;
+    wire [15:0] control_config={control_restart || source_error,synth_stop,
+        (|pressure_enabled_pressed),note_busy,manual_mode,!audio_silence && !synth_stop,
+        marimba_mode,effect_mode,effect_amount};
+    wire source_active=audio_config_valid && audio_config[10] && !audio_config[14] &&
+        !audio_deadline_error && !audio_effect_fault &&
+        (!audio_config[11] || (audio_config[9] ? audio_bank_busy :
+         (audio_config[12] || audio_config[13] || audio_bank_busy)));
+    wire effect_clear=!audio_config_valid || audio_config[15] || audio_deadline_error;
+    wire audio_output_active=!effect_clear && !audio_effect_fault && (source_active || effect_tail);
+    audio_domain_bridge clock_bridge(
+        .sys_clk(sys_clk),.audio_clk(audio_clk),.reset_n(rst_n),
+        .pll_locked(audio_pll_locked),.restart(control_restart),.config_in(control_config),
+        .event_valid(synth_event_valid),.event_on(synth_event_on),.event_update(synth_event_update),
+        .event_note(synth_event_note),.event_dynamics(synth_event_dynamics),.event_ready(bank_event_ready),
+        .link_ready_sys(audio_link_ready),
+        .engine_reset_n(engine_reset_n),.audio_config(audio_config),.audio_config_valid(audio_config_valid),
+        .audio_event_valid(audio_event_valid),.audio_event_on(audio_event_on),
+        .audio_event_update(audio_event_update),.audio_event_note(audio_event_note),
+        .audio_event_dynamics(audio_event_dynamics),.audio_event_ready(audio_event_ready),
+        .dac_tick(sample_tick),.dac_pcm(dac_sample_pcm),.source_active(audio_output_active),
+        .piano_busy(audio_piano_busy),.audio_busy(audio_bank_busy),
+        .synth_fault(audio_deadline_error),.effect_fault(audio_effect_fault),
+        .sample_valid(analysis_sample_tick),.sample_pcm(analysis_sample_pcm),.sample_active(returned_active),
+        .piano_busy_sys(piano_busy),.audio_busy_sys(audio_busy),
+        .synth_fault_sys(deadline_error),.effect_fault_sys(effect_fault),
+        .ack_valid(ack_valid),.ack_on(ack_on),.ack_update(ack_update),
+        .ack_marimba(ack_marimba),.ack_clear(ack_clear),.ack_note(ack_note),.bridge_fault(bridge_fault));
     instrument_voice_bank #(.LIVE_DYNAMICS(PRESSURE_ENABLE),
+        .SAMPLE_RATE_RATIO(AUDIO_SAMPLE_RATE_RATIO),
         .SINE_FILE(SINE_FILE),.FREQ_FILE(FREQ_FILE),.VOICING_FILE(VOICING_FILE),
         .MARIMBA_MODE_FILE(MARIMBA_MODE_FILE),.MARIMBA_ATTACK_FILE(MARIMBA_ATTACK_FILE)) voices (
-        .clk(sys_clk),.reset_n(play_rst_n),.sample_tick(sample_tick),.stop_all(synth_stop),
-        .marimba_mode(marimba_mode),
-        .event_valid(synth_event_valid),.event_on(synth_event_on),.event_update(synth_event_update),
-        .event_note(synth_event_note),
-        .event_dynamics(synth_event_dynamics),.pitch_ratio(DDS_PITCH_RATIO),
-        .event_ready(bank_event_ready),.deadline_error(deadline_error),.pcm(selected_pcm),
-        .piano_busy(piano_busy),.audio_busy(audio_busy));
-    wire source_active=!audio_silence && !synth_stop &&
-        (manual_mode ? (marimba_mode ? audio_busy : (note_busy || pressure_busy)) : playing);
-    wire effect_clear=control_restart || source_error;
+        .clk(audio_clk),.reset_n(engine_reset_n),.sample_tick(sample_tick),
+        .stop_all(!audio_config_valid || audio_config[14] || audio_deadline_error || audio_effect_fault),
+        .marimba_mode(audio_config[9]),
+        .event_valid(audio_event_valid),.event_on(audio_event_on),.event_update(audio_event_update),
+        .event_note(audio_event_note),
+        .event_dynamics(audio_event_dynamics),.pitch_ratio(DDS_PITCH_RATIO),
+        .event_ready(audio_event_ready),.deadline_error(audio_deadline_error),.pcm(selected_pcm),
+        .piano_busy(audio_piano_busy),.audio_busy(audio_bank_busy));
     wire signed [15:0] effect_pcm;
-    audio_effects #(.FRAME_CYCLES(AUDIO_FRAME_CYCLES)) effects(
-        .clk(sys_clk),.reset_n(rst_n),.clear(effect_clear),.in_valid(sample_tick),
-        .in_sample(source_active ? selected_pcm : 16'sd0),.mode(effect_mode),.amount(effect_amount),
+    audio_effects #(.FRAME_CYCLES(AUDIO_FRAME_CYCLES),.CLOCK_HZ(AUDIO_CLOCK_HZ),
+        .CONTROL_RATE_RATIO(AUDIO_SAMPLE_RATE_RATIO)) effects(
+        .clk(audio_clk),.reset_n(engine_reset_n),.clear(effect_clear),.in_valid(sample_tick),
+        .in_sample(source_active ? selected_pcm : 16'sd0),
+        .mode(audio_config[8:7]),.amount(audio_config[6:0]),
         .out_sample(effect_pcm),.out_valid(),.busy(),.tail_active(effect_tail),
-        .applied_mode(),.deadline_error(effect_fault));
+        .applied_mode(),.deadline_error(audio_effect_fault));
     // Break the UART/restart -> source gating -> DAC input timing path.
     // Effects complete well before the next audio frame; this adds one
     // system clock to gating without changing the DAC sample cadence.
     reg signed [15:0] pcm_registered;
-    always @(posedge sys_clk or negedge rst_n) begin
-        if(!rst_n)pcm_registered<=0;
-        else pcm_registered<=effect_clear || effect_fault || !(source_active || effect_tail) ?
+    always @(posedge audio_clk or negedge engine_reset_n) begin
+        if(!engine_reset_n)pcm_registered<=0;
+        else pcm_registered<=effect_clear || audio_effect_fault || !(source_active || effect_tail) ?
                              16'sd0 : effect_pcm;
     end
     assign pcm=pcm_registered;
     // Natural release/score EOF stops the source, not an effect's tail.
     // Explicit transport/instrument commands still clear the entire chain.
-    assign audio_analysis_active=!effect_clear && !effect_fault && (source_active || effect_tail);
-    assign analysis_clear=effect_clear || effect_fault || !audio_analysis_active;
-    assign storage_paused=manual_mode || control_restart;
+    assign audio_analysis_active=!control_restart && !failed && returned_active;
+    assign analysis_clear=control_restart || failed || !audio_analysis_active;
+    assign storage_paused=manual_mode || control_restart || !audio_link_ready;
     // Observe only events actually accepted by the piano synthesizer. Updates
     // change pressure dynamics without making another note or ending its bar.
     reg [87:0] held_piano_keys;
     always @(posedge sys_clk or negedge play_rst_n) begin
         if(!play_rst_n) held_piano_keys<=0;
-        else if(synth_stop || marimba_mode) held_piano_keys<=0;
-        else if(synth_event_valid && synth_event_ready && !synth_event_update && synth_event_note<88)
-            held_piano_keys[synth_event_note]<=synth_event_on;
+        else if(synth_stop || marimba_mode || (ack_valid && ack_clear)) held_piano_keys<=0;
+        else if(ack_valid && !ack_update && !ack_marimba && ack_note<88)
+            held_piano_keys[ack_note]<=ack_on;
     end
     // Release/tail expiry leaves the recent history scrolling. Explicit stop,
     // a new SD score, leaving SD for audition, instrument changes and errors

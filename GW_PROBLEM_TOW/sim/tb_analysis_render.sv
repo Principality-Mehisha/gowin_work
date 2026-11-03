@@ -2,7 +2,8 @@
 module tb_analysis_render #(
  parameter DATA_FILE="output/piano_analysis/render_data.hex",
  parameter SPECTRUM_FILE="output/piano_analysis/spectrum.ppm",
- parameter WAVEFORM_FILE="output/piano_analysis/waveform.ppm"
+ parameter WAVEFORM_FILE="output/piano_analysis/waveform.ppm",
+ parameter integer ANALYSIS_RATE_RATIO=1
 );
  reg clk=0,rst=0,passed=0;
  always #4.63 clk=~clk;
@@ -13,7 +14,8 @@ module tb_analysis_render #(
  wire [7:0] r,g,b;
  wire hs,vs,de;
  integer frame,cycle,n,x,y,fd;
- video_source dut(.pixel_clk(clk),.reset_n(rst),.test_pattern(1'b0),.update(1'b0),.active(1'b0),
+ video_source #(.ANALYSIS_RATE_RATIO(ANALYSIS_RATE_RATIO)) dut(
+  .pixel_clk(clk),.reset_n(rst),.test_pattern(1'b0),.update(1'b0),.active(1'b0),
   .elapsed_ms(32'd0),.lit_keys(88'd0),.display_mode(mode),.analysis_valid(1'b1),
   .analysis_data(data),.analysis_address(address),.frame_tick(),.red(r),.green(g),.blue(b),
   .hsync(hs),.vsync(vs),.de(de));

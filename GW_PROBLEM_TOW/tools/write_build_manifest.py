@@ -15,10 +15,14 @@ def main():
     inputs += [ROOT/'src/video/score_metadata.json']
     inputs += sorted((ROOT/'src/video').glob('analysis_*.hex'))
     inputs += [ROOT/'tools/build.tcl', ROOT/'tools/slot_card.py']
+    inputs += [ROOT/'tools/generate_audio150_ip.tcl', ROOT/'tools/generate_audio150_parameters.py']
+    inputs += [ROOT/name for name in ('ip/audio_fifo32/audio_fifo32.ipc',
+        'ip/audio_pll150/audio_pll150.ipc', 'ip/audio_pll150/audio_pll150.mod')]
     bitstream = ROOT/'impl/pnr/GW_PROBLEM_TOW.fs'
     timing = json.loads((ROOT/'sim/timing_report.json').read_text())
     assert all(c.get('setup_violations') == c.get('hold_violations') == 0 for c in timing['clocks'].values())
     assert timing['fmax_mhz'] >= timing['target_mhz']
+    assert timing['audio_clock'] == 'audio_clk' and timing['target_mhz'] == 150
     configuration=json.loads((ROOT/'impl/GW_PROBLEM_TOW_process_config.json').read_text())
     options={k:configuration.get(k) for k in ('Place_Option','Route_Option','Route_Maxfan','Replicate_Resources','Run_Timing_Driven','Correct_Hold_Violation')}
     manifest = dict(created_at=datetime.now(timezone(timedelta(hours=8))).isoformat(),

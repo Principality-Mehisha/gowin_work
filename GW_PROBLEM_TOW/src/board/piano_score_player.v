@@ -1,5 +1,5 @@
 // Board interfaces: reset, UART screen, SD stream, DAC, and instrument system.
-// All modules run directly from the board's 50 MHz sys_clk.
+// Control stays at 50 MHz; the PLL drives synthesis/effects/DAC at 150 MHz.
 module piano_score_player #(
     parameter integer SD_SCORE_ENABLE = 0,
     parameter integer PRESSURE_ENABLE = 0,
@@ -23,11 +23,11 @@ module piano_score_player #(
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter FREQ_FILE = "src/rom/frequency88.hex",
     parameter VOICING_FILE = "src/rom/voicing88.hex",
-    parameter MARIMBA_MODE_FILE = "src/rom/marimba48.hex",
+    parameter MARIMBA_MODE_FILE = "src/rom/marimba48_48828.hex",
     parameter MARIMBA_ATTACK_FILE = "src/rom/marimba_attack48.hex",
     // Frequency ROM is normalized for 48 kHz; compensate for this player's
-    // 50 MHz / BCK_HALF_DIV audio sample rate.
-    parameter [17:0] DDS_PITCH_RATIO = 18'd193274
+    // 150 MHz / (64 * BCK_HALF_DIV) audio sample rate.
+    parameter [17:0] DDS_PITCH_RATIO = 18'd64425
 ) (
     input wire sys_clk, KEY2,
     input wire [6:0] pitch_group,
@@ -52,6 +52,9 @@ module piano_score_player #(
 );
     GSR GSR_INST (.GSRI(1'b1));
     wire rst_n;
+    wire audio_clk,audio_pll_locked,audio_reset_n;
+    audio_clock150 audio_clocks(.sys_clk(sys_clk),.reset_n(rst_n),
+        .audio_clk(audio_clk),.locked(audio_pll_locked),.audio_reset_n(audio_reset_n));
     assign player_reset_n = rst_n;
     board_reset #(.POWER_ON_CYCLES(POWER_ON_CYCLES)) reset_controller (
         .clk(sys_clk), .key_reset_n(KEY2), .rst_n(rst_n)
@@ -110,7 +113,7 @@ module piano_score_player #(
     wire sample_tick;
     wire [1:0] effect_mode;
     wire [6:0] effect_amount;
-    assign analysis_sample_tick=sample_tick;
+    wire signed [15:0] dac_sample_pcm;
     wire signed [15:0] pcm_right=pcm;
     wire [55:0] notes,velocities;
     wire [7:0] gates,triggers;
@@ -155,10 +158,10 @@ module piano_score_player #(
         .elapsed_ms(elapsed_ms),.catalog_mask(scanned_catalog),.catalog_done(scanned_catalog_done)
     );
     pt8211_score_tx #(.BCK_HALF_DIV(BCK_HALF_DIV),
-                      .AMP_START_CYCLES(AUDIO_START_CYCLES)) audio (
-        .sys_clk(sys_clk), .sys_rst_n(rst_n),
+                      .AMP_START_CYCLES(AUDIO_START_CYCLES*3)) audio (
+        .sys_clk(audio_clk), .sys_rst_n(audio_reset_n),
         .pcm_left(pcm), .pcm_right(pcm_right),
-        .sample_tick(sample_tick),.sample_pcm(analysis_pcm),
+        .sample_tick(sample_tick),.sample_pcm(dac_sample_pcm),
         .HP_BCK(HP_BCK), .HP_WS(HP_WS), .HP_DIN(HP_DIN), .PA_EN(PA_EN)
     );
     instrument_system #(
@@ -180,7 +183,9 @@ module piano_score_player #(
     ) system (
         .sys_clk(sys_clk),
         .rst_n(rst_n),
+        .audio_clk(audio_clk),.audio_pll_locked(audio_pll_locked),
         .sample_tick(sample_tick),
+        .dac_sample_pcm(dac_sample_pcm),
         .effect_mode(effect_mode),.effect_amount(effect_amount),
         .pitch_group(pitch_group),.pressure_sample_valid(pressure_sample_valid),
         .pressure_sample_key(pressure_sample_key),.pressure_sample_data(pressure_sample_data),
@@ -219,6 +224,7 @@ module piano_score_player #(
         .video_clear(video_clear),
         .video_elapsed_ms(video_elapsed_ms),
         .video_keys(video_keys),
-        .LEDs(LEDs),.audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear)
+        .LEDs(LEDs),.audio_analysis_active(audio_analysis_active),.analysis_clear(analysis_clear),
+        .analysis_sample_tick(analysis_sample_tick),.analysis_sample_pcm(analysis_pcm)
     );
 endmodule

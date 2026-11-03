@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input wire GSRI); endmodule
+module GSR(input wire GSRI); wire GSRO=GSRI; endmodule
 
 module fixed_slot_case #(parameter integer SMALL_FIFO=0, RESET_ONLY=0)(output reg passed=0);
     `include "../output/fixed_slots/layout.vh"

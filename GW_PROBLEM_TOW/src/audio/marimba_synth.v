@@ -3,6 +3,7 @@
 // MIDI notes 36..83 map to the fitted C2..B5 range.
 module marimba_synth #(
     parameter integer EXTERNAL_LIMITER=0,
+    parameter integer SAMPLE_RATE_RATIO=1,
     parameter SINE_FILE = "src/rom/sine256.hex",
     parameter MODE_FILE = "src/rom/marimba48.hex",
     parameter ATTACK_FILE = "src/rom/marimba_attack48.hex"
@@ -31,6 +32,9 @@ module marimba_synth #(
                NOISE_COMMIT=18, ADVANCE=19;
 
     reg [4:0] state;
+    localparam RATE_BITS=SAMPLE_RATE_RATIO<2 ? 1 : $clog2(SAMPLE_RATE_RATIO);
+    reg [RATE_BITS-1:0] rate_phase;
+    reg time_step;
     reg [5:0] note_index;
     reg [1:0] mode_index;
     reg [NOTE_COUNT-1:0] pending, active_noise;
@@ -162,7 +166,7 @@ module marimba_synth #(
         // mutually exclusive read/write enables avoid a read-first SP RAM
         // mode that this device does not implement; write output is unused.
         if (reset_n && !stop_all && state == NOISE_COMMIT)
-            noise_state_ram[note_index] <= {next_noise_level, next_lfsr(noise_lfsr)};
+            noise_state_ram[note_index] <= {next_noise_level,next_lfsr(noise_lfsr)};
         else if (state == NOTE_START)
             noise_state_q <= noise_state_ram[note_index];
         if (state == SINE_READ) begin
@@ -176,7 +180,7 @@ module marimba_synth #(
             mult_product <= mult_result;
     end
 
-    marimba_body_filter body_filter (
+    marimba_body_filter #(.SAMPLE_RATE_RATIO(SAMPLE_RATE_RATIO)) body_filter (
         .clk(clk), .reset_n(reset_n), .clear(stop_all),
         .in_valid(mix_valid), .in_sample(mix_sample),
         .out_valid(filtered_valid), .out_sample(filtered_sample)
@@ -201,6 +205,7 @@ module marimba_synth #(
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state <= IDLE; note_index <= 0; mode_index <= 0;
+            rate_phase<=0;time_step<=1;
             pending <= 0; active_modes <= 0; active_noise <= 0;
             mode_step <= 0; mode_decay <= 0; mode_level <= 0; mode_phase <= 0;
             noise_level <= 0; noise_step <= 0; noise_lfsr <= 16'h1ace;
@@ -211,6 +216,7 @@ module marimba_synth #(
             mix_sample <= 0; mix_valid <= 0; deadline_error <= 0;
         end else if (stop_all) begin
             state <= IDLE; pending <= 0;
+            rate_phase<=0;time_step<=1;
             active_modes <= 0; active_noise <= 0;
             mix_accum <= 0; mix_sample <= 0; mix_valid <= 0;
         end else begin
@@ -224,6 +230,8 @@ module marimba_synth #(
             end
             case (state)
                 IDLE: if (sample_tick) begin
+                    time_step<=rate_phase==0;
+                    rate_phase<=rate_phase==SAMPLE_RATE_RATIO-1 ? 0 : rate_phase+1'b1;
                     note_index <= 0; mode_index <= 0;
                     mix_accum <= 0; state <= NOTE_START;
                 end
@@ -267,7 +275,7 @@ module marimba_synth #(
                 end
                 DECAY_MUL: state <= DECAY_USE;
                 DECAY_USE: begin
-                    next_level <= mult_product[30:15];
+                    next_level <= time_step ? mult_product[30:15] : mode_level;
                     state <= MODE_COMMIT;
                 end
                 MODE_COMMIT: begin
@@ -302,8 +310,8 @@ module marimba_synth #(
                 NOISE_DYN: state <= NOISE_DYN_USE;
                 NOISE_DYN_USE: begin
                     noise_sample <= $signed(mult_product >>> 8);
-                    next_noise_level <= noise_level <= noise_step ?
-                                        16'd0 : noise_level - noise_step;
+                    next_noise_level <= !time_step ? noise_level :
+                        (noise_level <= noise_step ? 16'd0 : noise_level - noise_step);
                     state <= NOISE_COMMIT;
                 end
                 NOISE_COMMIT: begin

@@ -13,9 +13,15 @@ module tb_uart_notes;
   .sys_clk(clk),.KEY2(k2),.uart_rx(rx),.uart_tx(tx),
   .HP_BCK(),.HP_WS(),.HP_DIN(),.PA_EN(),.sd_cs_n(),.sd_sck(),.sd_mosi(),.sd_miso(1'b1),.LEDs());
  `include "uart_test_tasks.vh"
- always @(negedge clk)if(dut.rst_n && !dut.system.marimba_mode &&
-   dut.video_keys!==dut.system.voices.piano.gates)
-  $fatal(1,"UART audition waterfall keys differ from sounding piano gates");
+ audio_gate_cdc_monitor key_monitor(
+  .sys_clk(clk),.audio_clk(dut.audio_clk),.reset_n(dut.system.clock_bridge.link_reset_n),
+  .enable(dut.system.audio_link_ready),.sys_clear(dut.system.synth_stop || dut.system.marimba_mode),
+  .source_fire(dut.system.audio_event_valid && dut.system.audio_event_ready),
+  .source_marimba(dut.system.audio_config[9]),.source_update(dut.system.audio_event_update),
+  .source_on(dut.system.audio_event_on),.source_note(dut.system.audio_event_note),
+  .ack_valid(dut.system.ack_valid),.ack_clear(dut.system.ack_clear),
+  .ack_marimba(dut.system.ack_marimba),.ack_update(dut.system.ack_update),
+  .ack_on(dut.system.ack_on),.ack_note(dut.system.ack_note),.keys(dut.video_keys));
  // Simulate the screen receiving real UART bytes, independently of DUT TX.
  reg [7:0] screen_byte;
  reg [287:0] screen_command=0;

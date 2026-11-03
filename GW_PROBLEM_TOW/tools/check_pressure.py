@@ -51,6 +51,7 @@ def main():
                         [ROOT / "sim" / (name + ".sv") for name in BENCHES[:-1]] +
                         [ROOT / "sim/tb_synth.sv", ROOT / "sim/pressure_synth_adapter.sv",
                          ROOT / "sim/run_pressure.ps1", ROOT / "tools/check_pressure.py",
+                         ROOT / "sim/audio_gate_cdc_monitor.sv",
                          ROOT / "tools/project_sources.ps1"]},
         "build_matches_current_sources": bool(matching),
         "physical_timing_checked": False, "hardware_tested": False,

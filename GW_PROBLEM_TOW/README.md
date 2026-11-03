@@ -1,6 +1,9 @@
 # Tang Mega 60K 实时钢琴与马林巴播放器
 
 工程入口：`GW_PROBLEM_TOW.gprj`；器件：`GW5AT-LV60PG484AC1/I0`；系统时钟50 MHz。
+音频域现改为官方PLL的150 MHz，原生合成及DAC采样率48828.125 Hz；
+控制、压力扫描、UART/蓝牙和SD仍为50 MHz，双时钟传输使用官方FIFO。
+本轮未编译主工程或更新位流，最终编译由用户执行，详见[150 MHz音频域](docs/AUDIO_150MHZ.md)。
 SD卡保存音符事件，FPGA实时合成声音，经PT8211输出。当前仅保留钢琴和马林巴；单簧管及其专用DDR子系统已完整移除。
 
 完整16键压力输入：钢琴支持持续力度及原音高分组，马林巴使用前三组覆盖C2～B5共48音，
@@ -18,7 +21,7 @@ PN曲目自动启用，休止/结束/停止/切到马林巴或手动模式后熄
 
 共用数字效果器：原声、延迟、震音（音量调制）、颤音（音高调制）四种互斥模式，效果量0～100，
 串口屏命令0x51/0x52控制，适用于两种音色及压力/试听/SD播放。频谱和波形观察处理后的DAC样本，
-钢琴瀑布流逻辑不变。默认原声；所有模式增加固定一音频帧约61.44 us流水延迟。
+钢琴瀑布流逻辑不变。默认原声；所有模式增加固定一音频帧约20.48 us流水延迟。
 HMI需增加n6/n7、四个模式按钮、一个滑块及定时器，事件脚本和接入说明见[数字效果器](docs/AUDIO_EFFECTS.md)；
 本仓库未提供用户实际.HMI/.TFT，脚本尚需在屏幕IDE编译；板上听感仍需试听确认。
 
@@ -64,17 +67,19 @@ GW_PROBLEM_TOW
 │  ├─ board_reset：上电延时及KEY2复位
 │  ├─ uart_score_control：串口屏协议和反馈
 │  ├─ sd_score_stream：SPI → 固定槽位读取/CRC → 解码 → FIFO/定时事件
-│  ├─ pt8211_score_tx：采样节拍与DAC串行输出
+│  ├─ audio_clock150：官方PLL及音频复位
+│  ├─ pt8211_score_tx：150 MHz采样节拍与DAC串行输出
 │  └─ instrument_system：演奏控制、全局音色、事件选择、错误静音
-│     ├─ instrument_voice_bank：钢琴 / 马林巴 → 共用限幅器
-│     └─ audio_effects：共享16 KiB缓存 → 平滑干湿混合/饱和 → DAC
+│     ├─ audio_domain_bridge：官方双时钟FIFO传递事件、确认及DAC样本
+│     ├─ instrument_voice_bank：150 MHz钢琴 / 马林巴 → 共用限幅器
+│     └─ audio_effects：共享32 KiB缓存 → 平滑干湿混合/饱和 → DAC
 ├─ bluetooth_file_receiver：独立UART连续流、32 KiB FIFO及固定槽位写入
 └─ piano_video：视频时钟、快照跨域、实时瀑布流/频谱/波形与TMDS
 ```
 
 `src/board` 保存顶层、复位及CST/SDC；`control` 保存协议与播放控制；`system` 保存演奏集成；
 `input/pressure`保存ADC扫描、分组选择、压力校准和事件处理；
-`storage` 保存SD/FAT/解码/调度；`audio` 保存合成、滤波、限幅及DAC；`rom` 保存五张音频表；`video` 保存视频逻辑。
+`storage` 保存SD/FAT/解码/调度；`audio` 保存合成、滤波、限幅及DAC；`rom` 保存六张音频表（含保留的旧采样率模态表）；`video` 保存视频逻辑。
 `tools` 为数据生成、构建和检查工具；`sim` 为测试；`screen` 为串口屏脚本。
 `sd_card`、`assets` 和 `source` 保留离线历史样本，不是当前SD部署清单，也不再向初始化镜像加入原三首。
 `impl`、`output` 为构建产物和验证证据。`.gprj` 是RTL清单的统一入口，仿真也从它读取源码。
@@ -85,10 +90,11 @@ GW_PROBLEM_TOW
 
 需要Gowin EDA V1.9.12.03、Python 3，以及PATH中的ModelSim `vlib/vlog/vsim`。
 新增压力、实时瀑布流及数字效果功能已完成代码检查与仿真；下面的Gowin编译由用户执行。
-使用IDE时重新载入工程以识别当前52个RTL文件（含ws2812_key_guide）；现有位流未因仿真而更新。
+使用IDE时重新载入工程以识别当前58个RTL文件（含官方PLL/FIFO）；现有位流未因仿真而更新。
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_audio150.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_key_guide.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_effects.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_live_waterfall.ps1

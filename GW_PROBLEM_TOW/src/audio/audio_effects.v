@@ -2,10 +2,13 @@
 // Delay/vibrato share synchronous RAM; fill counts hide stale contents.
 module audio_effects #(
     parameter integer FRAME_CYCLES=3072,
-    parameter integer DELAY_SAMPLES=(64'd50000000*300+FRAME_CYCLES*500)/(FRAME_CYCLES*1000),
-    parameter integer VIBRATO_BASE=80,VIBRATO_DEPTH=32,
-    parameter [31:0] LFO_STEP=(64'd4294967296*5*FRAME_CYCLES+25000000)/50000000,
-    parameter integer DELAY_TAIL=64'd50000000*4/FRAME_CYCLES,
+    parameter integer CLOCK_HZ=50000000,
+    parameter integer CONTROL_RATE_RATIO=1,
+    parameter integer DELAY_SAMPLES=(64'd1*CLOCK_HZ*300+FRAME_CYCLES*500)/(FRAME_CYCLES*1000),
+    parameter integer VIBRATO_BASE=64'd80*CLOCK_HZ/50000000,
+    parameter integer VIBRATO_DEPTH=64'd32*CLOCK_HZ/50000000,
+    parameter [31:0] LFO_STEP=(64'd4294967296*5*FRAME_CYCLES+CLOCK_HZ/2)/CLOCK_HZ,
+    parameter integer DELAY_TAIL=64'd1*CLOCK_HZ*4/FRAME_CYCLES,
     parameter integer VIBRATO_TAIL=VIBRATO_BASE+VIBRATO_DEPTH+2
 ) (
     input wire clk,reset_n,clear,in_valid,
@@ -21,14 +24,20 @@ module audio_effects #(
                V_WAIT0=6,V_SAVE0=7,V_WAIT1=8,V_SAVE1=9,V_BLEND=10,V_STORE=11,
                T_CALC=12,T_GAIN=13;
     reg [3:0] state;
-    reg signed [15:0] memory[0:8191];
+    localparam RAM_BITS=DELAY_SAMPLES>8191 ? 14 : 13;
+    localparam TAIL_MAX=DELAY_TAIL>VIBRATO_TAIL ? DELAY_TAIL : VIBRATO_TAIL;
+    localparam TAIL_BITS=TAIL_MAX<2 ? 1 : $clog2(TAIL_MAX+1);
+    localparam CONTROL_BITS=CONTROL_RATE_RATIO<2 ? 1 : $clog2(CONTROL_RATE_RATIO);
+    reg [CONTROL_BITS-1:0] control_phase;
+    wire control_step=control_phase==0;
+    reg signed [15:0] memory[0:(1<<RAM_BITS)-1];
     reg signed [15:0] memory_q,write_data;
-    reg [12:0] read_address,write_address,position,filled;
+    reg [RAM_BITS-1:0] read_address,write_address,position,filled;
     reg write_enable,warm;
     reg signed [15:0] dry,wet,tap0;
     reg [6:0] wet_gain;
     reg [8:0] vibrato_mix,sample_gain;
-    reg [15:0] tail_count;
+    reg [TAIL_BITS-1:0] tail_count;
     reg [31:0] lfo_phase;
     reg [7:0] fraction;
     reg [8:0] vibrato_delay;
@@ -36,14 +45,14 @@ module audio_effects #(
     wire [6:0] bounded_amount=amount>100 ? 7'd100 : amount;
     // Depth ramps by one Q0.8 unit per sample. Delay retains its old mix.
     wire [6:0] target_gain=mode==0 ? 7'd0 : bounded_amount+(bounded_amount>>2);
-    wire [6:0] next_gain=(mode!=applied_mode || mode==0) ?
+    wire [6:0] next_gain=!control_step ? wet_gain : (mode!=applied_mode || mode==0) ?
         (wet_gain!=0 ? wet_gain-1'b1 : 7'd0) :
         wet_gain<target_gain ? wet_gain+1'b1 :
         wet_gain>target_gain ? wet_gain-1'b1 : wet_gain;
     // Vibrato is fully pitch-modulated after the fade, not a chorus mix.
     // Its amount controls delay excursion, independently of bypass fading.
     wire want_vibrato=mode==3 && applied_mode==3 && bounded_amount!=0;
-    wire [8:0] next_vibrato_mix=want_vibrato ?
+    wire [8:0] next_vibrato_mix=!control_step ? vibrato_mix : want_vibrato ?
         (vibrato_mix<256 ? vibrato_mix+1'b1 : 9'd256) :
         (vibrato_mix!=0 ? vibrato_mix-1'b1 : 9'd0);
     wire [15:0] folded=lfo_phase[31] ? ~lfo_phase[30:15] : lfo_phase[30:15];
@@ -79,13 +88,13 @@ module audio_effects #(
     end
     always @(posedge clk or negedge reset_n)begin
         if(!reset_n)begin
-            state<=IDLE;out_sample<=0;out_valid<=0;deadline_error<=0;
+            state<=IDLE;out_sample<=0;out_valid<=0;deadline_error<=0;control_phase<=0;
             read_address<=0;write_address<=0;write_data<=0;write_enable<=0;
             dry<=0;wet<=0;tap0<=0;wet_gain<=0;sample_gain<=0;vibrato_mix<=0;
             tail_count<=0;applied_mode<=0;lfo_phase<=0;fraction<=0;
             vibrato_delay<=0;warm<=0;product<=0;position<=0;filled<=0;
         end else if(clear)begin
-            state<=IDLE;out_sample<=0;out_valid<=0;deadline_error<=0;write_enable<=0;
+            state<=IDLE;out_sample<=0;out_valid<=0;deadline_error<=0;write_enable<=0;control_phase<=0;
             wet_gain<=0;sample_gain<=0;vibrato_mix<=0;tail_count<=0;
             applied_mode<=mode;lfo_phase<=0;position<=0;filled<=0;
         end else begin
@@ -93,6 +102,7 @@ module audio_effects #(
             if(in_valid && state!=IDLE)deadline_error<=1;
             case(state)
                 IDLE:if(in_valid)begin
+                    control_phase<=control_phase==CONTROL_RATE_RATIO-1 ? 0 : control_phase+1'b1;
                     dry<=in_sample;wet_gain<=next_gain;vibrato_mix<=next_vibrato_mix;
                     sample_gain<=applied_mode==3 ? next_vibrato_mix : {2'd0,next_gain};
                     if(applied_mode==0 || applied_mode==2)tail_count<=0;

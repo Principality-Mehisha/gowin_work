@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module GSR(input GSRI); endmodule
+module GSR(input GSRI); wire GSRO=GSRI; endmodule
 module tb_marimba_pressure;
     localparam UART_TICKS=8;
     reg clk=0,pclk=0,k2=1,rx=1,passed=0;
@@ -63,17 +63,6 @@ module tb_marimba_pressure;
         if(pcm!=0)heard=heard+1;
         if(dut.system.marimba_mode && (dut.video_active || dut.video_keys))
             $fatal(1,"Marimba entered piano waterfall");
-        if(dut.system.voices.marimba.event_valid && dut.system.voices.marimba.event_ready &&
-           dut.system.voices.marimba.event_on)begin
-            strikes=strikes+1;
-            if(dut.system.voices.marimba.event_note<36 || dut.system.voices.marimba.event_note>83)
-                $fatal(1,"Pressure reached unsupported marimba note");
-            note_hits[dut.system.voices.marimba.event_note]=note_hits[dut.system.voices.marimba.event_note]+1;
-            if(check_b5 && dut.system.voices.marimba.event_note!=83)
-                $fatal(1,"Third group last key is not B5");
-        end
-        if(tick && !dut.system.voices.marimba.voice_busy && dut.system.voices.marimba_tail!=0)
-            tail_ticks=tail_ticks+1;
         if(recording && (analysis.first_sample || (analysis.state==1 && tick && enabled && !clear)))begin
             if(captures<1024)$fdisplay(input_file,"%04x",pcm);
             captures=captures+1;
@@ -83,21 +72,36 @@ module tb_marimba_pressure;
             expected[rows]=result;$fdisplay(result_file,"%08x",result);rows=rows+1;
         end
     end
+    always @(posedge dut.audio_clk)if(dut.system.engine_reset_n)begin
+        if(dut.system.voices.marimba.event_valid && dut.system.voices.marimba.event_ready &&
+           dut.system.voices.marimba.event_on)begin
+            strikes=strikes+1;
+            if(dut.system.voices.marimba.event_note<36 || dut.system.voices.marimba.event_note>83)
+                $fatal(1,"Pressure reached unsupported marimba note");
+            note_hits[dut.system.voices.marimba.event_note]=note_hits[dut.system.voices.marimba.event_note]+1;
+            if(check_b5 && dut.system.voices.marimba.event_note!=83)
+                $fatal(1,"Third group last key is not B5");
+        end
+        if(dut.sample_tick && !dut.system.voices.marimba.voice_busy && dut.system.voices.marimba_tail!=0)
+            tail_ticks=tail_ticks+1;
+    end
     initial begin
         for(i=0;i<84;i=i+1)note_hits[i]=0;
         for(i=0;i<16;i=i+1)voltages[i]=3510;
         input_file=$fopen("output/marimba_pressure/marimba_input.hex","w");
         result_file=$fopen("output/marimba_pressure/marimba_result.hex","w");
-        wait(dut.rst_n);wait(dut.system.pressure_calibrated==16'hffff);settle();
+        wait(dut.rst_n);wait(dut.system.pressure_calibrated==16'hffff);
+        wait(dut.system.audio_link_ready);settle();
         send_frame(0,'h44,0,0,0);settle();
         if(!dut.system.pressure_enable || enabled)$fatal(1,"Marimba pressure/idle setup");
         send_frame(0,'h50,1,0,0);settle();
         recording=1;voltages[15]=1900;
-        wait(strikes==1);@(negedge clk);initial_gain=dut.system.voices.marimba.dynamics_by_note[47];
-        repeat(8)@(posedge tick);
-        voltages[15]=2700;repeat(8)@(posedge tick);
-        voltages[15]=1300;repeat(8)@(posedge tick);
-        if(strikes!=1 || dut.system.voices.marimba.dynamics_by_note[47]!=initial_gain ||
+        wait(strikes==1);@(negedge dut.audio_clk);initial_gain=dut.system.voices.marimba.dynamics_by_note[47];
+        if(^initial_gain===1'bx)$fatal(1,"Unknown initial marimba gain");
+        repeat(24)@(posedge tick);
+        voltages[15]=2700;repeat(24)@(posedge tick);
+        voltages[15]=1300;repeat(24)@(posedge tick);
+        if(strikes!=1 || dut.system.voices.marimba.dynamics_by_note[47]!==initial_gain ||
            !enabled || leds!=0)$fatal(1,"Held pressure altered/retriggered the marimba strike");
         voltages[15]=3510;wait(dut.system.pressure_pressed==0);
         repeat(100)@(negedge clk);
@@ -111,7 +115,7 @@ module tb_marimba_pressure;
         end
         if(captures!=1024 || !heard)$fatal(1,"No complete real marimba analysis frame");
         wait(!enabled);
-        if(tail_ticks!=128 || !clear || strikes!=1)$fatal(1,"Natural modal/filter tail did not finish");
+        if(tail_ticks!=384 || !clear || strikes!=1)$fatal(1,"Natural modal/filter tail did not finish");
         // A new instrument clears the old publication, never relabels it.
         send_frame(0,'h43,0,0,0);settle();repeat(20)@(negedge pclk);
         if(visible || enabled)$fatal(1,"Old marimba frame survived timbre switch");
@@ -132,7 +136,7 @@ module tb_marimba_pressure;
         send_frame(0,'h11,0,0,0);settle();
         @(negedge clk);k2=0;repeat(8)@(negedge clk);k2=1;wait(dut.rst_n);
         if(enabled || !clear || leds!=8'hff)$fatal(1,"Marimba reset retained analysis/LEDs");
-        passed=1;$display("PASS marimba pressure: real UART/pressure B5 and 16-key chord, attack-only gain, no retrigger, release/natural decay, 128-frame filter tail, exact DAC samples, 1024/512 FFT data, frame CDC, invalid group/rearm, timbre clear and reset");$finish;
+        passed=1;$display("PASS marimba pressure: real UART/pressure B5 and 16-key chord, attack-only gain, no retrigger, release/natural decay, 384-frame native filter tail, exact DAC samples, 1024/512 FFT data, frame CDC, invalid group/rearm, timbre clear and reset");$finish;
     end
     initial begin #1000000000;$fatal(1,"Marimba pressure/analysis timeout");end
 endmodule

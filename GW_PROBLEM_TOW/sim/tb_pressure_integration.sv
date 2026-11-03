@@ -7,6 +7,7 @@ module tb_pressure_integration;
     reg [6:0] group_mask=7'b0000100;
     reg [11:0] voltages[0:15];
     reg [11:0] adc_data=0,pipeline0=0,pipeline1=0;
+    `include "pressure_scan_mapping.vh"
     wire [3:0] select;
     wire [7:0] leds;
     wire adc_clk,cs,sck,mosi,miso,bck,ws,din;
@@ -39,7 +40,7 @@ module tb_pressure_integration;
         .rst_n(dut.player_reset_n),.cs_n(cs),.sck(sck),.mosi(mosi),.miso(miso),
         .profile(2'd2),.fault(4'd0),.last_argument(),.read_commands(),.cmd16_seen());
     always @(posedge adc_clk) begin
-        pipeline0<=voltages[select];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
+        pipeline0<=voltages[pressure_key_for_select(select)];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
         if(last_adc!=0 && cycles-last_adc!=100)$fatal(1,"ADC clock changed");
         last_adc=cycles;
     end

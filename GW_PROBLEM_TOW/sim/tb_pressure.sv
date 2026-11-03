@@ -10,9 +10,10 @@ module tb_pressure;
     wire [15:0] pressed, long_held, calibrated;
     reg [11:0] voltages [0:15];
     reg [11:0] adc_data=0, pipeline0=0, pipeline1=0;
+    `include "pressure_scan_mapping.vh"
     // A coherent ADC word arrives after two conversion periods and tCO.
     always @(posedge adc_clk) begin
-        pipeline0<=voltages[select];
+        pipeline0<=voltages[pressure_key_for_select(select)];
         pipeline1<=pipeline0;
         adc_data<=#120 pipeline1;
     end

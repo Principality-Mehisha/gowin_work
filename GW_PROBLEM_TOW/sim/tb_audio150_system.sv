@@ -6,6 +6,7 @@ module tb_audio150_system;
     GSR GSR(.GSRI(1'b1));
     reg [6:0] group_mask=7'b0001000;
     reg [11:0] voltages[0:15],adc_data=3510,pipeline0=3510,pipeline1=3510;
+    `include "pressure_scan_mapping.vh"
     wire [3:0] select;
     wire adc_clk,cs,sck,mosi,miso,bck,ws,din,led;
     wire [7:0] leds;
@@ -39,7 +40,7 @@ module tb_audio150_system;
         .rst_n(dut.player_reset_n),.cs_n(cs),.sck(sck),.mosi(mosi),.miso(miso),
         .profile(2'd2),.fault(4'd0),.last_argument(),.read_commands(),.cmd16_seen());
     always @(posedge adc_clk)begin
-        pipeline0<=voltages[select];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
+        pipeline0<=voltages[pressure_key_for_select(select)];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
     end
     `include "uart_test_tasks.vh"
     `include "key_guide_reference.vh"

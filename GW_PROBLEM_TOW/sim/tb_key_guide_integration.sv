@@ -5,6 +5,7 @@ module tb_key_guide_integration #(parameter integer WARM_CATALOG=0);
     always #10 clk=~clk;
     reg [11:0] voltage[0:15];
     reg [11:0] adc_data=3510,pipeline0=3510,pipeline1=3510;
+    `include "pressure_scan_mapping.vh"
     wire [3:0] select;
     wire adc_clk,cs,sck,mosi,miso,led,frame_valid;
     wire [383:0] frame;
@@ -34,7 +35,7 @@ module tb_key_guide_integration #(parameter integer WARM_CATALOG=0);
         .rst_n(dut.player_reset_n),.cs_n(cs),.sck(sck),.mosi(mosi),.miso(miso),
         .profile(2'd2),.fault(4'd0),.last_argument(),.read_commands(),.cmd16_seen());
     always @(posedge adc_clk)begin
-        pipeline0<=voltage[select];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
+        pipeline0<=voltage[pressure_key_for_select(select)];pipeline1<=pipeline0;adc_data<=#120 pipeline1;
     end
     ws2812_monitor monitor(.clk(clk),.reset_n(dut.player_reset_n),.data_in(led),
         .frame(frame),.frame_valid(frame_valid),.frames(frames));

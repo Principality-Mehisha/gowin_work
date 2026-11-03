@@ -13,6 +13,11 @@ SD乐谱现支持32复音，PN/MB新文件使用32个音符事件槽，兼容已
 音源上限仍为钢琴88音、马林巴48音；新生成器默认32槽，旧BIN及SD布局无需重做。
 32槽BIN需配套重新编译、下载FPGA固件；未更新现有发布位流，详见[乐谱格式](docs/AUDIO_AND_SD.md)。
 
+串口屏新增一键88音钢琴试听：CMD=0x46、参数全0，A0～C8在同一音频帧起奏，
+约0.5秒后统一释放，再保留约1秒尾音。自动选择钢琴，不需要SD卡；
+停止、选曲、单音试听及切换乐器均可中断。屏幕按钮脚本、实现与验证见[88音同时发声](docs/PIANO88.md)。
+本次仅更新源码和仿真，未重新综合/PnR或更新发布位流，需重新编译下载。
+
 完整16键压力输入：钢琴支持持续力度及原音高分组，马林巴使用前三组覆盖C2～B5共48音，
 按下时的压力决定敲击力度，之后自然衰减，按住不重复敲击。SD自动播放和串口屏试听期间暂停压力输入；PN跟弹期间开放。
 切回后仍按住的键需先松开再按，KEY2重新校准时保持全部松键。
@@ -53,6 +58,7 @@ SD卡需先用离线工具生成专用FAT32布局镜像，不能直接在普通�
 | UART选曲 | CMD=0x12：PN001～PN100、MB001～MB100 |
 | UART单音 | 十六进制40=上一个音，41=下一个音，42=播放 |
 | UART乐器 | 十六进制43=钢琴，44=马林巴 |
+| UART全音 | 十六进制46=钢琴88音同帧起奏，参数全0 |
 | UART效果 | 十六进制51：0原声、1延迟、2震音、3颤音；52：效果量0～100 |
 
 UART默认115200/8N1。选音不发声；播放约0.5秒后释放，再保留约1秒尾音窗口。
@@ -103,6 +109,7 @@ GW_PROBLEM_TOW
 
 ```powershell
 python tools/check_project.py
+powershell -ExecutionPolicy Bypass -File sim/run_piano88.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_polyphony32.ps1
 powershell -ExecutionPolicy Bypass -File sim/run_timing150.ps1 -Full
 powershell -ExecutionPolicy Bypass -File sim/run_rom_sharing.ps1

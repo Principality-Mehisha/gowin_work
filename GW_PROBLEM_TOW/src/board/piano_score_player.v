@@ -65,6 +65,7 @@ module piano_score_player #(
     wire uart_note_previous;
     wire uart_note_next;
     wire uart_note_play;
+    wire uart_note_all_play;
     wire uart_select_piano;
     wire uart_select_marimba;
     wire [7:0] uart_track;
@@ -134,6 +135,7 @@ module piano_score_player #(
             .selected_marimba(selected_marimba),
             .player_error(last_error),.play_request(raw_uart_play),.stop_request(uart_stop),
             .note_previous(uart_note_previous),.note_next(uart_note_next),.note_play(uart_note_play),
+            .note_all_play(uart_note_all_play),
             .note_select_piano(uart_select_piano),.note_select_marimba(uart_select_marimba),
             .display_mode(display_mode),.effect_mode(effect_mode),.effect_amount(effect_amount),
             .guide_mode(guide_mode),.guide_changed(guide_changed),
@@ -143,6 +145,7 @@ module piano_score_player #(
         assign raw_uart_play=1'b0; assign uart_stop=1'b0;
         assign uart_track=0; assign uart_overflow=0;
         assign uart_note_previous=0; assign uart_note_next=0; assign uart_note_play=0;
+        assign uart_note_all_play=0;
         assign uart_select_piano=0; assign uart_select_marimba=0;
         assign effect_mode=0;assign effect_amount=30;
         assign guide_mode=0;assign guide_changed=0;
@@ -207,6 +210,7 @@ module piano_score_player #(
         .uart_note_previous(uart_note_previous),
         .uart_note_next(uart_note_next),
         .uart_note_play(uart_note_play),
+        .uart_note_all_play(uart_note_all_play),
         .uart_select_piano(uart_select_piano),
         .uart_select_marimba(uart_select_marimba),
         .uart_track(uart_track),

@@ -8,6 +8,8 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
  wire [6:0] fx_amount;
  wire guide_mode,guide_changed;
  wire note_previous,note_next,note_play;
+ wire note_all_play;
+ integer all_count=0;
  wire select_piano,select_marimba;
  reg marimba_selected=0;
  integer piano_count=0,marimba_count=0;
@@ -31,7 +33,8 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   .stop_request(stop),.requested_track(track),.display_mode(view_mode),.overflow(overflow),
   .effect_mode(fx_mode),.effect_amount(fx_amount),
   .guide_mode(guide_mode),.guide_changed(guide_changed),
-  .note_previous(note_previous),.note_next(note_next),.note_play(note_play));
+  .note_previous(note_previous),.note_next(note_next),.note_play(note_play),
+  .note_all_play(note_all_play));
  `include "uart_test_tasks.vh"
  always @(posedge clk) if(rst_n) begin
   if(guide_changed)mode_changes=mode_changes+1;
@@ -40,6 +43,7 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   if(note_previous) begin previous_count=previous_count+1;note_selected<=(note_selected==0)?87:note_selected-1'b1;end
   if(note_next) begin next_count=next_count+1;note_selected<=(note_selected==87)?0:note_selected+1'b1;end
   if(note_play) note_count=note_count+1;
+  if(note_all_play) all_count=all_count+1;
   if(select_piano) begin piano_count=piano_count+1;marimba_selected<=0;end
   if(select_marimba) begin marimba_count=marimba_count+1;marimba_selected<=1;end
  end
@@ -224,6 +228,12 @@ module tb_uart_protocol #(parameter integer UART_TICKS=5208);
   if(mode_changes!=1 || starts!=4 || stops!=1)$fatal(1,"Duplicate guide mode restarted transport");
   send_frame(114,'h53,0,0,0);expect_reply(114,0,'h53);
   if(guide_mode || guides[114] || mode_changes!=2)$fatal(1,"Guide off/echo failed");
+  send_frame(116,'h46,0,0,0);expect_reply(116,0,'h46);
+  send_frame(117,'h46,1,0,0);expect_reply(117,1,'h46);
+  send_frame(118,'h46,0,1,0);expect_reply(118,1,'h46);
+  send_frame(119,'h46,0,0,1);expect_reply(119,1,'h46);
+  if(all_count!=1 || note_count!=1 || starts!=4 || stops!=1)
+   $fatal(1,"88-note command/arguments changed unrelated transport");
   // Deliberately exceed the documented host pacing; STOP must still work,
   // and overflow must be observable once queued native replies drain.
   for(i=30;i<54;i=i+1) send_frame(i,1,0,0,0);

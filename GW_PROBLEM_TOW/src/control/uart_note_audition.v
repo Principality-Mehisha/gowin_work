@@ -1,11 +1,13 @@
 // Three virtual keys address piano or marimba. Selection is
 // separate from the held note, so changing selection never changes its pitch.
 // A play emits one note-on, a timed note-off, then clears after the tail window.
+// All-note piano audition uses internal broadcast address 127 for both events.
 module uart_note_audition #(
     parameter integer GATE_CYCLES = 25000000,
     parameter integer TAIL_CYCLES = 50000000
 ) (
     input wire clk, rst_n, previous_request, next_request, play_request, cancel,
+    input wire all_play_request,
     input wire select_piano_request, select_marimba_request,
     input wire event_ready,
     // Shared display index: 0=A0. Marimba events use MIDI (index + 21).
@@ -25,7 +27,7 @@ module uart_note_audition #(
     assign selected_note=selected_marimba ? marimba_note : piano_note;
     assign busy=state!=IDLE;
     assign event_valid=(state==ON_PENDING || state==OFF_PENDING) &&
-                       !cancel && !play_request && !instrument_request;
+                       !cancel && !play_request && !all_play_request && !instrument_request;
     assign event_on=state==ON_PENDING;
     assign event_dynamics=8'd192;
     always @(posedge clk or negedge rst_n) begin
@@ -33,7 +35,7 @@ module uart_note_audition #(
             selected_marimba<=0;
             piano_note<=0; marimba_note<=15;
         end
-        else if (select_piano_request) selected_marimba<=0;
+        else if (select_piano_request || all_play_request) selected_marimba<=0;
         else if (select_marimba_request) selected_marimba<=1;
         else if (selected_marimba) begin
             if (previous_request) marimba_note<=(marimba_note==15) ? 7'd62 : marimba_note-1'b1;
@@ -48,9 +50,10 @@ module uart_note_audition #(
         else begin
             clear<=0;
             if (cancel || instrument_request) begin state<=IDLE; count<=0; end
-            else if (play_request) begin
+            else if (all_play_request || play_request) begin
                 state<=ON_PENDING;
-                event_note<=selected_marimba ? selected_note+7'd21 : selected_note;
+                event_note<=all_play_request ? 7'd127 :
+                            (selected_marimba ? selected_note+7'd21 : selected_note);
                 count<=0;
             end
             else case(state)

@@ -2,6 +2,7 @@
 module tb_note_audition;
  reg clk=0,rst_n=0,prev=0,next=0,play=0,cancel=0,ready=0,passed=0;
  reg piano_request=0,marimba_request=0;
+ reg all_play=0;
  always #10 clk=~clk;
  wire valid,on,busy,clear;
  wire marimba;
@@ -10,6 +11,7 @@ module tb_note_audition;
  integer i,ons=0,offs=0;
  uart_note_audition #(.GATE_CYCLES(8),.TAIL_CYCLES(8)) dut (
   .clk(clk),.rst_n(rst_n),.previous_request(prev),.next_request(next),.play_request(play),
+  .all_play_request(all_play),
   .select_piano_request(piano_request),.select_marimba_request(marimba_request),.selected_marimba(marimba),
   .cancel(cancel),.event_ready(ready),.selected_note(selected),.event_valid(valid),
   .event_on(on),.event_note(note),.event_dynamics(dynamics),.busy(busy),.clear(clear));
@@ -87,6 +89,22 @@ module tb_note_audition;
   trigger();select_instrument(0);if(selected!=1) $fatal(1,"Reselection lost pitch");
   select_instrument(1);step_next();@(negedge clk);rst_n=0;@(negedge clk);rst_n=1;
   if(selected || busy || marimba || dut.marimba_note!=15) $fatal(1,"Reset must restore both instruments");
+  select_instrument(1);ready=0;
+  @(negedge clk);all_play=1;@(negedge clk);all_play=0;
+  repeat(12)begin
+   @(negedge clk);
+   if(!busy || !valid || !on || note!=127 || marimba)
+    $fatal(1,"88-note request must select piano and hold broadcast until ready");
+  end
+  step_next();
+  if(note!=127 || selected!=1) $fatal(1,"Selection changed the 88-note event");
+  ready=1;@(negedge clk);ready=0;wait(valid && !on);
+  repeat(12)begin
+   @(negedge clk);
+   if(!valid || on || note!=127) $fatal(1,"Broadcast release lost under backpressure");
+  end
+  ready=1;@(negedge clk);ready=0;wait(!busy);
+  if(!clear) $fatal(1,"88-note tail clear missing");
   passed=1;$display("PASS audition: all 88 piano/48 marimba notes, MIDI mapping, wraps, memory, backpressure and switching");$finish;
  end
  initial begin #10000000;$fatal(1,"Note audition timeout");end

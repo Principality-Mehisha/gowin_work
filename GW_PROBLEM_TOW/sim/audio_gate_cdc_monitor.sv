@@ -28,8 +28,10 @@ module audio_gate_cdc_monitor (
                    {ack_marimba,ack_update,ack_on,ack_note}!==events[received&4095])
                     $fatal(1,"Displayed note ACK lost, duplicated or changed an accepted audio event");
                 received=received+1;
-                if(!sys_clear && !ack_marimba && !ack_update && ack_note<88)
-                    expected[ack_note]=ack_on;
+                if(!sys_clear && !ack_marimba && !ack_update)begin
+                    if(ack_note==127)expected={88{ack_on}};
+                    else if(ack_note<88)expected[ack_note]=ack_on;
+                end
             end
         end
     end

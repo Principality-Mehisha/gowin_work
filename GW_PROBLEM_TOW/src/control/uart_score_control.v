@@ -12,7 +12,7 @@ module uart_score_control #(
     input wire [6:0] selected_note,
     input wire selected_marimba,
     output reg play_request, stop_request,
-    output reg note_previous, note_next, note_play,
+    output reg note_previous, note_next, note_play, note_all_play,
     output reg note_select_piano, note_select_marimba,
     output reg [1:0] display_mode,
     output reg [1:0] effect_mode,
@@ -54,7 +54,7 @@ module uart_score_control #(
         end
     end
     wire known=(cmd==8'h01 || cmd==8'h11 || cmd==8'h12 ||
-                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 ||
+                cmd==8'h40 || cmd==8'h41 || cmd==8'h42 || cmd==8'h43 || cmd==8'h44 || cmd==8'h46 ||
                 cmd==8'h50 || cmd==8'h51 || cmd==8'h52 || cmd==8'h53);
     wire args_ok=cmd==8'h12 ? (p0>=1 && p0<=2 && p1>=1 && p1<=100 && p2==0) :
         (p1==0 && p2==0 && (cmd==8'h50 ? p0<=2 :
@@ -71,7 +71,8 @@ module uart_score_control #(
     always @(posedge clk or negedge rst_n)begin
         if(!rst_n)begin
             play_request<=0;stop_request<=0;requested_track<=0;
-            note_previous<=0;note_next<=0;note_play<=0;note_select_piano<=0;note_select_marimba<=0;
+            note_previous<=0;note_next<=0;note_play<=0;note_all_play<=0;
+            note_select_piano<=0;note_select_marimba<=0;
         end else begin
             play_request<=request && known && args_ok && room && cmd==8'h12;
             // Stop remains effective even when feedback is full.
@@ -80,6 +81,7 @@ module uart_score_control #(
             note_previous<=request && args_ok && room && cmd==8'h40;
             note_next<=request && args_ok && room && cmd==8'h41;
             note_play<=request && args_ok && room && cmd==8'h42;
+            note_all_play<=request && args_ok && room && cmd==8'h46;
             note_select_piano<=request && args_ok && room && cmd==8'h43;
             note_select_marimba<=request && args_ok && room && cmd==8'h44;
         end

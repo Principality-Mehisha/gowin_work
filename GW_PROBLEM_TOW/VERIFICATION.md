@@ -1,5 +1,30 @@
 # 当前工程验证记录
 
+## 串口屏88音同帧试听（2026-11-04）
+
+新增CMD=0x46、P0/P1/P2全0，一键自动选择钢琴并让A0～C8共88音同帧起奏。
+沿用0.5秒gate和1秒tail；停止、单音、选曲、音色选择和KEY2可中断。
+内部广播地址127通过原官方FIFO与ACK路径，合成器仅在帧间IDLE接受广播，
+统一设置88个gate/pending，视频琴键根据实际音频ACK同步全部亮灭。
+广播力度使用8位寄存器和88位掩码，不并行写入原力度RAM。
+SD乐谱仍为32槽，马林巴仍为48音，ROM、引脚、约束和采样时钟不变。
+
+`sim/run_piano88.ps1`通过六次运行：`tb_piano88_core`分别验证LIVE_DYNAMICS=1/0，
+`tb_piano88_uart`验证实际UART RX、官方150 MHz PLL/FIFO、88个活动声部、非零PCM、
+同帧起奏/统一释放、尾音、ACK与视频键、错误帧/参数、重按、停止、
+单音/音色/SD互相抢占及复位；另回归`tb_note_audition`、`tb_uart_protocol`、
+`tb_uart_notes`，包含原88/48音映射、GB2312反馈及新命令参数/反压。
+两种力度配置最大延迟均为2861/3072周期，输出未出现未知样本或饱和。
+专项日志与源码SHA256在`output/piano88/verification.json`。
+新增屏幕脚本`screen/tjc_uart/piano88_release.txt`与主机`Piano88`命令帧一致。
+修改前源码备份为`output/piano88/before/sources.zip`。
+
+额外回归原生`tb_audio150_core`和`tb_audio150_bridge`，并执行原生PCM参考检查。
+历史`sim/run_rom_sharing.ps1`因缺少冻结的`output/rom_sharing/before/`比较模块未运行，
+没有从修改后的RTL伪造旧参考。仿真仍有既有可选调试输出未连接等告警。
+本次未执行完整综合/PnR、更新位流、访问物理COM口或开发板；
+尚未进行屏幕IDE编译及实板听感验证，不能据此宣称150 MHz物理时序通过。
+
 ## SD乐谱32复音（2026-11-04）
 
 P88S/M42S v1新文件使用slots=32，事件槽0～31；继续接受slots=8的旧文件并按各自槽数检查边界。

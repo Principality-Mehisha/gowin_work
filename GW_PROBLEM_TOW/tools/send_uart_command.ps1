@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform', 'EffectOriginal', 'EffectDelay', 'EffectTremolo', 'EffectVibrato', 'EffectReverb', 'EffectChorus', 'EffectAmount', 'GuideOn', 'GuideOff')]
+    [ValidateSet('NumberedPiano', 'NumberedMarimba', 'Stop', 'Query', 'NotePrevious', 'NoteNext', 'NotePlay', 'Piano88', 'InstrumentPiano', 'InstrumentMarimba', 'ViewWaterfall', 'ViewSpectrum', 'ViewWaveform', 'EffectOriginal', 'EffectDelay', 'EffectTremolo', 'EffectVibrato', 'EffectReverb', 'EffectChorus', 'EffectAmount', 'GuideOn', 'GuideOff')]
     [string]$Command = 'Query',
     [ValidateRange(0,255)][int]$Sequence = 0,
     [string]$Port,
@@ -19,6 +19,7 @@ switch ($Command) {
     'NotePrevious' { $commandByte = 0x40 }
     'NoteNext' { $commandByte = 0x41 }
     'NotePlay' { $commandByte = 0x42 }
+    'Piano88' { $commandByte = 0x46 }
     'InstrumentPiano' { $commandByte = 0x43 }
     'InstrumentMarimba' { $commandByte = 0x44 }
     'ViewWaterfall' { $commandByte = 0x50; $track = 0 }

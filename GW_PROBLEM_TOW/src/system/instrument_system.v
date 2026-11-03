@@ -41,6 +41,7 @@ module instrument_system #(
     input wire uart_note_previous,
     input wire uart_note_next,
     input wire uart_note_play,
+    input wire uart_note_all_play,
     input wire uart_select_piano,
     input wire uart_select_marimba,
     input wire [7:0] uart_track,
@@ -80,6 +81,7 @@ module instrument_system #(
     // Export the registered SD owner, never a busy/reset-gated UI status.
     assign sd_active=ringtone_active;
     wire instrument_request=uart_select_piano || uart_select_marimba;
+    wire audition_request=uart_note_play || uart_note_all_play;
     wire note_busy, note_clear;
     wire failed;
     wire manual_mode, uart_start, control_restart, play_rst_n;
@@ -137,7 +139,7 @@ module instrument_system #(
     end endgenerate
     playback_control #(.SD_SCORE_ENABLE(SD_SCORE_ENABLE)) control (
         .clk(sys_clk), .rst_n(rst_n),
-        .uart_play(uart_play), .uart_stop(uart_stop), .uart_note_play(uart_note_play),
+        .uart_play(uart_play), .uart_stop(uart_stop), .uart_note_play(audition_request),
         .mode_restart(guide_restart),
         .instrument_request(instrument_request), .audition_marimba(selected_marimba),
         .note_busy(note_busy || pressure_busy), .playing(playing), .finished(finished),
@@ -158,6 +160,7 @@ module instrument_system #(
     uart_note_audition #(.GATE_CYCLES(NOTE_GATE_CYCLES),.TAIL_CYCLES(NOTE_TAIL_CYCLES)) uart_notes (
         .clk(sys_clk),.rst_n(rst_n),.previous_request(uart_note_previous),
         .next_request(uart_note_next),.play_request(uart_note_play),
+        .all_play_request(uart_note_all_play),
         .select_piano_request(uart_select_piano),.select_marimba_request(uart_select_marimba),
         .cancel(uart_start || uart_stop),
         .event_ready(manual_mode && note_busy && synth_event_ready),
@@ -274,14 +277,16 @@ module instrument_system #(
     always @(posedge sys_clk or negedge play_rst_n) begin
         if(!play_rst_n) held_piano_keys<=0;
         else if(synth_stop || marimba_mode || (ack_valid && ack_clear)) held_piano_keys<=0;
-        else if(ack_valid && !ack_update && !ack_marimba && ack_note<88)
-            held_piano_keys[ack_note]<=ack_on;
+        else if(ack_valid && !ack_update && !ack_marimba) begin
+            if(ack_note==127) held_piano_keys<={88{ack_on}};
+            else if(ack_note<88) held_piano_keys[ack_note]<=ack_on;
+        end
     end
     // Release/tail expiry leaves the recent history scrolling. Explicit stop,
     // a new SD score, leaving SD for audition, instrument changes and errors
     // invalidate history, even if the command lasts less than one video frame.
     assign video_clear = uart_start || uart_stop || instrument_request || guide_restart ||
-                         (uart_note_play && !manual_mode) || marimba_mode || failed;
+                         (audition_request && !manual_mode) || marimba_mode || failed;
     assign video_active = !marimba_mode && !failed;
     assign video_elapsed_ms = elapsed_ms;
     assign video_keys = held_piano_keys;

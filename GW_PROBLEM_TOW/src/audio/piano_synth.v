@@ -1,5 +1,5 @@
 // 88 independent note states, one shared time-multiplexed 8-partial datapath.
-// event_note=0..87 means A0..C8; note-off addresses the original note.
+// event_note=0..87 means A0..C8; 127 broadcasts on/off at a frame boundary.
 module piano_synth #(
     parameter integer EXTERNAL_LIMITER=0,
     parameter integer EXTERNAL_SINE=0,
@@ -50,6 +50,8 @@ module piano_synth #(
     reg [6:0] voice;
     reg [3:0] harmonic;
     reg [87:0] gates, pending;
+    reg [87:0] broadcast_gain;
+    reg [7:0] broadcast_dynamics;
     reg [7:0] dynamics [0:87];
     // One synchronous state RAM; clearing validity avoids resetting RAM cells.
     // Live pressure adds applied gain above the unchanged low 83 state bits.
@@ -287,7 +289,10 @@ module piano_synth #(
     wire signed [15:0] enveloped_sample = envelope_product >>> 16;
     wire signed [31:0] voice_sample = note_product >>> 16;
     // FETCH snapshots gates and consumes trigger flags atomically.
-    assign event_ready = ready_reg && !stop_all && reset_n;
+    // A broadcast must precede the entire voice sweep, never split a frame.
+    wire broadcast_event=event_note==7'd127 && !event_update;
+    assign event_ready = ready_reg && !stop_all && reset_n &&
+                         (!broadcast_event || (state==IDLE && !sample_tick));
     assign debug_voice=voice;
     assign debug_env_state=env_state_reg;
     assign debug_envelope=voice_env;
@@ -309,7 +314,7 @@ module piano_synth #(
             voice_data<=voice_ram[voice];
             frequency_word<=frequency_rom[voice];
             partial_data<=partial_ram[voice];
-            dynamics_data<=dynamics[voice];
+            dynamics_data<=broadcast_gain[voice] ? broadcast_dynamics : dynamics[voice];
             profile<=BASS_VOICING ? voicing_rom[voice] : standard_profile;
             decay_data<=decay_rom[voice];
         end
@@ -357,6 +362,7 @@ module piano_synth #(
     always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state<=IDLE; voice<=0; harmonic<=1; gates<=0; pending<=0;
+            broadcast_gain<=0;broadcast_dynamics<=0;
             rate_phase<=0;time_step<=1;
             mix_sample<=0; mix_valid<=0; mix_accum<=0; active_count<=0;
             active_voices<=0; deadline_error<=0; frame_pitch<=65536;
@@ -387,6 +393,7 @@ module piano_synth #(
             sum_high_valid<=0; sum_finish<=0;
         end else if (stop_all) begin
             state<=IDLE; gates<=0; pending<=0; mix_accum<=0;
+            broadcast_gain<=0;broadcast_dynamics<=0;
             rate_phase<=0;time_step<=1;
             mix_sample<=0; mix_valid<=0; active_count<=0; active_voices<=0;
             valid_states<=0; voice_env<=0; env_state_reg<=0; base_phase<=0;
@@ -412,14 +419,27 @@ module piano_synth #(
             end
             if(sum_high_valid)
                 harmonic_sum[31:16]<=sum_high_left+sum_high_right+sum_carry;
-            if (event_valid && event_ready && event_note<88) begin
-                if(LIVE_DYNAMICS && event_update) begin
-                    if(gates[event_note]) dynamics[event_note]<=event_dynamics;
-                end else begin
-                    gates[event_note]<=event_on;
-                    if (event_on) begin
-                        pending[event_note]<=1;
-                        dynamics[event_note]<=event_dynamics;
+            if (event_valid && event_ready) begin
+                if(broadcast_event) begin
+                    gates<={88{event_on}};
+                    if(event_on) begin
+                        pending<={88{1'b1}};
+                        broadcast_gain<={88{1'b1}};
+                        broadcast_dynamics<=event_dynamics;
+                    end
+                end else if(event_note<88) begin
+                    if(LIVE_DYNAMICS && event_update) begin
+                        if(gates[event_note]) begin
+                            dynamics[event_note]<=event_dynamics;
+                            broadcast_gain[event_note]<=0;
+                        end
+                    end else begin
+                        gates[event_note]<=event_on;
+                        if (event_on) begin
+                            pending[event_note]<=1;
+                            dynamics[event_note]<=event_dynamics;
+                            broadcast_gain[event_note]<=0;
+                        end
                     end
                 end
             end
